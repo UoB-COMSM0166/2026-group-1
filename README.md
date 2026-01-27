@@ -27,12 +27,14 @@ VIDEO. Include a demo video of your game here (you don't have to wait until the 
 
 GROUP PHOTO. Add a group photo here.
 
-- Archie Brown, cq25988@bristol.ac.uk, role
-- Monal Gupta, ta25702@bristol.ac.uk, role
-- Ben Mounce, ta25702@bristol.ac.uk, role
-- Georgia Sweeny, dp25498@bristol.ac.uk, role
-- Nick, name, ve21144@bristol.ac.uk, role
-- Jude, ca20853@bristol.ac.uk, role
+|Name|Email|Role|
+|:-|:-|:-|
+|Archie Brown|cq25988@bristol.ac.uk||
+|Monal Gupta|ta25702@bristol.ac.uk|
+|Ben Mounce|ta25702@bristol.ac.uk|
+|Georgia Sweeny|dp25498@bristol.ac.uk|
+|Nick Jankov|ve21144@bristol.ac.uk|
+|Jude Hsu|ca20853@bristol.ac.uk|
 
 ## Project Report
 
