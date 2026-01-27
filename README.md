@@ -23,16 +23,16 @@ LINK. Add a link here to your deployed game, you can also make the image above l
 
 VIDEO. Include a demo video of your game here (you don't have to wait until the end, you can insert a work in progress video)
 
-## Your Group
+## Group 1
 
 GROUP PHOTO. Add a group photo here.
 
-- Group member 1, name, email, role
-- Group member 2, name, email, role
-- Group member 3, name, email, role
-- Group member 4, name, email, role
-- Group member 5, name, email, role
-- Group member 6, name, email, role
+- Archie Brown, email, role
+- Monal Gupta, ta25702@bristol.ac.uk, role
+- Ben Mounce, ta25702@bristol.ac.uk, role
+- Georgia Sweeny, dp25498@bristol.ac.uk, role
+- Nick, name, ve21144@bristol.ac.uk, role
+- Jude, ca20853@bristol.ac.uk, role
 
 ## Project Report
 
