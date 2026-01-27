@@ -31,7 +31,7 @@ GROUP PHOTO. Add a group photo here.
 - Monal Gupta, ta25702@bristol.ac.uk, role
 - Ben Mounce, ta25702@bristol.ac.uk, role
 - Georgia Sweeny, dp25498@bristol.ac.uk, role
-- Nick, name, ve21144@bristol.ac.uk, role
+- Nick Jankov, ve21144@bristol.ac.uk, role
 - Jude, ca20853@bristol.ac.uk, role
 
 ## Project Report
