@@ -1,4 +1,4 @@
-{
+export const room_test = {
   "height": 12,
   "width": 20,
   "tileheight": 32,

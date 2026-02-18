@@ -41,27 +41,21 @@ TODO / LIMITATIONS:
 ========================================
 */
 
-//======================
-// PLAYER SYSTEM
-//======================
 import { PLAYER } from '../config.js';
 
 export function createPlayerSystem(player) {
-  // returning object literals → commas between entries
   return {
-    update(deltaTime) {
-      const speed = PLAYER.MOVE_SPEED;
-      if (player.intent?.left) player.x -= speed;
-      if (player.intent?.right) player.x += speed;
+    update() {
+      const acceleration = PLAYER.ACCELERATION;
 
-      if (player.intent?.jump && player.onGround) {
-        player.vy = -player.jumpPower;
-        player.onGround = false;
+      if (player.intent?.left) {
+        player.vx -= acceleration;
       }
-      if (player.intent) player.intent.jump = false;
+      if (player.intent?.right) {
+        player.vx += acceleration;
+      }
+      if (player.intent?.up) player.vy -= acceleration;
+      if (player.intent?.down) player.vy += acceleration;
     },
   };
 }
-//======================================
-// END
-//======================================

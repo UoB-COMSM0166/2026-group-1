@@ -58,17 +58,17 @@ export function createInputSystem(player) {
     update() {
       const leftKey = INPUT.A_KEY;
       const rightKey = INPUT.D_KEY;
+      const downKey = INPUT.S_KEY;
+      const upKey = INPUT.W_KEY;
       player.intent.left = keyIsDown(leftKey) || keyIsDown(INPUT.LEFT_ARROW_KEY);
       player.intent.right = keyIsDown(rightKey) || keyIsDown(INPUT.RIGHT_ARROW_KEY);
+      player.intent.down = keyIsDown(downKey) || keyIsDown(INPUT.DOWN_ARROW_KEY);
+      player.intent.up = keyIsDown(upKey) || keyIsDown(INPUT.UP_ARROW_KEY);
     },
 
+    
     onKeyPressed(key, keyCodeValue) {
       const keyLower = typeof key === 'string' ? key.toLowerCase() : '';
-      const jumpPressed = INPUT.JUMP_KEY.includes(keyCodeValue) || keyLower === 'w';
-
-      if (jumpPressed && player.onGround) {
-        player.intent.jump = true;
-      }
 
       if (INPUT.TOGGLE_TORCH_KEY.includes(key)) {
         player.intent.toggleTorch = true;

@@ -62,7 +62,8 @@ export const PLAYER = {
   START_Y: CANVAS.TILE_SIZE,
   JUMP_POWER: 25,
   MOVE_SPEED: 5,
-  FALL_SPEED: 2
+  FALL_SPEED: 2,
+  ACCELERATION: 0.8, // How quickly submarine speeds up
 };
 
 //======================
