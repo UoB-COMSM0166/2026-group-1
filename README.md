@@ -257,8 +257,8 @@ Based on user stories derived from our game Epics
 
 | **Priority**            | **Systems / Features**                                                   | **Estimated Implementation Time** |
 | ----------------------- | ------------------------------------------------------------------------ | --------------------------------- |
-| **HIGH (MVP)**          | Player controls (movement, jump, sonar input, torch toggle)              | 2–3 days (mostly done)            |
-|                         | Underwater Physics (floaty gravity, drag, capped fall speed)             | 2–4 days                          |
+| **HIGH (MVP)**          | Player controls (intents: movement, sonar ping, torch toggle)            | 1-2 days (mostly done)            |
+|                         | Physics (underwater movement, drag, collisions, hitboxes)                | 4–5 days                          |
 |                         | Minimal gameplay UI (power meter, sonar cooldown, pause)                 | 1–2 days                          |
 |                         | Resource management (power drain + torch drain, replen)                  | 2–3 days (mostly done)            |
 |                         | Lighting system (darkness overlay + visibility masking)                  | 3–5 days                          |
