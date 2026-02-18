@@ -36,9 +36,16 @@ let lightingSystem;
 let roomSystem;
 
 let assets = {};
+
+const PLAYER_SPRITE = 'sub.png';
+
+// --- FIX: Log the id and keys to debug room loading ---
+console.log('room_test.id:', room_test.id); // Should print 'room_test'
+
 const roomData = {
   [room_test.id]: room_test
 };
+console.log('roomData keys:', Object.keys(roomData)); // Should print ['room_test']
 
 function getMapProperty(mapData, key, fallback = null) {
   const props = mapData?.properties;
@@ -63,6 +70,7 @@ function preload() {
   const imageNames = new Set();
   for (const room of Object.values(roomData)) {
     const imageName = getBackgroundImageName(room);
+    
     if (imageName) imageNames.add(imageName);
   }
 
@@ -70,6 +78,8 @@ function preload() {
     const imagePath = imageName.includes('/') ? imageName : `assets/backgrounds/${imageName}`;
     assets[imageName] = loadImage(imagePath);
   }
+  // Load player sprite
+  assets[PLAYER_SPRITE] = loadImage('assets/player/sub.png');
 }
 
 function setup() {
@@ -113,7 +123,8 @@ function setup() {
     getPlatformColor: () => roomSystem.getPlatformColor(),
     assets,
     darknessLayer,
-    getLightSources: () => lightingSystem.getLightSources()
+    getLightSources: () => lightingSystem.getLightSources(),
+    playerSprite: PLAYER_SPRITE
   });
 
   engine = new Engine();

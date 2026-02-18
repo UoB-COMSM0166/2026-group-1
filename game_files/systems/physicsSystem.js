@@ -51,14 +51,16 @@ NOTES:
 // SUBMARINE PHYSICS SYSTEM
 //======================================
 import { GAME } from '../config.js';
+import { PLAYER } from '../config.js';
+import { CANVAS } from '../config.js';
 
 export function createPhysicsSystem(
   player, 
   roomGetter,
   { 
-    drag = 0.92,           // Higher = less friction (0.9-0.95 feels good)
-    bounceDamping = 0.5,   // Velocity kept after bounce (0.5 = half speed)
-    minVelocity = 0.1      // Stop if slower than this
+    drag = PLAYER.DRAG,         
+    bounceDamping = PLAYER.BOUNCE_DAMPING,   
+    minVelocity = PLAYER.MIN_VELOCITY      
   } = {}
 ) {
   const getRoom = typeof roomGetter === 'function' ? roomGetter : () => roomGetter;
@@ -87,16 +89,31 @@ export function createPhysicsSystem(
   //======================================
   // WALL COLLISION & BOUNCE
   //======================================
-  function checkWallCollisions() {
-    const room = getRoom();
-    if (!room) return;
 
-    const roomWidth = room.width * room.tilewidth;
-    const roomHeight = room.height * room.tileheight;
+  // Currently assumes wall = screen edges, will be refactored to use room data for actual walls/obstacles
+
+
+  function checkWallCollisions() {
+
+    // TODO!!: Refactor to use room dimensions and actual wall data instead of canvas edges
+
+    // const room = getRoom();
+    // if (!room) return;
+
+    // const roomWidth = room.width * room.tilewidth;
+    // const roomHeight = room.height * room.tileheight;
+
+    // const halfW = player.w / 2;
+    // const halfH = player.h / 2;
+
+
+    // for now, use canvas dimensions as room boundaries // 
+    const roomWidth = CANVAS.WIDTH;
+    const roomHeight = CANVAS.HEIGHT;
 
     const halfW = player.w / 2;
     const halfH = player.h / 2;
-
+    
     // Left wall
     if (player.x - halfW < 0) {
       player.x = halfW;

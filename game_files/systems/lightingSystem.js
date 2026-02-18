@@ -53,18 +53,26 @@ export function createLightingSystem(player, enemies = []) {
       getLightSources() {
          const lightSources = [];
 
-         // Player torch
-         if (player.torch.isOn) {
-            const intensity = player.torch.getIntensity(player.power.getPercent());
-            if (intensity > 0) {
-               lightSources.push({
-                  x: player.x,
-                  y: player.y,
-                  radius: player.torch.radius,
-                  intensity
-               });
-            }
-         }
+         const intensity = player.torch.getIntensity(player.power.getPercent());
+         lightSources.push({
+            x: player.x,
+            y: player.y,
+            radius: player.torch.radius,
+            intensity
+         });
+         
+         // // Player torch
+         // if (player.torch.isOn) {
+         //    const intensity = player.torch.getIntensity(player.power.getPercent());
+         //    if (intensity > 0) {
+         //       lightSources.push({
+         //          x: player.x,
+         //          y: player.y,
+         //          radius: player.torch.radius,
+         //          intensity
+         //       });
+         //    }
+         // }
 // bioluminent blob
          return lightSources;
       }

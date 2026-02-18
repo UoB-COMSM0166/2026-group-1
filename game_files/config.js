@@ -63,7 +63,11 @@ export const PLAYER = {
   JUMP_POWER: 25,
   MOVE_SPEED: 5,
   FALL_SPEED: 2,
-  ACCELERATION: 0.8, // How quickly submarine speeds up
+  ACCELERATION: 0.8,
+  DRAG: 0.9  ,         // Higher = less friction (0.9-0.95 feels good)
+  BOUNCE_DAMPING: 0.5,  // Velocity kept after bounce (0.5 = half speed)
+  MIN_VELOCITY: 0.1,    // Stop if slower than this
+  SPRITE: 'game_files/assets/player/sub.png'
 };
 
 //======================

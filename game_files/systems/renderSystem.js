@@ -9,6 +9,10 @@ DESCRIPTION:
 ========================================
 */
 
+import { PLAYER } from '../config.js';
+import { CANVAS } from '../config.js';
+
+
 //======================================
 // RENDER SYSTEM
 //======================================
@@ -19,20 +23,20 @@ export function createRenderSystem({
    getPlatformColor,
    assets,
    darknessLayer,
-   getLightSources
+   getLightSources,
+   playerSprite
 }) {
    function drawBackground() {
       const bg = getBackground?.();
 
-      if (bg?.color) {
+      if (bg?.image && assets?.[bg.image]) {
+         image(assets[bg.image], 0, 0, width, height);
+      } else if (bg?.color) {
          background(bg.color);
       } else {
          background(0);
       }
 
-      if (bg?.image && assets?.[bg.image]) {
-         image(assets[bg.image], 0, 0, width, height);
-      }
    }
 
    function drawPlatforms() {
@@ -48,9 +52,22 @@ export function createRenderSystem({
    }
 
    function drawPlayer() {
-      stroke(150, 0, 25);
-      fill(225, 0, 50);
-      rect(player.x, player.y, player.w, player.h);
+      const sprite = assets[playerSprite];
+      if (!sprite) return;
+
+      const w = PLAYER.WIDTH * 5;
+      const h = PLAYER.HEIGHT * 5;
+
+      push();
+      translate(player.x, player.y);
+
+      // Flip horizontally if facing left
+      if (player.vx < 0) {
+         scale(-1, 1);
+      }
+      image(sprite, -w / 2, -h / 2, w, h);
+
+      pop();
    }
 
    function drawUI() {
@@ -99,6 +116,7 @@ export function createRenderSystem({
       }
    };
 }
-//======================================
+//========================================================================
 // END
 //======================================
+

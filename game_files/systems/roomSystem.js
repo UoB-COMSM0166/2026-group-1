@@ -50,6 +50,7 @@ function parseCollisionTileLayer(layer, tileWidth, tileHeight) {
 }
 
 function normalizeTiledRoom(roomKey, mapData) {
+  console.log(`Normalizing Tiled room: ${roomKey}`);
   const tileWidth = mapData?.tilewidth ?? CANVAS.TILE_SIZE;
   const tileHeight = mapData?.tileheight ?? CANVAS.TILE_SIZE;
 
@@ -59,7 +60,8 @@ function normalizeTiledRoom(roomKey, mapData) {
     height: (mapData?.height ?? 0) * tileHeight,
     background: {
       color: getTiledProperty(mapData, 'backgroundColor', '#000000'),
-      image: getTiledProperty(mapData, 'backgroundImage', null)
+      image: getTiledProperty(mapData, 'backgroundImage', null),
+      
     },
     platformColor: getTiledProperty(mapData, 'platformColor', '#5a6e82'),
     playerStart: null,
@@ -67,6 +69,7 @@ function normalizeTiledRoom(roomKey, mapData) {
     entities: [],
     exits: []
   };
+  console.log(`Parsed background for room ${roomKey}: image=${getTiledProperty(mapData, 'backgroundImage', null)}`);
 
   for (const layer of mapData?.layers ?? []) {
     const layerName = (layer?.name ?? '').toLowerCase();
@@ -124,7 +127,7 @@ function normalizeTiledRoom(roomKey, mapData) {
       normalized.playerStart = pointToPixels({ x: startX, y: startY });
     }
   }
-
+  console.log(normalized);
   return normalized;
 }
 
@@ -178,6 +181,8 @@ function normalizeRoom(roomKey, roomSource) {
 }
 
 export function createRoomSystem({ initialRoom = null, roomData = {} } = {}) {
+  console.log('Initializing Room System with rooms:', Object.keys(roomData));
+  console.log('Initial room:', initialRoom);
   let currentRoom = null;
   let currentConfig = null;
   let playerStart = null;
@@ -185,10 +190,13 @@ export function createRoomSystem({ initialRoom = null, roomData = {} } = {}) {
   let platforms = [];
 
   function loadRoom(roomKey) {
+    console.log('[RoomSystem] loadRoom called with roomKey:', roomKey);
     const roomSource = roomData[roomKey];
+    console.log('[RoomSystem] roomSource:', roomSource);
     if (!roomSource) return;
 
     const normalized = normalizeRoom(roomKey, roomSource);
+    console.log('[RoomSystem] normalized:', normalized);
 
     currentRoom = roomKey;
     currentConfig = normalized;
@@ -230,6 +238,9 @@ export function createRoomSystem({ initialRoom = null, roomData = {} } = {}) {
     },
 
     getBackground() {
+      console.log('[RoomSystem] getBackground: currentRoom =', currentRoom);
+      console.log('[RoomSystem] getBackground: currentConfig =', currentConfig);
+      console.log('[RoomSystem] getBackground: currentConfig.background =', currentConfig?.background);
       return currentConfig?.background ?? null;
     },
 
