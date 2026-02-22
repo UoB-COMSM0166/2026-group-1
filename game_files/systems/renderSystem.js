@@ -52,22 +52,42 @@ export function createRenderSystem({
    }
 
    function drawPlayer() {
-      const sprite = assets[playerSprite];
-      if (!sprite) return;
-
-      const w = PLAYER.WIDTH * 5;
-      const h = PLAYER.HEIGHT * 5;
-
+      
       push();
       translate(player.x, player.y);
+      scale(player.facing, 1);
+      
+      fill(120);
+      noStroke();
+      rect(-2, -player.size * 0.4, 4, player.size * 0.6);
+      rect(0.1, -player.size * 0.8, 8, 4);
+      
+      fill(150);
+      noStroke();
+      triangle(
+         -player.size / 2,0,
+         -player.size,
+         -player.size / 3,
+         -player.size,
+         player.size / 3
+      );
+      fill(255, 200, 50);
+      ellipse(0, 0, player.size * 1.2, player.size * 0.8);
+      
+    fill(100, 220, 255);
+    circle(player.size * 0.2, 0, player.size * 0.4);
 
-      // Flip horizontally if facing left
-      if (player.vx < 0) {
-         scale(-1, 1);
-      }
-      image(sprite, -w / 2, -h / 2, w, h);
+   pop();
+   const w = PLAYER.WIDTH * 5;
+   const h = PLAYER.HEIGHT * 5;
+   push();
+   translate(player.x, player.y);
 
-      pop();
+   // Flip horizontally if facing left
+   if (player.facing < 0) {
+      scale(-1, 1);
+   }
+   pop();
    }
 
    function drawUI() {

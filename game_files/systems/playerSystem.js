@@ -45,17 +45,19 @@ import { PLAYER } from '../config.js';
 
 export function createPlayerSystem(player) {
   return {
+
     update() {
       const acceleration = PLAYER.ACCELERATION;
 
-      if (player.intent?.left) {
-        player.vx -= acceleration;
-      }
-      if (player.intent?.right) {
-        player.vx += acceleration;
-      }
+      // Horizontal/vertical movement 
+      if (player.intent?.left) player.vx -= acceleration;
+      if (player.intent?.right) player.vx += acceleration;
       if (player.intent?.up) player.vy -= acceleration;
       if (player.intent?.down) player.vy += acceleration;
+
+      // Update facing direction based on horizontal velocity
+      if (player.vx > 0) player.facing = 1;
+      else if (player.vx < 0) player.facing = -1;
     },
   };
 }

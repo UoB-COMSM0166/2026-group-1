@@ -47,18 +47,14 @@ export class Player {
       // Config-driven defaults
       this.x = config.START_X;
       this.y = config.START_Y;
-      this.w = config.WIDTH;
-      this.h = config.HEIGHT;
+      this.size = config.SIZE 
+      this.facing = 1; // 1 for right, -1 for left
 
 
       // Physics state: Velocity 
       this.vx = 0; // Velocity for physics system
       this.vy = 0; // Vertical velocity, not used in submarine mode but kept for potential future use
 
-
-      // Runtime state
-      // this.jumpPower = config.JUMP_POWER; // Not used in submarine mode, but kept for potential future use
-      this.onGround = false;
 
       this.intent = {
          left: false,

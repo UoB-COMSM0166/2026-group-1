@@ -67,7 +67,8 @@ export const PLAYER = {
   DRAG: 0.9  ,         // Higher = less friction (0.9-0.95 feels good)
   BOUNCE_DAMPING: 0.5,  // Velocity kept after bounce (0.5 = half speed)
   MIN_VELOCITY: 0.1,    // Stop if slower than this
-  SPRITE: 'game_files/assets/player/sub.png'
+  SIZE: 20,
+  
 };
 
 //======================
