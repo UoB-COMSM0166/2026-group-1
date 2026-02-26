@@ -1,3 +1,4 @@
+// Author: jude
 class UI {
   constructor() {
     this.gameState = "START"; // Possible states: "START", "PLAYING"
@@ -14,7 +15,7 @@ class UI {
 
   drawStartScreen() {
     background(5, 10, 20, 200); // Slightly transparent dark background
-    
+
     textAlign(CENTER, CENTER);
     fill(0, 255, 150);
     textSize(32);
@@ -28,53 +29,66 @@ class UI {
     fill(0, 200, 0);
     rectMode(CENTER);
     rect(width / 2, height / 2 + 70, 120, 40, 5);
-    
+
     fill(255);
     text("START", width / 2, height / 2 + 70);
   }
 
   // integrated Mogal's draw power metre
   drawHUD() {
-    // UI text
-    textAlign(LEFT, TOP);
-    fill(255);
+    push();
+    // 1. Position and Styling
+    let x = 30;
+    let y = 50;
+    let segW = 25; // Width of each segment
+    let segH = 10; // Height of each segment
+    let gap = 4; // Space between segments
+    let totalSegments = 10;
+
+    // 2. Draw the 75% Label
+    textAlign(CENTER);
+    textSize(12);
+    fill(100, 220, 255);
     noStroke();
-    textSize(14);
-    text("WASD: Move | P: Sonar", 10, 15);
+    text(Math.round(player.power) + "%", x + segW / 2, y - 10);
 
-    // Power meter text
-    let percent = Math.round((player.power / player.maxPower) * 100);
-    text(`Power: ${percent}%`, 10, 40);
-
-    // Bar background
-    fill(80);
+    // 3. Draw the Segments
     rectMode(CORNER);
-    rect(10, 60, 200, 15, 5); // The '5' adds rounded corners for polish
+    for (let i = 0; i < totalSegments; i++) {
+      // We calculate the threshold from the bottom up
+      // i=0 is the top segment (needs 90% power to light up)
+      let threshold = (totalSegments - 1 - i) * (100 / totalSegments);
 
-    // 4. Bar Fill (Dynamic Color)
-    if (player.power > 50) {
-      fill(0, 255, 150); // Green (Healthy)
-    } else if (player.power > 25) {
-      fill(255, 200, 50); // Yellow (Warning)
-    } else {
-      fill(255, 60, 60); // Red (Critical)
+      if (player.power > threshold) {
+        // --- ACTIVE SEGMENT ---
+        fill(100, 220, 255);
+        drawingContext.shadowBlur = 10; // The "Neon" glow
+        drawingContext.shadowColor = color(100, 220, 255);
+      } else {
+        // --- INACTIVE SEGMENT ---
+        fill(40);
+        drawingContext.shadowBlur = 0;
+      }
+
+      // Draw the rounded segment
+      rect(x, y + i * (segH + gap), segW, segH, 2);
     }
 
-    // 5. Calculate width and draw the active power
-    let w = map(player.power, 0, player.maxPower, 0, 200);
-    w = max(0, w); // Prevents the bar from drawing backwards if power hits 0
-    rect(10, 60, w, 15, 5);
-    
-    // Reset rectMode back to CENTER for the rest of your game engine
-    rectMode(CENTER); 
+    // Always reset shadowBlur so it doesn't make the rest of the game blurry
+    drawingContext.shadowBlur = 0;
+    pop();
   }
 
   // Check if the user clicked the START button
   checkClick() {
     if (this.gameState === "START") {
       // Check if mouse is within the button rectangle
-      if (mouseX > width/2 - 60 && mouseX < width/2 + 60 && 
-          mouseY > height/2 + 50 && mouseY < height/2 + 90) {
+      if (
+        mouseX > width / 2 - 60 &&
+        mouseX < width / 2 + 60 &&
+        mouseY > height / 2 + 50 &&
+        mouseY < height / 2 + 90
+      ) {
         this.gameState = "PLAYING";
       }
     }

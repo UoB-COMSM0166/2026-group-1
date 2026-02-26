@@ -1,3 +1,5 @@
+// Auther: jude
+
 class GameMap {
   // 1. Constructor: Sets up the initial state
   constructor(mapWidth, mapHeight, resolution) {
@@ -57,7 +59,7 @@ class GameMap {
 
         if (d > 150) {
           this.walls.push(
-            new Wall(xPos, yPos, this.resolution, this.resolution)
+            new Wall(xPos, yPos, this.resolution, this.resolution),
           );
         }
       }
