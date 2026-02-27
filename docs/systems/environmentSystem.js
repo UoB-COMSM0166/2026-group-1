@@ -2,6 +2,18 @@
  * EnvironmentSystem handles static hazards (e.g., underwater mines, sharp rocks)
  * and resources (e.g., oxygen tanks, battery packs) for the submarine.
  */
+
+/**
+ * I have tried to implement the Environment system to handle static interactable
+ * hazards, resources, and secret rooms. It will parse object layers from the Tiled
+ * JSON map. It has AABB collision detection with a 1-second damage cooldown for the
+ * hazards, and single-use collection for the resources. It should also integrate
+ * directly with the sonar system so that hidden objects can remain invisible until
+ * hit by a sonar pulse, which will then trigger a fading glow effect and permanently
+ * reveals them. Finally, I wrapped it in a factory function to seamlessly integrate 
+ * with the existing engine architecture and coordinate system.
+*/
+
 export class EnvironmentSystem {
     constructor(resourceSystem) {
         this.entities = [];
