@@ -46,7 +46,7 @@ TODO / LIMITATIONS:
 //======================================
 // LIGHTING SYSTEM
 //======================================
-export function createLightingSystem(player, enemies = []) {
+export function createLightingSystem(player, enemies = [], getSonarLights = () => []) {
    return {
 
       //--- GET LIGHT SOURCES ---//
@@ -61,19 +61,12 @@ export function createLightingSystem(player, enemies = []) {
             intensity
          });
          
-         // // Player torch
-         // if (player.torch.isOn) {
-         //    const intensity = player.torch.getIntensity(player.power.getPercent());
-         //    if (intensity > 0) {
-         //       lightSources.push({
-         //          x: player.x,
-         //          y: player.y,
-         //          radius: player.torch.radius,
-         //          intensity
-         //       });
-         //    }
-         // }
-// bioluminent blob
+         // Sonar light sources
+         const sonarLights = getSonarLights();
+         for (const light of sonarLights) {
+            lightSources.push(light);
+         }
+
          return lightSources;
       }
    };

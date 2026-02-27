@@ -18,6 +18,7 @@ import { createPhysicsSystem } from './systems/physicsSystem.js';
 import { createTorchSystem } from './systems/torchSystem.js';
 import { createRenderSystem } from './systems/renderSystem.js';
 import { createLightingSystem } from './systems/lightingSystem.js';
+import { createSonarSystem } from './systems/sonarSystem.js';
 import { createRoomSystem } from './systems/roomSystem.js';
 import { CANVAS, PLAYER, GAME, TORCH } from './config.js';
 import { Player } from './entities/player.js';
@@ -31,13 +32,14 @@ let inputSystem;
 let playerSystem;
 let physicsSystem;
 let torchSystem;
+let sonarSystem;
 let renderSystem;
 let lightingSystem;
 let roomSystem;
 
 let assets = {};
 
-const PLAYER_SPRITE = 'sub.png';
+
 
 // --- FIX: Log the id and keys to debug room loading ---
 console.log('room_test.id:', room_test.id); // Should print 'room_test'
@@ -79,7 +81,7 @@ function preload() {
     assets[imageName] = loadImage(imagePath);
   }
   // Load player sprite
-  assets[PLAYER_SPRITE] = loadImage('assets/player/sub.png');
+  // assets[PLAYER_SPRITE] = loadImage('assets/player/sub.png');
 }
 
 function setup() {
@@ -110,11 +112,13 @@ function setup() {
     fallSpeed: PLAYER.FALL_SPEED,
     groundY: GAME.GROUND_Y
   });
+  sonarSystem = createSonarSystem(player, () => roomSystem.getPlatforms());
+
   torchSystem = createTorchSystem(player.torch, player, {
     drainRate: TORCH.DRAIN_RATE
   });
 
-  lightingSystem = createLightingSystem(player, []);
+  lightingSystem = createLightingSystem(player, [], () => sonarSystem.getSonarLights());
 
   renderSystem = createRenderSystem({
     player,
@@ -124,15 +128,17 @@ function setup() {
     assets,
     darknessLayer,
     getLightSources: () => lightingSystem.getLightSources(),
-    playerSprite: PLAYER_SPRITE
-    
+    getActivePulses: () => sonarSystem.getActivePulses(),
+    getRevealedWalls: () => sonarSystem.getRevealedWalls(),
   });
 
   engine = new Engine();
   engine.register(inputSystem);
   engine.register(playerSystem);
   engine.register(physicsSystem);
+  engine.register(sonarSystem);
   engine.register(torchSystem);
+  engine.register(lightingSystem);
   engine.register(roomSystem);
   engine.register(renderSystem);
 }

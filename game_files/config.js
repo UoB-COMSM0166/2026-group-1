@@ -34,7 +34,8 @@ export const INPUT = {
   
   // ACTION KEYS - functions take strings
   JUMP_KEY: [87, 38],
-  TOGGLE_TORCH_KEY: ['L', 'l']
+  TOGGLE_TORCH_KEY: ['L', 'l'],
+  SONAR_KEY: ['P', 'p']
 };
 
 //======================
@@ -88,6 +89,20 @@ export const TORCH = {
   RADIUS: 200,
   FLICKER_POWER_THRESHOLD: 0.15,
   DRAIN_RATE: 1
+};
+
+//======================
+// SONAR CONFIG
+//======================
+export const SONAR = {
+  PULSE_SPEED: 0.2,        // Particle travel speed (pixels per ms)
+  NUM_RAYS: 360,           // Number of particle rays per pulse
+  PARTICLE_FADE: 0.2,      // Life drain per ms per particle
+  WALL_FADE_RATE: 0.1,     // Wall alpha decay per ms
+  POWER_COST: 10,          // Power consumed per pulse
+  COOLDOWN: 500,           // Minimum ms between pulses
+  TRIGGER_KEY: ['P', 'p'], // Keys that trigger sonar
+  LIGHT_RADIUS: 80         // Radius of light source per illuminated wall cluster
 };
 
 //======================

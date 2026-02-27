@@ -46,7 +46,7 @@ import { PLAYER } from '../config.js';
 export function createPlayerSystem(player) {
   return {
 
-    update() {
+    update(deltaTime) {
       const acceleration = PLAYER.ACCELERATION;
 
       // Horizontal/vertical movement 
@@ -58,6 +58,32 @@ export function createPlayerSystem(player) {
       // Update facing direction based on horizontal velocity
       if (player.vx > 0) player.facing = 1;
       else if (player.vx < 0) player.facing = -1;
+
+      // --- Bubble trail management ---
+      // Spawn bubbles behind the submarine when moving
+      const isMoving = Math.abs(player.vx) > 0.1 || Math.abs(player.vy) > 0.1;
+      if (isMoving && Math.random() < 0.4) {
+        const backX = player.x - player.facing * player.size * 0.8;
+        player.bubbles.push({
+          x: backX,
+          y: player.y + (Math.random() * 8 - 4),
+          size: 2 + Math.random() * 4,
+          life: 200,
+          vx: (Math.random() * 0.04 - 0.02),
+          vy: -(0.03 + Math.random() * 0.05),
+        });
+      }
+
+      // Update existing bubbles (drift upward + fade)
+      for (let i = player.bubbles.length - 1; i >= 0; i--) {
+        const b = player.bubbles[i];
+        b.x += b.vx * deltaTime;
+        b.y += b.vy * deltaTime;
+        b.life -= 0.15 * deltaTime;
+        if (b.life <= 0) {
+          player.bubbles.splice(i, 1);
+        }
+      }
     },
   };
 }

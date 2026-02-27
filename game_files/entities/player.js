@@ -62,6 +62,7 @@ export class Player {
          up: false,
          down: false,
          toggleTorch: false,
+         sonar: false,
       };
 
       // component
@@ -71,6 +72,12 @@ export class Player {
       this.power = new PowerSystem();
       this.health = null;
       this.oxygen = null;
+
+      // Sonar state
+      this.sonarPulses = [];
+
+      // Bubble trail state (managed by playerSystem)
+      this.bubbles = [];
    }
 };
 //======================================
