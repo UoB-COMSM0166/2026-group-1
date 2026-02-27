@@ -12,6 +12,8 @@
  * hit by a sonar pulse, which will then trigger a fading glow effect and permanently
  * reveals them. Finally, I wrapped it in a factory function to seamlessly integrate 
  * with the existing engine architecture and coordinate system.
+ *
+ * Author: Ben
 */
 
 export class EnvironmentSystem {
