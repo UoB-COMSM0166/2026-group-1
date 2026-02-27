@@ -1,36 +1,96 @@
-/**
- * EnvironmentSystem handles static hazards (e.g., underwater mines, sharp rocks)
- * and resources (e.g., oxygen tanks, battery packs) for the submarine.
- */
+/*
+========================================
+VERSION: 1.5
+SYSTEM: ENVIRONMENT SYSTEM
+AUTHOR: Ben Mounce
+DESCRIPTION:
+- Loads hazard, resource, and special objects from Tiled 
+    JSON map data
+- Stores and manages environment entities for the active 
+    room/sector
+- Detects collisions between the player submarine and 
+    environment objects
+- Applies damage/healing via the provided resourceSystem 
+    and exposes lightweight reveal/illumination behaviour for 
+    sonar-discovered objects
 
-/**
- * I have tried to implement the Environment system to handle static interactable
- * hazards, resources, and secret rooms. It will parse object layers from the Tiled
- * JSON map. It has AABB collision detection with a 1-second damage cooldown for the
- * hazards, and single-use collection for the resources. It should also integrate
- * directly with the sonar system so that hidden objects can remain invisible until
- * hit by a sonar pulse, which will then trigger a fading glow effect and permanently
- * reveals them. Finally, I wrapped it in a factory function to seamlessly integrate 
- * with the existing engine architecture and coordinate system.
- *
- * Author: Ben
+RULES:
+- No rendering logic inside this system
+- Do not modify other systems directly; communicate via the 
+    resourceSystem
+- Damage cooldowns, glow fading must be consistent across 
+    frame rates using the deltaTime supplied by the engine
+========================================
+DESIGN GOALS:
+- Keep environment rules and interactions separated from 
+    player movement and rendering
+- Provide a clear, testable interface for loading rooms, 
+    querying active environment entities, and handling 
+    per-frame updates
+- Minimise assumptions about entity shape/size: the system 
+    uses AABB rectangles
+========================================
+RESPONSIBILITIES:
+- Parse object layers from Tiled JSON and create an environment
+    entities
+- Track active/inactive state, hidden/revealed flags, and 
+    glow state
+- Apply damage to the player through resourceSystem.modifyHealth() 
+    with a cooldown to avoid frame-rate dependent repeat damage
+- Allow single-use resources to be collected and deactivated
+- Provide getEntities() for rendering or other systems to 
+    inspect active environment objects
+
+DEPENDENCIES:
+- deltaTime: provided by the engine update loop when calling
+    update()
+- resourceSystem: must expose modifyHealth(amount) for 
+    damage/heal effects.
+- An entity/player adapter with x,y,width,height used for 
+    AABB checks.
+
+USAGE:
+import { createEnvironmentSystem } from './environmentSystem1.0.js';
+
+const envSystem = createEnvironmentSystem(player, resourceSystem);
+engine.register(envSystem);
+
+Call envSystem.loadRoom(mapData) when entering a new map/sector and
+envSystem.update(deltaTime) each frame
+========================================
+Notes:
+- Damage application uses a millisecond cooldown to avoid 
+    applying damage repeatedly within a single second; this is 
+    driven by the currentTimeMs and should be stable across frame 
+    rates
+- Glow/reveal fading uses delta-time scaled decay, so the visual 
+    alpha falls consistently regardless of frame rate
+- The system intentionally exposes data shapes (x,y,width,height) 
+    compatible with simple AABB checks
+========================================
+TODO / LIMITATIONS:
+- No persistence of revealed state across sessions/sectors
+- Hidden objects currently reveal permanently when illuminated, 
+    optional re-hiding logic is commented in place
+- Consider adding unit tests for collision handling and cooldown 
+    timing.
+========================================
 */
 
+//======================================
+// ENVIRONMENT SYSTEM
+//======================================
 export class EnvironmentSystem {
     constructor(resourceSystem) {
         this.entities = [];
-        // Manages hull integrity, energy, oxygen
         this.resourceSystem = resourceSystem; 
         
-        // Damage cooldown
-        this.damageCooldownMs = 1000; // 1 second
+        this.damageCooldownMs = 1000;
         this.lastDamageTime = 0;
     }
 
-    // Loads environment objects from Tiled JSON map data
     loadRoom(mapData) {
-        // Ensure previous room data is cleared before loading new ones
-        this.cleanup(); 
+        this.cleanup();
 
         if (!mapData || !mapData.layers) {
             console.warn("No layers found in mapData for EnvironmentSystem.");
@@ -38,7 +98,6 @@ export class EnvironmentSystem {
         }
 
         for (const layer of mapData.layers) {
-            // We look for Object layers in Tiled
             if (layer.type === 'objectgroup' && layer.objects) {
                 for (const obj of layer.objects) {
                     const entity = this.parseTiledObject(obj);
@@ -51,7 +110,6 @@ export class EnvironmentSystem {
         console.log(`Loaded ${this.entities.length} environment entities for the new sector.`);
     }
 
-    // Parses a Tiled object into our internal format based on custom properties.
     parseTiledObject(obj) {
         if (!obj.properties) return null;
 
@@ -60,7 +118,6 @@ export class EnvironmentSystem {
         let heal = 0;
         let isHidden = false;
 
-        // Extract properties defined in Tiled
         for (const prop of obj.properties) {
             if (prop.name === 'type') type = prop.value;
             if (prop.name === 'damage') damage = prop.value;
@@ -68,7 +125,6 @@ export class EnvironmentSystem {
             if (prop.name === 'hidden') isHidden = prop.value;
         }
 
-        // Track hazards, resources, and secret passages
         if (type === 'hazard' || type === 'resource' || type === 'secret_passage') {
             return {
                 id: obj.id,
@@ -81,23 +137,18 @@ export class EnvironmentSystem {
                 type: type,
                 active: true,
                 hidden: isHidden,
-                // starts revealed if not hidden
-                revealed: !isHidden, 
+                revealed: !isHidden,
                 damage: damage,
                 heal: heal,
-                
-                // Glow effect properties
                 isGlowing: false,
                 glowAlpha: 0,
-                
-                // Called by the Pulse class when a sonar particle hits this
+
                 illuminate: function() {
                     if (this.hidden && !this.revealed) {
                         this.revealed = true;
                         console.log(`Sonar revealed a hidden ${this.type}!`);
                     }
-                    
-                    // The glow effect
+
                     this.isGlowing = true;
                     this.glowAlpha = 255;
                 }
@@ -107,17 +158,15 @@ export class EnvironmentSystem {
         return null;
     }
 
-    // Returns all active entities so the Pulse class can check collisions against them.
     getEntities() {
         return this.entities.filter(e => e.active);
     }
 
-    // Checks collisions between the submarine and environment entities.
     update(submarine, currentTimeMs, dt) {
         for (const entity of this.entities) {
-            if (!entity.active) continue;
-
-            // Update glow effect fading
+            if (!entity.active) {
+                continue
+            }
             if (entity.isGlowing) {
                 entity.glowAlpha -= 0.5 * (dt || 16);
                 
@@ -131,14 +180,12 @@ export class EnvironmentSystem {
                     // }
                 }
             }
-
             if (this.checkCollision(submarine, entity)) {
                 this.handleCollision(entity, currentTimeMs);
             }
         }
     }
 
-    // Simple AABB collision detection.
     checkCollision(rect1, rect2) {
         return (
             rect1.x < rect2.x + rect2.width &&
@@ -150,7 +197,6 @@ export class EnvironmentSystem {
 
     handleCollision(entity, currentTimeMs) {
         if (entity.type === 'hazard') {
-            // Apply damage cooldown
             if (currentTimeMs - this.lastDamageTime >= this.damageCooldownMs) {
                 this.resourceSystem.modifyHealth(-(entity.damage || 1));
                 this.lastDamageTime = currentTimeMs;
@@ -158,30 +204,27 @@ export class EnvironmentSystem {
             }
         } 
         else if (entity.type === 'resource') {
-            // Apply resource benefits
             if (entity.heal) {
                 this.resourceSystem.modifyHealth(entity.heal);
             }
-            
-            // 4. Mark as collected / inactive
+
             entity.active = false;
             console.log(`Submarine collected a resource!`);
         }
         else if (entity.type === 'secret_passage') {
-            // Logic for entering a hidden room or area
             console.log(`Submarine entered a secret passage!`);
         }
     }
 
-    // Cleans up environment data when leaving a sector.
     cleanup() {
         this.entities = [];
         this.lastDamageTime = 0;
     }
 }
 
-// Environment system factory
-
+//======================================
+// ENVIRONMENT SYSTEM FACTORY
+//======================================
 export function createEnvironmentSystem(player, resourceSystem) {
     const envSystem = new EnvironmentSystem(resourceSystem);
     
@@ -190,7 +233,6 @@ export function createEnvironmentSystem(player, resourceSystem) {
             envSystem.loadRoom(mapData);
         },
         update(deltaTime) {
-            // Adapt player center coordinates to top-left for collision
             const submarineAdapter = {
                 x: player.x - player.w / 2,
                 y: player.y - player.h / 2,
@@ -204,3 +246,6 @@ export function createEnvironmentSystem(player, resourceSystem) {
         }
     };
 }
+//======================================
+// END
+//======================================
