@@ -125,6 +125,7 @@ function setup() {
     darknessLayer,
     getLightSources: () => lightingSystem.getLightSources(),
     playerSprite: PLAYER_SPRITE
+    
   });
 
   engine = new Engine();

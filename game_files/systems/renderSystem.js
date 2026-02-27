@@ -11,6 +11,7 @@ DESCRIPTION:
 
 import { PLAYER } from '../config.js';
 import { CANVAS } from '../config.js';
+import { BUBBLES } from './AmbientEffects.js';
 
 
 //======================================
@@ -24,7 +25,7 @@ export function createRenderSystem({
    assets,
    darknessLayer,
    getLightSources,
-   playerSprite
+   playerSprite,
 }) {
    function drawBackground() {
       const bg = getBackground?.();
@@ -52,7 +53,6 @@ export function createRenderSystem({
    }
 
    function drawPlayer() {
-      
       push();
       translate(player.x, player.y);
       scale(player.facing, 1);
@@ -74,21 +74,42 @@ export function createRenderSystem({
       fill(255, 200, 50);
       ellipse(0, 0, player.size * 1.2, player.size * 0.8);
       
-    fill(100, 220, 255);
-    circle(player.size * 0.2, 0, player.size * 0.4);
+      fill(100, 220, 255);
+      circle(player.size * 0.2, 0, player.size * 0.4);
 
-   pop();
-   const w = PLAYER.WIDTH * 5;
-   const h = PLAYER.HEIGHT * 5;
-   push();
-   translate(player.x, player.y);
+      pop();
+      const w = PLAYER.WIDTH * 5;
+      const h = PLAYER.HEIGHT * 5;
+      push();
+      translate(player.x, player.y);
 
-   // Flip horizontally if facing left
-   if (player.facing < 0) {
-      scale(-1, 1);
+      // Flip horizontally if facing left
+      if (player.facing < 0) {
+         scale(-1, 1);
+      }
+      pop();
    }
-   pop();
+   show()
+      noStroke();
+      fill(150, 220, 255, this.life);
+      circle(this.x, this.y, this.size);
+      
+      function drawBubbles(){
+         for (let i = bubbles.length - 1; i >= 0; i--) {
+            let b = bubbles[i];
+            b.update(deltaTime);
+            b.show();
+            if (b.life <= 0) {
+               bubbles.splice(i, 1);
+            }
+         }
+         player.update(deltaTime);
+         player.show();
+      }
+      
    }
+      
+
 
    function drawUI() {
       fill(255);
@@ -135,7 +156,7 @@ export function createRenderSystem({
          drawUI();
       }
    };
-}
+
 //========================================================================
 // END
 //======================================
