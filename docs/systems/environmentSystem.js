@@ -166,9 +166,8 @@ export class EnvironmentSystem {
     }
 }
 
-//======================================
-// ENVIRONMENT SYSTEM FACTORY
-//======================================
+// Environment system factory
+
 export function createEnvironmentSystem(player, resourceSystem) {
     const envSystem = new EnvironmentSystem(resourceSystem);
     

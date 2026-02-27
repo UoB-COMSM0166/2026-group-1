@@ -101,7 +101,6 @@ function setup() {
   
   environmentSystem = createEnvironmentSystem(player, {
     modifyHealth: (amount) => {
-      // Simple mock resource system
       player.health = (player.health || 100) + amount;
       console.log(`Player health changed by ${amount}. Current health: ${player.health}`);
     }
