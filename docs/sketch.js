@@ -19,6 +19,7 @@ import { createTorchSystem } from './systems/torchSystem.js';
 import { createRenderSystem } from './systems/renderSystem.js';
 import { createLightingSystem } from './systems/lightingSystem.js';
 import { createRoomSystem } from './systems/roomSystem.js';
+import { createEnvironmentSystem } from './systems/environmentSystem.js';
 import { CANVAS, PLAYER, GAME, TORCH } from './config.js';
 import { Player } from './entities/player.js';
 import { room_test } from './data/rooms/room_test.js';
@@ -34,6 +35,7 @@ let torchSystem;
 let renderSystem;
 let lightingSystem;
 let roomSystem;
+let environmentSystem;
 
 let assets = {};
 const roomData = {
@@ -96,6 +98,16 @@ function setup() {
 
   inputSystem = createInputSystem(player);
   playerSystem = createPlayerSystem(player);
+  
+  environmentSystem = createEnvironmentSystem(player, {
+    modifyHealth: (amount) => {
+      // Simple mock resource system
+      player.health = (player.health || 100) + amount;
+      console.log(`Player health changed by ${amount}. Current health: ${player.health}`);
+    }
+  });
+  environmentSystem.loadRoom(roomData[initialRoom]);
+
   physicsSystem = createPhysicsSystem(player, () => roomSystem.getPlatforms(), {
     fallSpeed: PLAYER.FALL_SPEED,
     groundY: GAME.GROUND_Y
@@ -113,7 +125,8 @@ function setup() {
     getPlatformColor: () => roomSystem.getPlatformColor(),
     assets,
     darknessLayer,
-    getLightSources: () => lightingSystem.getLightSources()
+    getLightSources: () => lightingSystem.getLightSources(),
+    getEnvironmentEntities: () => environmentSystem.getEntities()
   });
 
   engine = new Engine();
@@ -122,6 +135,7 @@ function setup() {
   engine.register(physicsSystem);
   engine.register(torchSystem);
   engine.register(roomSystem);
+  engine.register(environmentSystem);
   engine.register(renderSystem);
 }
 

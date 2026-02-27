@@ -25,7 +25,11 @@ export const room_test = {
     {
       type: "objectgroup",
       name: "entities",
-      objects: []
+      objects: [
+        { x: 150, y: 250, width: 32, height: 32, properties: [{ name: "type", value: "hazard" }, { name: "damage", value: 10 }] },
+        { x: 300, y: 200, width: 32, height: 32, properties: [{ name: "type", value: "resource" }, { name: "heal", value: 25 }] },
+        { x: 400, y: 150, width: 32, height: 32, properties: [{ name: "type", value: "hazard" }, { name: "damage", value: 15 }, { name: "hidden", value: true }] }
+      ]
     },
     {
       type: "objectgroup",

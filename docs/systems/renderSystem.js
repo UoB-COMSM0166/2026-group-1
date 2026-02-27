@@ -19,7 +19,8 @@ export function createRenderSystem({
    getPlatformColor,
    assets,
    darknessLayer,
-   getLightSources
+   getLightSources,
+   getEnvironmentEntities
 }) {
    function drawBackground() {
       const bg = getBackground?.();
@@ -51,6 +52,27 @@ export function createRenderSystem({
       stroke(150, 0, 25);
       fill(225, 0, 50);
       rect(player.x, player.y, player.w, player.h);
+   }
+
+   function drawEnvironment() {
+      const entities = getEnvironmentEntities?.() ?? [];
+      for (const entity of entities) {
+         if (entity.revealed || entity.isGlowing) {
+            push();
+            rectMode(CORNER);
+            if (entity.isGlowing) {
+               fill(0, 255, 255, entity.glowAlpha);
+            } else if (entity.type === 'hazard') {
+               fill(255, 0, 0);
+            } else if (entity.type === 'resource') {
+               fill(0, 255, 0);
+            } else {
+               fill(200);
+            }
+            rect(entity.x, entity.y, entity.w, entity.h);
+            pop();
+         }
+      }
    }
 
    function drawUI() {
@@ -93,6 +115,7 @@ export function createRenderSystem({
 
          drawBackground();
          drawPlatforms();
+         drawEnvironment();
          drawPlayer();
          drawLighting(lightSources);
          drawUI();
