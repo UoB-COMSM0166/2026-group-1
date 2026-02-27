@@ -29,7 +29,8 @@ export class EnvironmentSystem {
 
     // Loads environment objects from Tiled JSON map data
     loadRoom(mapData) {
-        this.cleanup(); // Ensure previous room data is cleared before loading new ones
+        // Ensure previous room data is cleared before loading new ones
+        this.cleanup(); 
 
         if (!mapData || !mapData.layers) {
             console.warn("No layers found in mapData for EnvironmentSystem.");
@@ -80,7 +81,8 @@ export class EnvironmentSystem {
                 type: type,
                 active: true,
                 hidden: isHidden,
-                revealed: !isHidden, // starts revealed if not hidden
+                // starts revealed if not hidden
+                revealed: !isHidden, 
                 damage: damage,
                 heal: heal,
                 
@@ -88,14 +90,14 @@ export class EnvironmentSystem {
                 isGlowing: false,
                 glowAlpha: 0,
                 
-                // Called by the Pulse class when a sonar particle hits this entity
+                // Called by the Pulse class when a sonar particle hits this
                 illuminate: function() {
                     if (this.hidden && !this.revealed) {
                         this.revealed = true;
                         console.log(`Sonar revealed a hidden ${this.type}!`);
                     }
                     
-                    // Trigger the glow effect
+                    // The glow effect
                     this.isGlowing = true;
                     this.glowAlpha = 255;
                 }
@@ -136,7 +138,7 @@ export class EnvironmentSystem {
         }
     }
 
-    // Simple AABB (Axis-Aligned Bounding Box) collision detection.
+    // Simple AABB collision detection.
     checkCollision(rect1, rect2) {
         return (
             rect1.x < rect2.x + rect2.width &&
@@ -146,19 +148,17 @@ export class EnvironmentSystem {
         );
     }
 
-    // Applies effects via the ResourceSystem
     handleCollision(entity, currentTimeMs) {
         if (entity.type === 'hazard') {
-            // Apply damage cooldown so the submarine doesn't explode in 1 frame
+            // Apply damage cooldown
             if (currentTimeMs - this.lastDamageTime >= this.damageCooldownMs) {
-                // Assuming resourceSystem has a method for hull damage
                 this.resourceSystem.modifyHealth(-(entity.damage || 1));
                 this.lastDamageTime = currentTimeMs;
                 console.log(`Submarine hit a hazard! Hull took ${entity.damage || 1} damage.`);
             }
         } 
         else if (entity.type === 'resource') {
-            // Apply resource benefits (e.g., repairing hull, restoring battery/oxygen)
+            // Apply resource benefits
             if (entity.heal) {
                 this.resourceSystem.modifyHealth(entity.heal);
             }
