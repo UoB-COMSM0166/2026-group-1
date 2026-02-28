@@ -1,4 +1,4 @@
-// Wall class be Ben
+// Author: Ben
 class Wall {
   constructor(x, y, w, h) {
     this.x = x;

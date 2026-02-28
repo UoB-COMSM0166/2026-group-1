@@ -1,8 +1,10 @@
+// Auther: jude
+
 class Camera {
   constructor(viewportWidth, viewportHeight) {
     this.x = 0;
     this.y = 0;
-    this.w = viewportWidth; 
+    this.w = viewportWidth;
     this.h = viewportHeight;
   }
 
@@ -17,12 +19,12 @@ class Camera {
     // 2. Determine what the camera should look at
     if (d < 100) {
       // Focus on the room center
-      targetX = mapCenterX - (this.w / 2);
-      targetY = mapCenterY - (this.h / 2);
+      targetX = mapCenterX - this.w / 2;
+      targetY = mapCenterY - this.h / 2;
     } else {
       // Focus on the player
-      targetX = player.x - (this.w / 2);
-      targetY = player.y - (this.h / 2);
+      targetX = player.x - this.w / 2;
+      targetY = player.y - this.h / 2;
     }
 
     // 3. Smoothly pan towards the chosen target (5% distance per frame)

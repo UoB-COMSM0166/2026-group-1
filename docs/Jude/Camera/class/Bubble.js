@@ -1,4 +1,5 @@
-//For bubbles following submarine by Ben
+// For bubbles following submarine
+// Author: Ben
 class Bubble {
   constructor(x, y) {
     this.x = x;

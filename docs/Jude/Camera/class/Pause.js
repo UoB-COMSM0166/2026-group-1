@@ -1,4 +1,4 @@
-//Pulse class by Ben
+//Author: Ben
 class Pulse {
   constructor(x, y) {
     this.particles = [];

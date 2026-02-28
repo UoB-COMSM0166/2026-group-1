@@ -1,4 +1,4 @@
-//Player class by Ben
+//Author: Ben
 class Player {
   constructor(x, y) {
     this.x = x;
@@ -104,7 +104,7 @@ class Player {
       -this.size,
       -this.size / 3,
       -this.size,
-      this.size / 3
+      this.size / 3,
     );
 
     fill(255, 200, 50);
