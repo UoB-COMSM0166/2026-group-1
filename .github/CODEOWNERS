@@ -1,0 +1,16 @@
+# ==================================================
+# CODEOWNERS FILE - Branch & Folder Protection Rules
+# ==================================================
+
+# Protect the .github folder (including this CODEOWNERS file)
+/.github/ @GeorgiaSweeny
+
+# Protect "main - docs/":
+# To ensure code architecture compliance and prevent accidental overwrites
+# pull requests to docs/ are enforced and require review before merge (Georgia) 
+/docs/ @GeorgiaSweeny
+
+# Protect listed root files to prevent accidental overwrites
+CODE_ARCHITECTURE_GUIDE.md @GeorgiaSweeny
+CONTRIBUTING_GUIDE.md @GeorgiaSweeny
+TESTING_FRAMEWORK_GUIDE.md @GeorgiaSweeny

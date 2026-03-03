@@ -10,7 +10,7 @@
 			[ADD PROMO IMAGE]
 		</div>
 		<div align="center">
- 			<h3 align=center><a href="https://editor.p5js.org/GeorgiaSweeny/full/Pux7V1zx0 target="">Click the here to play the game - V2.3</a></h3>
+ 			<h3 align=center><a href="https://uob-comsm0166.github.io/2026-group-1/">Play Current Version - V2.5</a></h3>
 		</div>
 	</body>
 </html>
@@ -27,7 +27,7 @@ https://github.com/user-attachments/assets/7f6a8c2a-c20e-4220-b267-f1d39c76ae9f.
 
 # Our Team - Group 1
 
-![Group1](/docs/images/Group1.jpeg)
+![Group1](/project-docs/images/Group1.jpeg)
 
 </br>
 

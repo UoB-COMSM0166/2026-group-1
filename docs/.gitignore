@@ -1,0 +1,23 @@
+# Node dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables (if you ever add them)
+.env
+
+# Coverage reports (if using Jest coverage)
+coverage/
+
+# IDE files
+.vscode/
+.idea/
+
+
