@@ -47,89 +47,95 @@ NOTES:
 //======================================
 // PHYSICS SYSTEM - 
 //======================================
-import { PLAYER, GAME } from '../config.js';
 
-export function createPhysicsSystem(player, platformsOrGetter, { fallSpeed = PLAYER.FALL_SPEED, groundY = GAME.GROUND_Y } = {}) {
-  const getPlatforms = typeof platformsOrGetter === 'function'
+import { isColliding, resolveWallCollision } from "./hitboxSystem.js";
+
+export function createPhysicsSystem(player, platformsOrGetter) {
+  const getRoomCollisionSource = typeof platformsOrGetter === 'function'
     ? platformsOrGetter
     : () => platformsOrGetter;
 
-  //---INTERNAL FUNCTIONS---//
-
-//======================================
-// COLLISON SYSTEM - Author:
-//======================================
-/* Note from Georgia: (to be removed)
-
- Add your name to Author/s in header file and this section.
- Update header details with new collsion logic.
- I will add underwater physics here but it wont effect collision
- logic.
-
- This currently the platformer physics and collsion logic.
- It is not AABB collsion and currently uses gravity.
-You should be able to remove gravity and the game should behave 
-as "top-down" style as youve been working with.
-I will implement the underwater physics as soon as possible though.
-
-A good name for the collision wrapper would be --> applyCollisions();
-Call all your functions in there so update(); is kept clean.
-
-Map will be a JSON grid made of "tiles" - proably going to make
-the maps with TILED https://www.mapeditor.org/. There should be documention
-and online info for how people have used it in other projects which might be useful.
-
-Write your behavior tests first, it should help when writing the functions 
-- maybe we will start loving tests? xD
-Add error messages if you think it would be helpful
-*/
-
-  // Landing collision detection
-  function isLandingOnPlatform(player, platform) {
-    return (
-      player.x + player.w / 2 > platform.x - platform.w / 2 &&
-      player.x - player.w / 2 < platform.x + platform.w / 2 &&
-      player.y + player.h / 2 >= platform.y - platform.h / 2 &&
-      player.y + player.h / 2 <= platform.y - platform.h / 2 + player.vy &&
-      player.vy > 0
-    );
+  function resolveWalls(source) {
+    if (!source) return [];
+    if (Array.isArray(source)) return source;
+    if (Array.isArray(source.platforms)) return source.platforms;
+    return [];
   }
 
-  // Apply gravity and collisions
-  function applyGravity() {
-    player.onGround = false;
-    player.vy += fallSpeed;
-    player.y += player.vy;
+  function getEntityWidth(entity) {
+    if (typeof entity?.getWidth === 'function') return entity.getWidth();
+    return entity?.w ?? entity?.width ?? 0;
+  }
 
-    // Ground collision
-    if (player.y >= groundY) {
-      player.y = groundY;
-      player.vy = 0;
-      player.onGround = true;
+  function getEntityHeight(entity) {
+    if (typeof entity?.getHeight === 'function') return entity.getHeight();
+    return entity?.h ?? entity?.height ?? 0;
+  }
+
+  function getWallCenter(wall) {
+    if (Number.isFinite(wall?.position?.x) && Number.isFinite(wall?.position?.y)) {
+      return { x: wall.position.x, y: wall.position.y };
+    }
+    if (Number.isFinite(wall?.x) && Number.isFinite(wall?.y)) {
+      return { x: wall.x, y: wall.y };
+    }
+    return null;
+  }
+
+  function toPhysicsWall(wall) {
+    if (!wall) return null;
+    if (
+      typeof wall.updateZones === 'function' &&
+      wall.position &&
+      Array.isArray(wall.zones)
+    ) {
+      return wall;
     }
 
-    // Platform collisions
-    for (const p of getPlatforms()) {
-      if (isLandingOnPlatform(player, p)) {
-        player.y = p.y - p.h / 2 - player.h / 2;
-        player.vy = 0;
-        player.onGround = true;
-        break;
+    const center = getWallCenter(wall);
+    const wallW = wall?.w ?? wall?.width ?? 0;
+    const wallH = wall?.h ?? wall?.height ?? 0;
+    if (!center || !Number.isFinite(wallW) || !Number.isFinite(wallH) || wallW <= 0 || wallH <= 0) {
+      return null;
+    }
+
+    const adapted = {
+      position: center,
+      w: wallW,
+      h: wallH,
+      zones: [false, false, false, false],
+      updateZones(entity) {
+        const vec = entity?.position;
+        const entityW = getEntityWidth(entity);
+        const entityH = getEntityHeight(entity);
+        if (!vec || !entityW || !entityH) return;
+
+        this.zones[0] = (((vec.x + (entityW / 2)) >= this.position.x - (this.w / 2)) &&
+                         ((vec.x - (entityW / 2)) <= this.position.x + (this.w / 2)) &&
+                         ((vec.y + (entityH / 2)) <= this.position.y - (this.h / 2)));
+        this.zones[1] = ((vec.x - (entityW / 2)) >= this.position.x + (this.w / 2));
+        this.zones[2] = (((vec.x + (entityW / 2)) >= this.position.x - (this.w / 2)) &&
+                         ((vec.x - (entityW / 2)) <= this.position.x + (this.w / 2)) &&
+                         ((vec.y - (entityH / 2)) >= this.position.y - (this.h / 2)));
+        this.zones[3] = ((vec.x + (entityW / 2)) <= this.position.x - (this.w / 2));
+      }
+    };
+    return adapted;
+  }
+
+  function applyCollisions(){
+    player.setNextPosition();
+    const walls = resolveWalls(getRoomCollisionSource());
+    for (const wall of walls) {
+      const physicsWall = toPhysicsWall(wall);
+      if (!physicsWall) continue;
+      physicsWall.updateZones(player);
+      if (isColliding(physicsWall, player)) {
+        resolveWallCollision(player, physicsWall);
       }
     }
+    player.movePlayer();
   }
-//======================================
-// COLLISON SYSTEM - END
-//======================================
-
-//======================================
-// UNDERWATER PHYSICS - Author: Georgia
-//======================================
-// ........
-// underwater movement logic
-//======================================
-// UNDERWATER SYSTEM - END
-//======================================
 
 //======================================
 // PHYSICS - UPDATE PHASE
@@ -138,8 +144,7 @@ Add error messages if you think it would be helpful
   return {
     update() {
       // applyUnderWaterPhysics(); <-- georgia will add this
-      // applyCollisions(); <-- suggested wrapper name for collsions to live in
-      applyGravity();// can safely remove current wrapper and code above
+      applyCollisions(); // <-- suggested wrapper name for collsions to live in
     }
   };
 }

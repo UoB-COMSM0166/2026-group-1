@@ -18,11 +18,11 @@ DESIGN GOALS:
 ========================================
 RESPONSIBILITIES:
 - Maintain player positional and state data
-- Apply player-controlled movement intent (left / right)
-- Trigger player actions (jump, torch toggle) via input
+- Apply player-controlled movement intent (left / right / up / down)
+- Trigger player actions (torch toggle) via input
 
 DEPENDENCIES:
-- player object: {x, y, w, h, vy, onGround, power}
+- player object: {x, y, w, h, vy, power}
 - Input state (keyIsDown / keyPressed handlers)
 - Power system for action gating (e.g. torch usage)
 
@@ -32,7 +32,6 @@ engine.register(playerSystem);
 ========================================
 NOTES:
 - Player movement intent is applied before physics resolution
-- Jump logic depends on onGround state set by Physics System
 - Player system does not resolve collisions
 ========================================
 TODO / LIMITATIONS:
@@ -41,27 +40,30 @@ TODO / LIMITATIONS:
 ========================================
 */
 
-//======================
+//======================================
 // PLAYER SYSTEM
-//======================
+//======================================
 import { PLAYER } from '../config.js';
 
 export function createPlayerSystem(player) {
   // returning object literals → commas between entries
   return {
     update(deltaTime) {
-      const speed = PLAYER.MOVE_SPEED;
-      if (player.intent?.left) player.x -= speed;
-      if (player.intent?.right) player.x += speed;
-
-      if (player.intent?.jump && player.onGround) {
-        player.vy = -player.jumpPower;
-        player.onGround = false;
-      }
-      if (player.intent) player.intent.jump = false;
+      const dt = Math.max(0, deltaTime ?? 16);
+      const dtSeconds = dt / 1000;
+      const speed = PLAYER.MOVE_SPEED * dtSeconds;
+      // set initial velocity to 0, if no button pressed player does not move
+      player.setVelocityX();
+      player.setVelocityY();
+      
+      if(player.moveIntent.right ){player.setVelocityX(speed)}
+      if(player.moveIntent.left){player.setVelocityX(speed)}
+      if(player.moveIntent.up){player.setVelocityY(speed)}
+      if(player.moveIntent.down){player.setVelocityY(speed)}
     },
   };
 }
+
 //======================================
 // END
 //======================================

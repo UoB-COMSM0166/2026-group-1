@@ -1,0 +1,109 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "roomA.json",
+    "expandedProjectPaths": [
+        "tilesets/prototype-tileset",
+        ".",
+        "tilesets"
+    ],
+    "fileStates": {
+        "/Users/georgia/COMSCI/SEP/backgrounds.tsx": {
+            "scaleInDock": 1
+        },
+        "/Users/georgia/COMSCI/SEP/cave.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/backgrounds/backgrounds.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 0.1584,
+            "scaleInEditor": 1
+        },
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/prototype-tileset/prototype-tileset.tsx": {
+            "scaleInDock": 1
+        },
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/prototype-tileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1.615,
+            "scaleInEditor": 1
+        },
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/protoype-tileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "/Users/georgia/COMSCI/SEP/roomB.tmj": {
+            "scale": 0.91,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 399.9999999999999,
+                "y": 399.99999999999994
+            }
+        },
+        "roomA.json": {
+            "expandedObjectLayers": [
+                5,
+                9,
+                8,
+                7,
+                2
+            ],
+            "scale": 0.9923,
+            "selectedLayer": 7,
+            "viewCenter": {
+                "x": 339.6150357754711,
+                "y": 380.93318552856994
+            }
+        },
+        "roomB.json": {
+            "expandedObjectLayers": [
+                5,
+                4,
+                3,
+                6,
+                8,
+                2
+            ],
+            "scale": 0.77,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 240.25974025974028,
+                "y": 559.7402597402598
+            }
+        },
+        "tilesets/prototype-tileset/protoype-tileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1.96
+        }
+    },
+    "last.externalTilesetPath": "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset",
+    "last.imagePath": "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/backgrounds",
+    "map.height": 70,
+    "map.lastUsedFormat": "json",
+    "map.layerDataFormat": "3",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "openFiles": [
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/backgrounds/backgrounds.tsx",
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/prototype-tileset.tsx",
+        "roomB.json",
+        "roomA.json"
+    ],
+    "project": "game-rooms.tiled-project",
+    "property.type": "string",
+    "recentFiles": [
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/backgrounds/backgrounds.tsx",
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/prototype-tileset.tsx",
+        "roomB.json",
+        "roomA.json",
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/protoype-tileset.tsx",
+        "tilesets/prototype-tileset/protoype-tileset.tsx",
+        "/Users/georgia/COMSCI/SEP/roomB.tmj"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.type": 1
+}

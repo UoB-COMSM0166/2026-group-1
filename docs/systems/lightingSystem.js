@@ -1,6 +1,6 @@
 /*
 ========================================
-VERSION: 1.0
+VERSION: 2.0
 SYSTEM: LIGHTING SYSTEM
 AUTHOR: Georgia Sweeny
 DESCRIPTION:
@@ -29,7 +29,7 @@ DEPENDENCIES:
 - Uses torch.getIntensity(powerPercent) for smooth light intensity
 
 USAGE:
-const lightingSystem = createLightingSystem(player, enemies);
+const lightingSystem = createLightingSystem(player, enemies, etc. = []);
 const lightSources = lightingSystem.getLightSources();
 ========================================
 NOTES:
@@ -46,26 +46,28 @@ TODO / LIMITATIONS:
 //======================================
 // LIGHTING SYSTEM
 //======================================
-export function createLightingSystem(player, enemies = []) {
+export function createLightingSystem(getEntities) {
    return {
 
       //--- GET LIGHT SOURCES ---//
       getLightSources() {
          const lightSources = [];
 
-         // Player torch
-         if (player.torch.isOn) {
-            const intensity = player.torch.getIntensity(player.power.getPercent());
-            if (intensity > 0) {
-               lightSources.push({
-                  x: player.x,
-                  y: player.y,
-                  radius: player.torch.radius,
-                  intensity
-               });
+         const entities = getEntities ? getEntities() : [];
+
+         for(const entity of entities) {
+            if (typeof entity.getLightSources === 'function') {
+
+               const result = entity.getLightSources();
+               if (!result) continue;
+
+               if (Array.isArray(result)) {
+                  lightSources.push(...result);
+               } else {
+                  lightSources.push(result);
+               }
             }
          }
-// bioluminent blob
          return lightSources;
       }
    };
