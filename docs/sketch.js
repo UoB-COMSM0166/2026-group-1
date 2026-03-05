@@ -211,9 +211,11 @@ function setup() {
     initialRoom,
     roomData,
     player,
-    onRoomLoaded: ({ room, width: roomWidth, height: roomHeight }) => {
-      if (room) {
-        ensureRoomAssetsLoaded(room);
+    onRoomLoaded: ({ roomData: activeRoomData, width: roomWidth, height: roomHeight }) => {
+      if (activeRoomData) {
+        ensureRoomAssetsLoaded(activeRoomData);
+        // Keep environment objects in sync with the active room.
+        environmentSystem?.loadRoom(activeRoomData);
       }
       if (!roomWidth || !roomHeight) return;
       resizeCanvas(roomWidth, roomHeight);

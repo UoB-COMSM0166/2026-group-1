@@ -13,10 +13,6 @@ DESCRIPTION:
 
 import { DEBUG_COLOR } from "../config.js";
 
-import { PLAYER } from '../config.js';
-import { CANVAS } from '../config.js';
-
-
 //======================================
 // RENDER SYSTEM
 //======================================
@@ -37,8 +33,156 @@ export function createRenderSystem({
    darknessLayer,
    getLightSources,
    enableLighting = true,
-   getEnvironmentEntities
 }) {
+   const BACKGROUND_FILE_MAP = {
+      'bg-atmosphere': 'bg-atmosphere.jpg',
+      'bg-atmosphere.jpg': 'bg-atmosphere.jpg',
+   };
+
+   function normalizeBackgroundImageName(name) {
+      if (!name) return null;
+      const raw = String(name).trim();
+      if (!raw) return null;
+      if (BACKGROUND_FILE_MAP[raw]) return BACKGROUND_FILE_MAP[raw];
+      return raw;
+   }
+
+   function toRgba(hex, alpha = 1) {
+      if (typeof hex !== 'string' || !hex.startsWith('#')) return `rgba(255,255,255,${alpha})`;
+      let value = hex.slice(1);
+      if (value.length === 3) {
+         value = value.split('').map((c) => c + c).join('');
+      }
+      if (value.length !== 6) return `rgba(255,255,255,${alpha})`;
+      const r = parseInt(value.slice(0, 2), 16);
+      const g = parseInt(value.slice(2, 4), 16);
+      const b = parseInt(value.slice(4, 6), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+   }
+
+   function drawRotatedAt(x, y, w, h, rotationDeg, drawFn) {
+      push();
+      translate(x, y);
+      rotate(radians(rotationDeg || 0));
+      drawFn(w, h);
+      pop();
+   }
+
+   function getHazardStyle(hazard) {
+      const props = hazard.properties ?? {};
+      const shape = props.shape ?? (hazard.gid === 28 ? 'triangle' : 'rect');
+      const color = props.color ?? '#d1342f';
+      const alpha = Number.isFinite(props.alpha) ? props.alpha : hazard.opacity;
+      return { shape, color, alpha: alpha ?? 1 };
+   }
+
+   function getCollectableStyle(collectable) {
+      const props = collectable.properties ?? {};
+      const gid = collectable.gid;
+      const defaultShape = gid === 57 ? 'diamond' : 'circle';
+      const shape = props.shape ?? defaultShape;
+      const color = props.color ?? (gid === 57 ? '#7cf4ff' : '#ffd34d');
+      const alpha = Number.isFinite(props.alpha) ? props.alpha : collectable.opacity;
+      return { shape, color, alpha: alpha ?? 1 };
+   }
+
+   function getCollectableType(collectable, tileset) {
+      const fromProps = collectable?.properties?.collectableType;
+      if (typeof fromProps === 'string' && fromProps.length) return fromProps.toLowerCase();
+      if (!tileset || !Number.isFinite(collectable?.gid)) return null;
+
+      const localTileId = collectable.gid - tileset.firstgid;
+      if (localTileId === 20) return 'power';
+      if (localTileId === 41 || localTileId === 53) return 'health';
+      return null;
+   }
+
+   function getCollectableTint(type) {
+      if (type === 'power') return [255, 225, 80, 255]; // yellow
+      if (type === 'health') return [110, 255, 120, 255]; // green
+      return null;
+   }
+
+   function getExitStyle(exitObj) {
+      const props = exitObj.properties ?? {};
+      const color = exitObj.color ?? props.color ?? '#ff00ff';
+      const alpha = Number.isFinite(props.alpha) ? props.alpha : exitObj.opacity;
+      return { color, alpha: alpha ?? 1 };
+   }
+
+   function getSpawnKind(spawn, tilesets) {
+      const typeText = String(spawn?.spawnType ?? '').toLowerCase();
+      if (typeText.includes('enemy')) return 'enemy';
+      if (typeText.includes('player')) return 'player';
+
+      if (Number.isFinite(spawn?.gid)) {
+         const tileset = getTilesetForGid(spawn.gid, tilesets);
+         if (tileset) {
+            const localTileId = spawn.gid - tileset.firstgid;
+            if (localTileId === 68) return 'player'; // prototype tileset playerSpawn
+            if (localTileId === 78) return 'enemy';  // prototype tileset enemySpawn
+         }
+      }
+
+      const spawnId = String(spawn?.spawnId ?? '').toLowerCase();
+      if (spawnId) return 'player';
+      return 'unknown';
+   }
+
+   function normalizeRelativePath(basePath, relativePath) {
+      const baseParts = basePath.split('/').filter(Boolean);
+      const relParts = String(relativePath ?? '').split('/').filter(Boolean);
+      for (const part of relParts) {
+         if (part === '.') continue;
+         if (part === '..') {
+            baseParts.pop();
+            continue;
+         }
+         baseParts.push(part);
+      }
+      return baseParts.join('/');
+   }
+
+   function tilesetSourceToImagePath(source) {
+      if (!source) return null;
+      // backgrounds.tsx is an image collection (no single .png atlas file to load).
+      if (String(source).toLowerCase().endsWith('backgrounds.tsx')) return null;
+      const pngSource = source.replace(/\.tsx$/i, '.png');
+      return normalizeRelativePath('data/rooms', pngSource);
+   }
+
+   function getTilesetForGid(gid, tilesets) {
+      if (!Number.isFinite(gid) || gid <= 0 || !Array.isArray(tilesets) || !tilesets.length) return null;
+      let best = null;
+      for (const tileset of tilesets) {
+         const firstgid = Number(tileset?.firstgid ?? 0);
+         if (!firstgid || gid < firstgid) continue;
+         if (!best || firstgid > best.firstgid) {
+            best = { ...tileset, firstgid };
+         }
+      }
+      return best;
+   }
+
+   function resolveBackgroundImageFromGid(tilesets, gid) {
+      const tileset = getTilesetForGid(gid, tilesets);
+      if (!tileset) return null;
+      if (String(tileset.source ?? '').toLowerCase().endsWith('backgrounds.tsx')) {
+         const localTileId = gid - tileset.firstgid;
+         const byId = {
+            0: 'bg-atmosphere.jpg',
+            1: 'bg-atmosphere.jpg'
+         };
+         return byId[localTileId] ?? null;
+      }
+      return null;
+   }
+
+   
+//======================================
+// DRAW BACKGROUND
+//======================================
+
    function drawBackground() {
       const bg = getBackground?.();
       const tilesets = getTilesets?.() ?? [];
@@ -225,11 +369,9 @@ export function createRenderSystem({
       for (const r of reveals) {
          const alpha = Math.max(0, Math.min(255, r.alpha ?? 0));
          noStroke();
-         fill(60, 120, 180, alpha);
+         fill(90, 110, 130, alpha);
          rect(r.x, r.y, r.w, r.h);
 
-         stroke(120, 200, 255, alpha);
-         strokeWeight(1);
          noFill();
          rect(r.x, r.y, r.w, r.h);
       }
@@ -247,7 +389,7 @@ export function createRenderSystem({
 
       fill(120);
       noStroke();
-      rect(-2, -player.size * 0.4, 4, player.size * 0.6);
+      rect(-2, -player.size * 0.8, 4, player.size * 0.6);
       rect(0.1, -player.size * 0.8, 8, 4);
 
       fill(150);
@@ -265,27 +407,6 @@ export function createRenderSystem({
       fill(100, 220, 255);
       circle(player.size * 0.2, 0, player.size * 0.4);
       pop();
-   }
-
-   function drawEnvironment() {
-      const entities = getEnvironmentEntities?.() ?? [];
-      for (const entity of entities) {
-         if (entity.revealed || entity.isGlowing) {
-            push();
-            rectMode(CORNER);
-            if (entity.isGlowing) {
-               fill(0, 255, 255, entity.glowAlpha);
-            } else if (entity.type === 'hazard') {
-               fill(255, 0, 0);
-            } else if (entity.type === 'resource') {
-               fill(0, 255, 0);
-            } else {
-               fill(200);
-            }
-            rect(entity.x, entity.y, entity.w, entity.h);
-            pop();
-         }
-      }
    }
 
 //======================================
@@ -319,6 +440,7 @@ export function createRenderSystem({
       for (const light of lightSources) {
          const { x, y, radius, intensity = 1 } = light;
          const scaledRadius = radius * (0.8 + 0.2 * intensity);
+
          const gradient = ctx.createRadialGradient(
             x, y, scaledRadius * 0.1,
             x, y, scaledRadius
@@ -363,7 +485,6 @@ export function createRenderSystem({
          drawCollectables();
          drawExits();
          drawSpawnPoints();
-         drawEnvironment();
          drawPlayer();
          if (enableLighting) {
             drawLighting(lightSources);

@@ -476,7 +476,8 @@ export function createRoomSystem({
     onRoomLoaded?.({
       room: currentRoom,
       width: normalized.width,
-      height: normalized.height
+      height: normalized.height,
+      roomData: normalized
     });
   }
 
