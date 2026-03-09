@@ -29,7 +29,7 @@ DEPENDENCIES:
 - Uses torch.getIntensity(powerPercent) for smooth light intensity
 
 USAGE:
-const lightingSystem = createLightingSystem(player, enemies);
+const lightingSystem = createLightingSystem(player, enemies, etc. = []);
 const lightSources = lightingSystem.getLightSources();
 ========================================
 NOTES:
@@ -46,7 +46,7 @@ TODO / LIMITATIONS:
 //======================================
 // LIGHTING SYSTEM
 //======================================
-export function createLightingSystem(player = []) {
+export function createLightingSystem(player = [], getSonarLights = () => []) {
    return {
 
       //--- GET LIGHT SOURCES ---//
@@ -65,7 +65,6 @@ export function createLightingSystem(player = []) {
                });
             }
          }
-// bioluminent blob
          return lightSources;
       }
    };

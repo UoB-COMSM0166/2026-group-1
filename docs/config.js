@@ -33,7 +33,8 @@ export const INPUT = {
   RIGHT_ARROW_KEY: 39,
   
   // ACTION KEYS - functions take strings
-  TOGGLE_TORCH_KEY: ['L', 'l']
+  TOGGLE_TORCH_KEY: ['L', 'l'],
+  EMIT_SONAR_KEY: ['K', 'k']
 };
 
 //======================
@@ -45,8 +46,9 @@ clean scaling for modern resolutions like 640x360 or 1920x1080
 Base Resolution: Use 640x360 as a base resolution for 16:9
 then scale up, rather than designing in native 1080p*/
 export const CANVAS = {
-  WIDTH: 640,
-  HEIGHT: 360,
+  WIDTH: 800,
+  HEIGHT: 800,
+
   TILE_SIZE: 16
 };
 
@@ -56,9 +58,15 @@ export const CANVAS = {
 export const PLAYER = {
   WIDTH: CANVAS.TILE_SIZE,
   HEIGHT: CANVAS.TILE_SIZE,
+  SIZE: CANVAS.TILE_SIZE,
   START_X: CANVAS.TILE_SIZE,
   START_Y: CANVAS.TILE_SIZE,
-  MOVE_SPEED: 0.2,
+  MOVE_SPEED: 180,
+  ACCELERATION: 0.8,
+  DRAG: 0.9  ,         // Higher = less friction (0.9-0.95 feels good)
+  BOUNCE_DAMPING: 0.5,  // Velocity kept after bounce (0.5 = half speed)
+  MIN_VELOCITY: 0.1,    // Stop if slower than this
+  SIZE: 20,
 };
 
 //======================
@@ -81,12 +89,30 @@ export const TORCH = {
 };
 
 //======================
-// TILE TYPE CONFIG
+// LIGHTING CONFIG
 //======================
-export const TILE_TYPE = {
-  0: 'empty', // water
-  1: 'rock'
+export const LIGHTING = {
+  PLAYER_AMBIENT: {
+    radius: 70,
+    brightness: 0.2
+  }
 };
+
+//======================
+// SONAR CONFIG
+//======================
+export const SONAR = {
+  // Cooldown in seconds for readability; derived ms used by sonarSystem
+  COOLDOWN: 3,
+  COOLDOWN_MS: 3000
+};
+
+//======================
+// GAME CONFIG
+//======================
+export const GAME = {
+};
+
 
 //======================
 // HITBOX DEBUG

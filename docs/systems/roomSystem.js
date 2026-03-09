@@ -464,6 +464,25 @@ export function createRoomSystem({
       return { tileWidth, tileHeight };
     },
 
+    getRoomState() {
+      return {
+        platforms,
+        hazards,
+        collectables,
+        triggers,
+        exits,
+        spawnPoints,
+        entities,
+        tileWidth,
+        tileHeight,
+        width: currentConfig?.width,
+        height: currentConfig?.height,
+        background: currentConfig?.background,
+        platformColor: currentConfig?.platformColor,
+        currentRoom
+      };
+    },
+
     getBackground() {
       return currentConfig?.background ?? null;
     },

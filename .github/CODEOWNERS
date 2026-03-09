@@ -8,7 +8,7 @@
 # Protect "main - docs/":
 # To ensure code architecture compliance and prevent accidental overwrites
 # pull requests to docs/ are enforced and require review before merge (Georgia) 
-/docs/ @GeorgiaSweeny
+/docs/ @GeorgiaSweeny @C2V180
 
 # Protect listed root files to prevent accidental overwrites
 CODE_ARCHITECTURE_GUIDE.md @GeorgiaSweeny

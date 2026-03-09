@@ -1,0 +1,50 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "/Users/georgia/COMSCI/SEP/backgrounds.tsx": {
+            "scaleInDock": 1
+        },
+        "/Users/georgia/COMSCI/SEP/cave.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/prototype-tileset/prototype-tileset.tsx": {
+            "scaleInDock": 1
+        },
+        "/Users/georgia/COMSCI/SEP/roomB.tmj": {
+            "scale": 0.91,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 399.9999999999999,
+                "y": 399.99999999999994
+            }
+        },
+        "tilesets/prototype-tileset/protoype-tileset.tsx": {
+            "dynamicWrapping": false
+        }
+    },
+    "last.imagePath": "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/tilesets/prototype-tileset",
+    "map.height": 50,
+    "map.layerDataFormat": "3",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 50,
+    "openFiles": [
+    ],
+    "project": "game-rooms.tiled-project",
+    "recentFiles": [
+        "/Users/georgia/COMSCI/SEP/roomB.tmj"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}

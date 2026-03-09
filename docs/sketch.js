@@ -16,20 +16,19 @@ AUTHOR: Georgia Sweeny
 // MAIN
 //======================================
 
-import { Engine } from "./gameEngine/engine.js";
-import { createInputSystem } from "./systems/inputSystem.js";
-import { createPlayerSystem } from "./systems/playerSystem.js";
-import { createPhysicsSystem } from "./systems/physicsSystem.js";
-import { createTorchSystem } from "./systems/torchSystem.js";
-import { createRenderSystem } from "./systems/renderSystem.js";
-import { createLightingSystem } from "./systems/lightingSystem.js";
-import { createRoomSystem } from "./systems/roomSystem.js";
-import { CANVAS, PLAYER, TORCH } from "./config.js";
-import { Player } from "./entities/player.js";
-import { createResourceManagementSystem } from "./systems/resourceManagementSystem.js";
-import { createCameraSystem } from "./systems/cameraSystem.js";
-import { createUISystem } from "./systems/uiSystem.js";
-import { createMenuSystem } from "./systems/menuSystem.js";
+import { Engine } from './gameEngine/engine.js';
+import { createInputSystem } from './systems/inputSystem.js';
+import { createPlayerSystem } from './systems/playerSystem.js';
+import { createPhysicsSystem } from './systems/physicsSystem.js';
+import { createTorchSystem } from './systems/torchSystem.js';
+import { createRenderSystem } from './systems/renderSystem.js';
+import { createLightingSystem } from './systems/lightingSystem.js';
+import { createSonarSystem } from './systems/sonarSystem.js';
+import { createRoomSystem } from './systems/roomSystem.js';
+import { createSonarSystem } from './systems/sonarSystem.js';
+import { CANVAS, PLAYER, TORCH } from './config.js';
+import { Player } from './entities/player.js';
+import { createResourceManagementSystem } from './systems/resourceManagementSystem.js';
 
 let engine;
 let darknessLayer;
@@ -39,8 +38,10 @@ let inputSystem;
 let playerSystem;
 let physicsSystem;
 let torchSystem;
+let sonarSystem;
 let renderSystem;
 let lightingSystem;
+let sonarSystem;
 let roomSystem;
 let resourceManagementSystem;
 let cameraSystem;
@@ -228,6 +229,7 @@ function preload() {
   const imageNames = new Set();
   for (const room of Object.values(roomData)) {
     const imageName = getBackgroundImageName(room);
+    
     if (imageName) imageNames.add(imageName);
   }
 
@@ -265,7 +267,7 @@ function setup() {
   textSize(20);
   textAlign(LEFT);
 
-  darknessLayer = createGraphics(CANVAS.WIDTH, CANVAS.HEIGHT);
+  player = new Player(PLAYER);
 
   player = new Player(
     PLAYER.START_X,
@@ -297,24 +299,24 @@ function setup() {
   syncCanvasToCurrentRoom();
   const playerStart = roomSystem.getPlayerStart();
   if (playerStart) {
-    player.setCurrentPosition(playerStart.x, playerStart.y);
+    player.setCurrentPosition(playerStart.x, playerStart.y); 
   }
 
-  // init the camera system
-  cameraSystem = createCameraSystem(player, () => {
-    const currentRoom = roomSystem.getCurrentRoom();
-    return getRoomPixelSize(currentRoom);
-  });
+  darknessLayer = createGraphics(width, height);
 
-  menuSystem = createMenuSystem();
   inputSystem = createInputSystem(player);
   playerSystem = createPlayerSystem(player);
-  physicsSystem = createPhysicsSystem(player, () => roomSystem.getPlatforms());
+  physicsSystem = createPhysicsSystem(player, () => roomSystem.getRoomState());
   torchSystem = createTorchSystem(player.torch, player, {
     drainRate: TORCH.DRAIN_RATE,
   });
 
-  lightingSystem = createLightingSystem(player, []);
+  sonarSystem = createSonarSystem(player, () => roomSystem.getPlatforms());
+
+  lightingSystem = createLightingSystem(() => [
+    player,
+    ...(roomSystem.getEntities?.() ?? [])
+  ]);
 
   resourceManagementSystem = createResourceManagementSystem(player, roomSystem);
 
@@ -342,20 +344,26 @@ function setup() {
     getTileSize: () => roomSystem.getTileSize(),
     getBackground: () => roomSystem.getBackground(),
     getPlatformColor: () => roomSystem.getPlatformColor(),
+    getSonarCooldown: () => sonarSystem?.getCooldownPercent?.(),
+    getSonarReveals: () => sonarSystem?.getRevealedWalls?.(),
     assets,
     darknessLayer,
     getLightSources: () => lightingSystem.getLightSources(),
+    getActivePulses: () => sonarSystem.getActivePulses(),
+    getRevealedWalls: () => sonarSystem.getRevealedWalls(),
   });
 
   engine = new Engine();
   engine.register(inputSystem);
   engine.register(playerSystem);
   engine.register(physicsSystem);
+  engine.register(sonarSystem);
   engine.register(torchSystem);
   engine.register(roomSystem);
   engine.register(cameraSystem);
   engine.register(uiSystem);
   engine.register(renderSystem);
+  engine.register(sonarSystem);
   engine.register(resourceManagementSystem);
 }
 
@@ -376,7 +384,7 @@ function draw() {
 }
 
 function keyPressed() {
-  inputSystem.onKeyPressed?.(key, keyCode);
+  inputSystem?.onKeyPressed?.(key, keyCode);
 }
 
 function mousePressed() {

@@ -25,22 +25,25 @@ import { DEBUG_COLOR } from "../config.js";
 // RENDER SYSTEM
 //======================================
 export function createRenderSystem({
-  player,
-  getCamera,
-  getUIData,
-  getPlatforms,
-  getHazards,
-  getCollectables,
-  getTriggers,
-  getEntities,
-  getSpawnPoints,
-  getTilesets,
-  getTileSize,
-  getBackground,
-  getPlatformColor,
-  assets,
-  darknessLayer,
-  getLightSources,
+   player,
+   getPlatforms,
+   getHazards,
+   getCollectables,
+   getTriggers,
+   getEntities,
+   getSpawnPoints,
+   getTilesets,
+   getTileSize,
+   getBackground,
+   getPlatformColor,
+   getSonarReveals,
+   getSonarCooldown,
+   assets,
+   darknessLayer,
+   getLightSources,
+   getActivePulses,
+   getRevealedWalls,
+
 }) {
   let elapsedTime = 0;
   const oscillationSpeed = 2; // Hz
@@ -88,186 +91,76 @@ export function createRenderSystem({
       if (!best || firstgid > best.firstgid) {
         best = { ...tileset, firstgid };
       }
-    }
-    return best;
-  }
 
-  function getObjectRect(obj) {
-    if (!obj) return null;
-    if (
-      typeof obj.getCornerX === "function" &&
-      typeof obj.getCornerY === "function"
-    ) {
-      return {
-        x: obj.getCornerX(),
-        y: obj.getCornerY(),
-        w: obj.getWidth(),
-        h: obj.getHeight(),
-      };
-    }
-    const tileSize = getTileSize?.() ?? {};
-    const fallbackW = tileSize.tileWidth ?? 16;
-    const fallbackH = tileSize.tileHeight ?? 16;
-    const w = obj.w ?? obj.width ?? fallbackW;
-    const h = obj.h ?? obj.height ?? fallbackH;
-    const cx = obj.x ?? 0;
-    const cy = obj.y ?? 0;
-    return { x: cx - w / 2, y: cy - h / 2, w, h };
-  }
+      const imagePath = tilesetSourceToImagePath(tileset.source);
+      const tilesetImage = imagePath ? assets?.[`tileset:${imagePath}`] : null;
+      if (!tilesetImage) return false;
 
-  function drawSpriteFromTileset(obj) {
-    const gid = Number(obj?.gid);
-    if (!Number.isFinite(gid)) return false;
+      const rect = getObjectRect(obj);
+      if (!rect) return false;
 
-    const tilesets = getTilesets?.() ?? [];
-    const tileset = getTilesetForGid(gid, tilesets);
-    if (!tileset) return false;
+      const tileSize = getTileSize?.() ?? {};
+      const tileWidth = tileSize.tileWidth ?? tileset.tilewidth ?? 16;
+      const tileHeight = tileSize.tileHeight ?? tileset.tileheight ?? 16;
+      const localTileId = gid - Number(tileset.firstgid);
+      const columns = Number(tileset.columns) || Math.max(1, Math.floor(tilesetImage.width / tileWidth));
+      const srcX = (localTileId % columns) * tileWidth;
+      const srcY = Math.floor(localTileId / columns) * tileHeight;
 
-    if (
-      String(tileset.source ?? "")
-        .toLowerCase()
-        .endsWith("backgrounds.tsx")
-    ) {
-      return false;
-    }
+      image(tilesetImage, rect.x, rect.y, rect.w, rect.h, srcX, srcY, tileWidth, tileHeight);
+      return true;
+   }
 
-    const imagePath = tilesetSourceToImagePath(tileset.source);
-    const tilesetImage = imagePath ? assets?.[`tileset:${imagePath}`] : null;
-    if (!tilesetImage) return false;
+//===BACKGROUND===//
+   function drawBackground() {
+      const bg = getBackground?.();
 
-    const rect = getObjectRect(obj);
-    if (!rect) return false;
+      if (bg?.color) {
+         background(bg.color);
+      } else {
+         background(0);
+      }
 
-    const tileSize = getTileSize?.() ?? {};
-    const tileWidth = tileSize.tileWidth ?? tileset.tilewidth ?? 16;
-    const tileHeight = tileSize.tileHeight ?? tileset.tileheight ?? 16;
-    const localTileId = gid - Number(tileset.firstgid);
-    const columns =
-      Number(tileset.columns) ||
-      Math.max(1, Math.floor(tilesetImage.width / tileWidth));
-    const srcX = (localTileId % columns) * tileWidth;
-    const srcY = Math.floor(localTileId / columns) * tileHeight;
+      if (bg?.image && assets?.[bg.image]) {
+         image(assets[bg.image], 0, 0, width, height);
+      }
+   }
 
-    image(
-      tilesetImage,
-      rect.x,
-      rect.y,
-      rect.w,
-      rect.h,
-      srcX,
-      srcY,
-      tileWidth,
-      tileHeight,
-    );
-    return true;
-  }
+   //===TERRAIN===//
+   function drawPlatforms() {
+      const platforms = getPlatforms?.() ?? [];
+      const platformColor = getPlatformColor?.() ?? '#5a6e82ff';
 
-  //===BACKGROUND===//
-  function drawBackground() {
-    const bg = getBackground?.();
+      noStroke();
+      fill(platformColor);
+      
+      for (const p of platforms) {
+         if (drawSpriteFromTileset(p)) continue;
+         rect(p.getCornerX(), p.getCornerY(), p.getWidth(), p.getHeight());
+      }
+   }
 
-    if (bg?.color) {
-      background(bg.color);
-    } else {
-      background(0);
-    }
+   //=== HAZARDS ===//
+   function drawHazards() {
+      const hazards = getHazards?.() ?? [];
+      if (!hazards.length) return;
 
-    if (bg?.image && assets?.[bg.image]) {
-      image(assets[bg.image], 0, 0, width, height);
-    }
-  }
+      noStroke();
+      fill(220, 70, 70, 180);
+      rectMode(CENTER);
+      for (const hazard of hazards) {
+         if (hazard.visible === false) continue;
+         if (drawSpriteFromTileset(hazard)) continue;
+         rect(hazard.x, hazard.y, hazard.w, hazard.h);
+      }
+      rectMode(CORNER);
+   }
 
-  //===TERRAIN===//
-  function drawPlatforms() {
-    const platforms = getPlatforms?.() ?? [];
-    const platformColor = getPlatformColor?.() ?? "#5a6e82";
+   //=== COLLECTABLES ===//
+   function drawCollectables() {
+      const collectables = getCollectables?.() ?? [];
+      if (!collectables.length) return;
 
-    noStroke();
-    fill(platformColor);
-
-    for (const p of platforms) {
-      if (drawSpriteFromTileset(p)) continue;
-      rect(p.getCornerX(), p.getCornerY(), p.getWidth(), p.getHeight());
-    }
-  }
-
-  //=== HAZARDS ===//
-  function drawHazards() {
-    const hazards = getHazards?.() ?? [];
-    if (!hazards.length) return;
-
-    noStroke();
-    fill(220, 70, 70, 180);
-    rectMode(CENTER);
-    for (const hazard of hazards) {
-      if (hazard.visible === false) continue;
-      if (drawSpriteFromTileset(hazard)) continue;
-      rect(hazard.x, hazard.y, hazard.w, hazard.h);
-    }
-    rectMode(CORNER);
-  }
-
-  //=== COLLECTABLES ===//
-  function drawCollectables() {
-    const collectables = getCollectables?.() ?? [];
-    if (!collectables.length) return;
-
-    noStroke();
-    fill(255, 225, 80, 220);
-    for (const item of collectables) {
-      if (item.visible === false) continue;
-      if (drawSpriteFromTileset(item)) continue;
-      ellipse(item.x, item.y, Math.max(8, item.w), Math.max(8, item.h));
-    }
-  }
-
-  //=== TRIGGERS ===//
-  function drawTriggers() {
-    const triggers = getTriggers?.() ?? [];
-    if (!triggers.length) return;
-
-    noFill();
-    stroke(140, 180, 255, 180);
-    strokeWeight(1);
-    rectMode(CENTER);
-    for (const trigger of triggers) {
-      if (trigger.visible === false) continue;
-      if (drawSpriteFromTileset(trigger)) continue;
-      rect(trigger.x, trigger.y, trigger.w, trigger.h);
-    }
-    rectMode(CORNER);
-    noStroke();
-  }
-
-  //=== ENTITIES ===//
-  function drawEntities() {
-    const entities = getEntities?.() ?? [];
-    if (!entities.length) return;
-
-    noStroke();
-    fill(180, 110, 230, 210);
-    for (const entity of entities) {
-      if (entity.visible === false) continue;
-      if (entity.properties?.spawnId != null) continue;
-      if (drawSpriteFromTileset(entity)) continue;
-      rect(
-        entity.x - entity.w / 2,
-        entity.y - entity.h / 2,
-        entity.w,
-        entity.h,
-      );
-    }
-  }
-
-  //=== SPAWNS ===//
-  function drawSpawnPoints() {
-    const spawnPoints = getSpawnPoints?.() ?? [];
-    if (!spawnPoints.length) return;
-
-    for (const spawn of spawnPoints) {
-      if (drawSpriteFromTileset(spawn)) continue;
-      const isPlayerSpawn =
-        String(spawn.spawnId ?? "").toLowerCase() === "default";
       noStroke();
       fill(isPlayerSpawn ? color(80, 255, 130, 220) : color(255, 130, 80, 220));
       triangle(
@@ -432,41 +325,192 @@ export function createRenderSystem({
       for (let i in walls) {
         walls[i].debugDrawHitbox(DEBUG_COLOR.WALL);
       }
-      player.debugDrawHitbox(DEBUG_COLOR.PLAYER);
-    }
-  }
+   }
 
-  //======================================
-  // DRAW EVERYTHING
-  //======================================
-  return {
-    draw(deltaTime) {
-      elapsedTime += deltaTime;
-      const lightSources = getLightSources?.() ?? [];
-
-      const camera = getCamera?.();
+   //===PLAYER===//
+   function drawPlayer() {
       push();
-      if (camera) {
-        translate(-camera.x, -camera.y);
-      }
+      translate(player.position.x, player.position.y);
+      scale(player.facing, 1);
 
-      drawBackground();
-      drawPlatforms();
-      drawHazards();
-      drawCollectables();
-      drawTriggers();
-      drawEntities();
-      drawSpawnPoints();
-      drawPlayer();
-      debugHitbox(DEBUG_COLOR.DRAW);
+      // Periscope
+      fill(120);
+      noStroke();
+      rect(-2, -player.w * 0.9, 4, player.w * 0.6);
+      rect(-2, -player.w * 0.9, 8, 4);
+
+      // Tail fin
+      fill(150);
+      triangle(
+         -player.w / 2, 0,
+         -player.w, -player.w / 3,
+         -player.w, player.w / 3
+      );
+
+      // Body
+      fill(255, 200, 50);
+      ellipse(0, 0, player.w * 1.2, player.w * 0.8);
+
+      // Porthole window
+      fill(100, 220, 255);
+      circle(player.w * 0.2, 0, player.w * 0.4);
 
       pop();
+   }
 
-      // drawLighting(lightSources);
-      drawUI();
-    },
-  };
-}
+   //===BUBBLES===//
+   function drawBubbles() {
+      const bubbleList = player.bubbles ?? [];
+      noStroke();
+      for (const b of bubbleList) {
+         if (b.life > 0) {
+            fill(150, 220, 255, b.life);
+            circle(b.x, b.y, b.size);
+         }
+      }
+   }
+
+   //===SONAR PULSES===//
+   function drawSonarPulses() {
+      const pulses = getActivePulses?.() ?? [];
+      strokeWeight(2);
+      for (const pulse of pulses) {
+         for (const p of pulse.particles) {
+            if (p.life > 0) {
+               stroke(0, 220, 0, p.life);
+               point(p.x, p.y);
+            }
+         }
+      }
+   }
+
+   //===SONAR WALLS===//
+   function drawSonarWalls() {
+      const walls = getRevealedWalls?.() ?? [];
+      for (const wall of walls) {
+         if (wall.alpha > 1) {
+            // Dark background rect
+            noStroke();
+            fill(20, 25, 35, wall.alpha);
+            rect(wall.x, wall.y, wall.w, wall.h, 3);
+
+            // Rocky texture overlay
+            fill(40, 50, 65, wall.alpha);
+            beginShape();
+            for (const pt of wall.rockPoints) {
+               vertex(pt.px, pt.py);
+            }
+            endShape(CLOSE);
+         }
+      }
+   }
+
+   //===LIGHTING===//
+   function drawLighting(lightSources = []) {
+      darknessLayer.clear();
+      darknessLayer.background(0);
+
+      const ctx = darknessLayer.drawingContext;
+      ctx.globalCompositeOperation = 'destination-out';
+
+      for (const light of lightSources) {
+         const { x, y, radius, intensity = 1 } = light;
+         const scaledRadius = radius * (0.8 + 0.2 * intensity);
+         const gradient = ctx.createRadialGradient(
+            x, y, scaledRadius * 0.1,
+            x, y, scaledRadius
+         );
+         gradient.addColorStop(0, 'rgba(255,255,255,1)');
+         gradient.addColorStop(1, 'rgba(0,0,0,0)');
+
+         ctx.fillStyle = gradient;
+         ctx.beginPath();
+         ctx.arc(x, y, scaledRadius, 0, Math.PI * 2);
+         ctx.fill();
+      }
+
+      ctx.globalCompositeOperation = 'source-over';
+      image(darknessLayer, 0, 0);
+   }
+
+   //===UI===//
+   function drawUI() {
+      fill(255);
+      noStroke();
+      text(`Power: ${Math.round(player.power.current)}`, 20, 30);
+
+      const sonarCooldown = getSonarCooldown?.() ?? 0;
+      if (Number.isFinite(sonarCooldown) && sonarCooldown > 0) {
+         fill('#d61b1b');
+         text(`Sonar: cooling`, 20, 55);
+      } else {
+         fill('#64ff64');
+         text(`Sonar: ready (K)`, 20, 55);
+      }
+   }
+
+//======================================
+// DRAW SONAR
+//======================================
+   function drawSonarReveals() {
+      if (player?.torch?.isOn) return;
+      const reveals = getSonarReveals?.() ?? [];
+      if (!reveals.length) return;
+
+      rectMode(CORNER);
+      for (const r of reveals) {
+         const alpha = Math.max(0, Math.min(255, r.alpha ?? 0));
+         noStroke();
+         fill(90, 110, 130, alpha);
+         rect(r.x, r.y, r.w, r.h);
+
+         noFill();
+         rect(r.x, r.y, r.w, r.h);
+      }
+      rectMode(CORNER);
+   }
+
+//======================================
+// VISUAL DEBUG HELPERS
+//======================================
+//===HITBOX-DEBUG===//
+   // draw by changing DRAW to true in config, shows hitbox boundaries
+   function debugHitbox(drawThis){
+      if(drawThis){
+         let walls = getPlatforms();
+         for(let i in walls){
+            walls[i].debugDrawHitbox(DEBUG_COLOR.WALL);
+         }
+         player.debugDrawHitbox(DEBUG_COLOR.PLAYER);
+      }
+   }
+
+//======================================
+// DRAW EVERYTHING
+//======================================
+      return {
+         draw(deltaTime) {
+            elapsedTime += deltaTime;
+            const lightSources = getLightSources?.() ?? [];
+
+            drawBackground();
+            drawPlatforms();
+            drawHazards();
+            drawCollectables();
+            drawTriggers();
+            drawEntities();
+            drawSpawnPoints();
+            drawSonarWalls();
+            drawSonarPulses();
+            drawBubbles();
+            drawPlayer();
+            drawLighting(lightSources);
+            drawSonarReveals();
+            drawUI();
+            debugHitbox(DEBUG_COLOR.DRAW);
+         }
+      };
+   }
 //======================================
 // END
 //======================================
