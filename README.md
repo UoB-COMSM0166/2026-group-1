@@ -467,6 +467,45 @@ The diagrams collectively **visualise the structure and runtime behaviour**, sho
 
 ---
 
+## Week 7 - User & Heuristic Evaluation
+
+One participant was recruited from an adjacent group. Two observers recorded critical moments while the participant played through the prototype, verbalising their thoughts. Two tasks were set:
+- Navigate from the starting room to the next area using the sonar mechanic
+- Survive for as long as possible while managing the power resource
+
+### Findings
+
+**Atmosphere and core tension are working.** The limited torch radius created genuine curiosity. Players instinctively avoided unlit areas without being told to. The core design premise is landing as intended.
+
+**No narrative direction was the most commonly raised issue.** Without a clear objective, players explored aimlessly and reported uncertainty about what they were working toward. Pete also highlighted this directly, even a minimal story setup (distress signal, missing crew) would give exploration a purpose. If the objective(collectible item) is hidden and sonar reveals it, the mechanic becomes narratively meaningful rather than purely mechanical.
+
+**Enemies created no real tension.** Players navigated around them without strategic thought. Enemies reacting visibly to sonar like speeding up, changing direction, entering an alert state, would make encounters feel meaningful.
+
+## Heuristic Evaluation
+
+> **Severity = (Frequency + Impact + Persistence) / 3**
+
+### Strengths
+
+| Interface | Observation | Heuristic | F | I | P | Severity |
+|---|---|---|---|---|---|---|
+| Display placement | Power and sonar status in top-left follows gaming conventions. Players looked there instinctively | H4 – Consistency & Standards | 1 | 1 | 1 | 1.0 |
+| Enemy design | Red enemy colour contrasts clearly against dark environment. Threats are immediately recognisable. | H4 – Consistency & Standards | 1 | 1 | 1 | 1.0 |
+| Gameplay | No objective communicated. Player has no direction | H1 – Visibility of System Status | 4 | 4 | 4 | 4.0 |
+| Game start | No controls displayed. Discovered through trial and error | H10 – Help & Documentation | 4 | 3 | 4 | 3.7 |
+| Gameplay | Enemies deal contact damage with no warning animation or sound | H5 – Error Prevention | 3 | 3 | 3 | 3.0 |
+| Game Over screen | No cause of death shown. Player cannot identify what went wrong | H9 – Help Users Recover from Errors | 3 | 3 | 3 | 3.0 |
+
+### Difficulty Levels
+Two difficulty levels will be selectable from the main menu:
+
+**Easy** — slower power drain, wider torch radius, slower enemies, more pickups.
+
+**Hard** — faster drain, narrower torch radius, more aggressive enemies, 
+fewer or no pickups.
+
+---
+
 ### Implementation
 
 - 15% ~750 words
