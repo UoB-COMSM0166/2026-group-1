@@ -85,6 +85,29 @@ function parseCollisionTileLayer(layer, tileWidth, tileHeight) {
   return result;
 }
 
+function getTilesetForGid(tilesets, gid) {
+  if (!Number.isFinite(gid) || gid <= 0 || !Array.isArray(tilesets)) return null;
+  let best = null;
+  for (const ts of tilesets) {
+    const firstgid = Number(ts?.firstgid ?? 0);
+    if (!firstgid || gid < firstgid) continue;
+    if (!best || firstgid > best.firstgid) {
+      best = { ...ts, firstgid };
+    }
+  }
+  return best;
+}
+
+function getCollectableTypeFromGid(tilesets, gid) {
+  const tileset = getTilesetForGid(tilesets, Number(gid));
+  if (!tileset) return null;
+  const localTileId = Number(gid) - Number(tileset.firstgid);
+  if (!Number.isFinite(localTileId) || localTileId < 0) return null;
+  const tileProps = tileset?.tilePropertiesById?.[localTileId] ?? null;
+  const collectableType = String(tileProps?.collectableType ?? '').toLowerCase();
+  return collectableType || null;
+}
+
 function normalizeTiledRoom(roomKey, mapData) {
   const tileWidth = mapData?.tilewidth ?? CANVAS.TILE_SIZE;
   const tileHeight = mapData?.tileheight ?? CANVAS.TILE_SIZE;
@@ -156,9 +179,11 @@ function normalizeTiledRoom(roomKey, mapData) {
     }
 
     if (layer?.type === 'objectgroup' && layerName === 'collectables') {
-      normalized.collectables = (layer.objects ?? []).map((obj) =>
-        normalizeLayerObject(obj, tileWidth, tileHeight, layer.opacity ?? 1)
-      );
+      normalized.collectables = (layer.objects ?? []).map((obj) => {
+        const collectable = normalizeLayerObject(obj, tileWidth, tileHeight, layer.opacity ?? 1);
+        collectable.collectableType = getCollectableTypeFromGid(normalized.tilesets, collectable.gid);
+        return collectable;
+      });
       continue;
     }
 
@@ -462,6 +487,25 @@ export function createRoomSystem({
 
     getTileSize() {
       return { tileWidth, tileHeight };
+    },
+
+    getRoomState() {
+      return {
+        platforms,
+        hazards,
+        collectables,
+        triggers,
+        exits,
+        spawnPoints,
+        entities,
+        tileWidth,
+        tileHeight,
+        width: currentConfig?.width,
+        height: currentConfig?.height,
+        background: currentConfig?.background,
+        platformColor: currentConfig?.platformColor,
+        currentRoom
+      };
     },
 
     getBackground() {

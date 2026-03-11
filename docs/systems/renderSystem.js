@@ -38,9 +38,15 @@ export function createRenderSystem({
   getTileSize,
   getBackground,
   getPlatformColor,
+   getSonarReveals,
+   getSonarHazardReveals,
+   getSonarCollectableReveals,
+   getSonarCooldown,
   assets,
   darknessLayer,
   getLightSources,
+   getActivePulses,
+   getRevealedWalls,,
 }) {
   let elapsedTime = 0;
   const oscillationSpeed = 2; // Hz
@@ -162,6 +168,36 @@ export function createRenderSystem({
     return true;
   }
 
+   function getCollectableType(item) {
+      const explicitType = String(item?.collectableType ?? '').toLowerCase();
+      if (explicitType) return explicitType;
+
+      const gid = Number(item?.gid);
+      if (!Number.isFinite(gid) || gid <= 0) return null;
+
+      const tilesets = getTilesets?.() ?? [];
+      const tileset = getTilesetForGid(gid, tilesets);
+      if (!tileset) return null;
+
+      const localTileId = gid - Number(tileset.firstgid);
+      if (!Number.isFinite(localTileId) || localTileId < 0) return null;
+
+      const tileProps = tileset?.tilePropertiesById?.[localTileId] ?? null;
+      const type = String(tileProps?.collectableType ?? '').toLowerCase();
+      if (type) return type;
+
+      // Fallback for prototype tileset ids when metadata is absent at runtime.
+      if (localTileId === 41 || localTileId === 53) return 'health';
+      if (localTileId === 20) return 'power';
+      return null;
+   }
+
+   function getCollectableColorByType(collectableType, alpha = 220) {
+      if (collectableType === 'health') return color(80, 220, 120, alpha);
+      if (collectableType === 'power') return color(255, 225, 80, alpha);
+      return color(255, 225, 80, alpha);
+   }
+
   //===BACKGROUND===//
   function drawBackground() {
     const bg = getBackground?.();
@@ -180,7 +216,7 @@ export function createRenderSystem({
   //===TERRAIN===//
   function drawPlatforms() {
     const platforms = getPlatforms?.() ?? [];
-    const platformColor = getPlatformColor?.() ?? "#5a6e82";
+    const platformColor = getPlatformColor?.() ?? "#5a6e82ff";
 
     noStroke();
     fill(platformColor);
@@ -212,14 +248,15 @@ export function createRenderSystem({
     const collectables = getCollectables?.() ?? [];
     if (!collectables.length) return;
 
-    noStroke();
-    fill(255, 225, 80, 220);
-    for (const item of collectables) {
-      if (item.visible === false) continue;
-      if (drawSpriteFromTileset(item)) continue;
-      ellipse(item.x, item.y, Math.max(8, item.w), Math.max(8, item.h));
-    }
-  }
+      noStroke();
+      for (const item of collectables) {
+         if (item.visible === false) continue;
+         if (drawSpriteFromTileset(item)) continue;
+         const collectableType = getCollectableType(item);
+         fill(getCollectableColorByType(collectableType, 220));
+         ellipse(item.x, item.y, Math.max(8, item.w), Math.max(8, item.h));
+      }
+   }
 
   //=== TRIGGERS ===//
   function drawTriggers() {
@@ -281,17 +318,88 @@ export function createRenderSystem({
     }
   }
 
-  //===PLAYER===//
-  function drawPlayer() {
-    stroke(150, 0, 25);
-    fill(225, 0, 50);
-    rect(
-      player.getCornerX(),
-      player.getCornerY(),
-      player.getWidth(),
-      player.getHeight(),
-    );
-  }
+   //===PLAYER===//
+   function drawPlayer() {
+      push();
+      translate(player.position.x, player.position.y);
+      scale(player.facing, 1);
+
+      // Periscope
+      fill(120);
+      noStroke();
+      rect(-2, -player.w * 0.9, 4, player.w * 0.6);
+      rect(-2, -player.w * 0.9, 8, 4);
+
+      // Tail fin
+      fill(150);
+      triangle(
+         -player.w / 2, 0,
+         -player.w, -player.w / 3,
+         -player.w, player.w / 3
+      );
+
+      // Body
+      fill(255, 200, 50);
+      ellipse(0, 0, player.w * 1.2, player.w * 0.8);
+
+      // Porthole window
+      fill(100, 220, 255);
+      circle(player.w * 0.2, 0, player.w * 0.4);
+
+      pop();
+   }
+
+   //===BUBBLES===//
+   function drawBubbles() {
+      const bubbleList = player.bubbles ?? [];
+      noStroke();
+      for (const b of bubbleList) {
+         if (b.life > 0) {
+            fill(150, 220, 255, b.life);
+            circle(b.x, b.y, b.size);
+         }
+      }
+   }
+
+   //===SONAR PULSES===//
+   function drawSonarPulses() {
+      const pulses = getActivePulses?.() ?? [];
+      strokeWeight(2);
+      for (const pulse of pulses) {
+         for (const p of pulse.particles) {
+            if (p.life > 0) {
+               stroke(0, 220, 0, p.life);
+               point(p.x ?? p.pos?.x ?? 0, p.y ?? p.pos?.y ?? 0);
+            }
+         }
+      }
+   }
+
+   //===SONAR WALLS===//
+   function drawSonarWalls() {
+      const walls = getRevealedWalls?.() ?? [];
+      for (const wall of walls) {
+         if (wall.alpha > 1) {
+            // Dark background rect
+            noStroke();
+            fill(20, 25, 35, wall.alpha);
+            rect(wall.x, wall.y, wall.w, wall.h, 3);
+
+            // Rocky texture overlay
+            fill(40, 50, 65, wall.alpha);
+            const rockPoints = Array.isArray(wall.rockPoints) ? wall.rockPoints : null;
+            if (rockPoints && rockPoints.length > 1) {
+               beginShape();
+               for (const pt of rockPoints) {
+                  vertex(pt.px, pt.py);
+               }
+               endShape(CLOSE);
+            } else {
+               rect(wall.x, wall.y, wall.w, wall.h, 3);
+            }
+         }
+      }
+   }
 
   //===LIGHTING===//
   function drawLighting(lightSources = []) {
@@ -307,8 +415,10 @@ export function createRenderSystem({
       const screenX = light.x - cam.x;
       const screenY = light.y - cam.y;
 
-      const { x, y, radius, intensity = 1 } = light;
-      const scaledRadius = radius * (0.8 + 0.2 * intensity);
+      const { x, y, radius, intensity = 1, kind = 'torch' } = light;
+      const scaledRadius = kind === 'ambient'
+            ? radius * (0.85 + 0.1 * intensity)
+            : radius * (0.9 + 0.25 * intensity);
       const gradient = ctx.createRadialGradient(
         screenX,
         screenY,
@@ -317,8 +427,15 @@ export function createRenderSystem({
         screenY,
         scaledRadius,
       );
-      gradient.addColorStop(0, "rgba(255,255,255,1)");
-      gradient.addColorStop(1, "rgba(0,0,0,0)");
+         if (kind === 'ambient') {
+            gradient.addColorStop(0, 'rgba(255,255,255,0.55)');
+            gradient.addColorStop(0.6, 'rgba(255,255,255,0.18)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0)');
+         } else {
+         gradient.addColorStop(0, "rgba(255,255,255,1)");
+            gradient.addColorStop(0.25, 'rgba(255,255,255,0.85)');
+         gradient.addColorStop(1, "rgba(0,0,0,0)");
+         }
 
       ctx.fillStyle = gradient;
       ctx.beginPath();
@@ -419,6 +536,71 @@ export function createRenderSystem({
 
       rect(currentX, innerStartY, segmentW, segmentH, 2);
     }
+
+      const sonarCooldown = getSonarCooldown?.() ?? 0;
+      if (Number.isFinite(sonarCooldown) && sonarCooldown > 0) {
+         fill('#d61b1b');
+         text(`Sonar: cooling`, 20, 55);
+      } else {
+         fill('#64ff64');
+         text(`Sonar: ready (K)`, 20, 55);
+      }
+   }
+
+//======================================
+// DRAW SONAR
+//======================================
+   function drawSonarReveals() {
+      if (player?.torch?.isOn) return;
+      const reveals = getSonarReveals?.() ?? [];
+      if (!reveals.length) return;
+
+      rectMode(CORNER);
+      for (const r of reveals) {
+         const alpha = Math.max(0, Math.min(255, r.alpha ?? 0));
+         noStroke();
+         fill(90, 110, 130, alpha);
+         rect(r.x, r.y, r.w, r.h);
+
+         noFill();
+         rect(r.x, r.y, r.w, r.h);
+      }
+      rectMode(CORNER);
+   }
+
+   function drawSonarHazardReveals() {
+      if (player?.torch?.isOn) return;
+      const reveals = getSonarHazardReveals?.() ?? [];
+      if (!reveals.length) return;
+
+      rectMode(CORNER);
+      for (const r of reveals) {
+         const alpha = Math.max(0, Math.min(255, r.alpha ?? 0));
+         noStroke();
+         fill(220, 70, 70, alpha);
+         rect(r.x, r.y, r.w, r.h);
+      }
+      rectMode(CORNER);
+   }
+
+   function drawSonarCollectableReveals() {
+      if (player?.torch?.isOn) return;
+      const reveals = getSonarCollectableReveals?.() ?? [];
+      if (!reveals.length) return;
+
+      for (const r of reveals) {
+         const alpha = Math.max(0, Math.min(255, r.alpha ?? 0));
+         noStroke();
+         const collectableType = getCollectableType(r);
+         if (collectableType === 'health') {
+            fill(80, 220, 120, alpha);
+         } else if (collectableType === 'power') {
+            fill(255, 225, 80, alpha);
+         } else {
+            fill(getCollectableColorByType(null, alpha));
+         }
+         ellipse(r.x + r.w / 2, r.y + r.h / 2, Math.max(8, r.w), Math.max(8, r.h));
+      }
   }
 
   //======================================
@@ -457,12 +639,18 @@ export function createRenderSystem({
       drawTriggers();
       drawEntities();
       drawSpawnPoints();
+            drawSonarWalls();
+            drawSonarPulses();
+            drawBubbles();
       drawPlayer();
       debugHitbox(DEBUG_COLOR.DRAW);
 
       pop();
 
       // drawLighting(lightSources);
+            drawSonarReveals();
+            drawSonarHazardReveals();
+            drawSonarCollectableReveals();
       drawUI();
     },
   };

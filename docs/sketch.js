@@ -23,6 +23,7 @@ import { createPhysicsSystem } from "./systems/physicsSystem.js";
 import { createTorchSystem } from "./systems/torchSystem.js";
 import { createRenderSystem } from "./systems/renderSystem.js";
 import { createLightingSystem } from "./systems/lightingSystem.js";
+import { createSonarSystem } from './systems/sonarSystem.js';
 import { createRoomSystem } from "./systems/roomSystem.js";
 import { CANVAS, PLAYER, TORCH } from "./config.js";
 import { Player } from "./entities/player.js";
@@ -39,6 +40,7 @@ let inputSystem;
 let playerSystem;
 let physicsSystem;
 let torchSystem;
+let sonarSystem;
 let renderSystem;
 let lightingSystem;
 let roomSystem;
@@ -92,7 +94,61 @@ function tilesetSourceToImagePath(source) {
   // backgrounds.tsx is an image collection (no single .png atlas file to load).
   if (String(source).toLowerCase().endsWith("backgrounds.tsx")) return null;
   const pngSource = source.replace(/\.tsx$/i, ".png");
-  return normalizeRelativePath("data/rooms", pngSource);
+  return normalizeRelativePath('data/rooms', pngSource);
+}
+
+function parseTsxTileProperties(xmlText) {
+  if (!xmlText || typeof DOMParser === 'undefined') return {};
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlText, 'application/xml');
+  const byId = {};
+  const tileNodes = Array.from(doc.querySelectorAll('tile'));
+
+  for (const tileNode of tileNodes) {
+    const localId = Number(tileNode.getAttribute('id'));
+    if (!Number.isFinite(localId)) continue;
+
+    const props = {};
+    const propertyNodes = Array.from(tileNode.querySelectorAll('properties > property'));
+    for (const propNode of propertyNodes) {
+      const name = propNode.getAttribute('name');
+      if (!name) continue;
+      const valueAttr = propNode.getAttribute('value');
+      props[name] = valueAttr ?? propNode.textContent ?? '';
+    }
+    if (Object.keys(props).length) {
+      byId[localId] = props;
+    }
+  }
+
+  return byId;
+}
+
+function parseTsxTileProperties(xmlText) {
+  if (!xmlText || typeof DOMParser === 'undefined') return {};
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlText, 'application/xml');
+  const byId = {};
+  const tileNodes = Array.from(doc.querySelectorAll('tile'));
+
+  for (const tileNode of tileNodes) {
+    const localId = Number(tileNode.getAttribute('id'));
+    if (!Number.isFinite(localId)) continue;
+
+    const props = {};
+    const propertyNodes = Array.from(tileNode.querySelectorAll('properties > property'));
+    for (const propNode of propertyNodes) {
+      const name = propNode.getAttribute('name');
+      if (!name) continue;
+      const valueAttr = propNode.getAttribute('value');
+      props[name] = valueAttr ?? propNode.textContent ?? '';
+    }
+    if (Object.keys(props).length) {
+      byId[localId] = props;
+    }
+  }
+
+  return byId;
 }
 
 function getMapProperty(mapData, key, fallback = null) {
@@ -225,9 +281,29 @@ function preload() {
     roomData[roomId] = loadJSON(`data/rooms/${roomId}.json`);
   }
 
+  const tilePropsBySourcePath = {};
+  for (const room of Object.values(roomData)) {
+    for (const tileset of room?.tilesets ?? []) {
+      const sourcePath = normalizeRelativePath('data/rooms', tileset?.source ?? '');
+      if (!sourcePath.toLowerCase().endsWith('.tsx')) continue;
+      if (tilePropsBySourcePath[sourcePath]) continue;
+
+      const tsxLines = loadStrings(sourcePath) ?? [];
+      tilePropsBySourcePath[sourcePath] = parseTsxTileProperties(tsxLines.join('\n'));
+    }
+  }
+
+  for (const room of Object.values(roomData)) {
+    for (const tileset of room?.tilesets ?? []) {
+      const sourcePath = normalizeRelativePath('data/rooms', tileset?.source ?? '');
+      tileset.tilePropertiesById = tilePropsBySourcePath[sourcePath] ?? {};
+    }
+  }
+
   const imageNames = new Set();
   for (const room of Object.values(roomData)) {
     const imageName = getBackgroundImageName(room);
+    
     if (imageName) imageNames.add(imageName);
   }
 
@@ -297,8 +373,12 @@ function setup() {
   syncCanvasToCurrentRoom();
   const playerStart = roomSystem.getPlayerStart();
   if (playerStart) {
-    player.setCurrentPosition(playerStart.x, playerStart.y);
+    player.setCurrentPosition(playerStart.x, playerStart.y); 
   }
+
+  // darknessLayer = createGraphics(width, height);
+
+  darknessLayer = createGraphics(width, height);
 
   // init the camera system
   cameraSystem = createCameraSystem(player, () => {
@@ -309,12 +389,19 @@ function setup() {
   menuSystem = createMenuSystem();
   inputSystem = createInputSystem(player);
   playerSystem = createPlayerSystem(player);
-  physicsSystem = createPhysicsSystem(player, () => roomSystem.getPlatforms());
+  physicsSystem = createPhysicsSystem(player, () => roomSystem.getRoomState());
   torchSystem = createTorchSystem(player.torch, player, {
     drainRate: TORCH.DRAIN_RATE,
   });
 
-  lightingSystem = createLightingSystem(player, []);
+  sonarSystem = createSonarSystem(
+    player,
+    () => roomSystem.getPlatforms(),
+    () => roomSystem.getHazards(),
+    () => roomSystem.getCollectables()
+  );
+
+  lightingSystem = createLightingSystem(player);
 
   resourceManagementSystem = createResourceManagementSystem(player, roomSystem);
 
@@ -342,15 +429,22 @@ function setup() {
     getTileSize: () => roomSystem.getTileSize(),
     getBackground: () => roomSystem.getBackground(),
     getPlatformColor: () => roomSystem.getPlatformColor(),
+    getSonarCooldown: () => sonarSystem?.getCooldownPercent?.(),
+    getSonarReveals: () => sonarSystem?.getRevealedWalls?.(),
+    getSonarHazardReveals: () => sonarSystem?.getRevealedHazards?.(),
+    getSonarCollectableReveals: () => sonarSystem?.getRevealedCollectables?.(),
     assets,
     darknessLayer,
-    getLightSources: () => lightingSystem.getLightSources(),
+    getLightSources: () => lightingSystem.getLightSources(),,
+    getActivePulses: () => sonarSystem.getActivePulses(),
+    getRevealedWalls: () => sonarSystem.getRevealedWalls(),
   });
 
   engine = new Engine();
   engine.register(inputSystem);
   engine.register(playerSystem);
   engine.register(physicsSystem);
+  engine.register(sonarSystem);
   engine.register(torchSystem);
   engine.register(roomSystem);
   engine.register(cameraSystem);
@@ -377,22 +471,6 @@ function draw() {
 
 function keyPressed() {
   inputSystem.onKeyPressed?.(key, keyCode);
-}
-
-function mousePressed() {
-  if (gameState === "START_MENU") {
-    const clickedButton = menuSystem.checkClick(mouseX, mouseY);
-
-    if (clickedButton === "EASY") {
-      // Load the easy map and start!
-      roomSystem.goToRoom("roomA", { spawnId: "default" });
-      gameState = "PLAYING";
-    } else if (clickedButton === "HARD") {
-      // Load the hard map and start!
-      roomSystem.goToRoom("roomB", { spawnId: "default" });
-      gameState = "PLAYING";
-    }
-  }
 }
 
 window.preload = preload;

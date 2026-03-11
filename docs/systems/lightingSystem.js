@@ -29,7 +29,7 @@ DEPENDENCIES:
 - Uses torch.getIntensity(powerPercent) for smooth light intensity
 
 USAGE:
-const lightingSystem = createLightingSystem(player, enemies);
+const lightingSystem = createLightingSystem(player, enemies, etc. = []);
 const lightSources = lightingSystem.getLightSources();
 ========================================
 NOTES:
@@ -46,27 +46,43 @@ TODO / LIMITATIONS:
 //======================================
 // LIGHTING SYSTEM
 //======================================
-export function createLightingSystem(player = []) {
+import { LIGHTING } from '../config.js';
+
+export function createLightingSystem(player = [], getSonarLights = () => []) {
    return {
 
       //--- GET LIGHT SOURCES ---//
       getLightSources() {
-         const lightSources = [];
+         if (!player) return [];
+         const x = player.position?.x ?? player.x ?? 0;
+         const y = player.position?.y ?? player.y ?? 0;
 
          // Player torch
-         if (player.torch.isOn) {
-            const intensity = player.torch.getIntensity(player.power.getPercent());
+         if (player.torch?.isOn) {
+            const intensity = player.torch.getIntensity(player.power?.getPercent?.() ?? 0);
             if (intensity > 0) {
-               lightSources.push({
-                  x: player.position.x,
-                  y: player.position.y,
+               return [{
+                  kind: 'torch',
+                  x,
+                  y,
                   radius: player.torch.radius,
                   intensity
-               });
+               }];
             }
          }
-// bioluminent blob
-         return lightSources;
+
+         const ambientRadius = LIGHTING?.PLAYER_AMBIENT?.radius ?? 0;
+         const ambientIntensity = LIGHTING?.PLAYER_AMBIENT?.brightness ?? 0;
+         if (ambientRadius > 0 && ambientIntensity > 0) {
+            return [{
+               kind: 'ambient',
+               x,
+               y,
+               radius: ambientRadius,
+               intensity: ambientIntensity
+            }];
+         }
+         return [];
       }
    };
 }

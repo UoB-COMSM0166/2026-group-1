@@ -38,16 +38,32 @@ engine.register(playerSystem); // playerSystem consumes this class
 //======================
 // PLAYER CLASS
 //======================
-import { PowerSystem } from '../systems/powerSystem.js';
-import { Torch } from './components/torch.js';  // torch class in same folder
 import { TORCH } from '../config.js';
+import { LIGHTING } from '../config.js';
+import { PLAYER } from '../config.js';
+import { Torch } from './components/torch.js';  // torch class in same folder
+import { PowerSystem } from '../systems/powerSystem.js';
 import { Hitbox } from '../systems/hitboxSystem.js';
 
 export class Player extends Hitbox{
-   constructor(x, y, w, h){
-      super(x, y, w, h);
+   constructor(xOrConfig, y, w, h){
+      const usingConfigObject = typeof xOrConfig === 'object' && xOrConfig !== null;
+      const startX = usingConfigObject ? (xOrConfig.START_X ?? 0) : xOrConfig;
+      const startY = usingConfigObject ? (xOrConfig.START_Y ?? 0) : y;
+      const width = usingConfigObject ? (xOrConfig.WIDTH ?? PLAYER.WIDTH) : w;
+      const height = usingConfigObject ? (xOrConfig.HEIGHT ?? PLAYER.HEIGHT) : h;
+
+      // Hitbox expects corner coordinates; player start points are center-like in current room flow.
+      const cornerX = (startX ?? 0) - (width ?? 0) / 2;
+      const cornerY = (startY ?? 0) - (height ?? 0) / 2;
+
+      super(cornerX, cornerY, width ?? PLAYER.WIDTH, height ?? PLAYER.HEIGHT);
+
       this.nextPos = createVector(this.position.x, this.position.y);
       this.velocity = createVector(0, 0);
+
+      this.size = PLAYER.SIZE;
+      this.facing = 1; // 1 for right, -1 for left
 
       this.torch = new Torch(TORCH);
       this.power = new PowerSystem();
@@ -60,8 +76,24 @@ export class Player extends Hitbox{
          up: false,
          down: false,
       };
-
-      this.toggleTorchIntent = false;
+      this.actionIntent = {
+         toggleTorch: false,
+         //sonar
+         //missile
+      };
+   
+   }
+   get x(){
+      return this.position.x;
+   }
+   set x(value){
+      this.position.x = value;
+   }
+   get y(){
+      return this.position.y;
+   }
+   set y(value){
+      this.position.y = value;
    }
    setCurrentPosition(x, y){
       this.position.x = x;
@@ -70,35 +102,66 @@ export class Player extends Hitbox{
       this.nextPos.x = x;
       this.nextPos.y = y;
    }
+   setVelocityX(x = 0){
+      this.velocity.x = x;
+   }
+   setVelocityY(y = 0){
+      this.velocity.y = y;
+   }
    setNextPosition(){
-      if(this.moveIntent.right){this.nextPos.x += this.velocity.x}
-      if(this.moveIntent.left){this.nextPos.x -= this.velocity.x}
-      if(this.moveIntent.up){this.nextPos.y -= this.velocity.y}
-      if(this.moveIntent.down){this.nextPos.y += this.velocity.y}
-      this.resetMoveIntent();
-  }
+      this.nextPos.x = this.position.x + this.velocity.x;
+      this.nextPos.y = this.position.y + this.velocity.y;
+   }
    movePlayer(){
       this.position.x = this.nextPos.x;
       this.position.y = this.nextPos.y;
-   }
-   setVelocityX(x=0){
-      this.velocity.x = x;
-   }
-   setVelocityY(y=0){
-      this.velocity.y = y;
    }
    getMoveIntent(){
       return this.moveIntent;
    }
    switchTorch(){
-      this.toggleTorchIntent = true;
+      this.actionIntent.toggleTorch = true;
+   }
+   requestAction(actionKey){
+      if (!this.actionIntent || !(actionKey in this.actionIntent)) return;
+      this.actionIntent[actionKey] = true;
+   }
+   consumeAction(actionKey){
+      if (!this.actionIntent || !(actionKey in this.actionIntent)) return false;
+      const requested = this.actionIntent[actionKey] === true;
+      this.actionIntent[actionKey] = false;
+      return requested;
+   }
+   getLightSources(){
+      const powerPercent = this.power?.getPercent?.() ?? 0;
+      const torchIntensity = this.torch?.getIntensity?.(powerPercent) ?? 0;
+      const sources = [];
+
+      if (torchIntensity > 0) {
+         sources.push({
+            x: this.x,
+            y: this.y,
+            radius: this.torch.radius,
+            intensity: torchIntensity
+         });
+      }
+
+      if (LIGHTING?.PLAYER_AMBIENT?.radius && LIGHTING?.PLAYER_AMBIENT?.brightness) {
+         sources.push({
+            x: this.x,
+            y: this.y,
+            radius: LIGHTING.PLAYER_AMBIENT.radius,
+            intensity: LIGHTING.PLAYER_AMBIENT.brightness
+         });
+      }
+
+      return sources;
    }
    resetMoveIntent(){
       for(let i in this.moveIntent){
          this.moveIntent[i] = false;
       }
    }
-   // add getter functions for player specific variables
 };
 
 //======================================
