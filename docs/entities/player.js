@@ -84,16 +84,6 @@ export class Player extends Hitbox{
       this.actionIntent = {
          toggleTorch: false,
          emitSonar: false,
-         fireMissile: false,
-      };
-
-      // Resource tracking
-      this.coins = PLAYER.STARTING_COINS ?? 0;
-      this.missiles = 0;
-      this.upgrades = {
-         power: 1,
-         torch: 1,
-         sonar: 1,
       };
    
    }

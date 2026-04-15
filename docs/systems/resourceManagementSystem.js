@@ -2,7 +2,7 @@
 =========================================
 VERSION: 3.3
 SYSTEM: RESOURCE MANAGEMENT SYSTEM
-AUTHOR: Monal Gupta, Archie Brown
+AUTHOR: Monal Gupta
 DESCRIPTION:
 - Handles player's resources and interactions with resource entities in the room.
 - Collectables: one-shot collection with type-based handlers
@@ -68,8 +68,8 @@ export function createResourceManagementSystem(
     if (!best) return null;
 
     const localTileId = gid - best.firstgid;
-    if (localTileId === 20) return 'coin';
-    if (localTileId === 41 || localTileId === 53) return 'health';
+    if (localTileId === 20) return "power";
+    if (localTileId === 41 || localTileId === 53) return "health";
     return null;
   }
 
@@ -86,17 +86,14 @@ export function createResourceManagementSystem(
   // Moved game logic from sketch.js to here
   //======================================
   const handlers = {
-
-    // Comment out whilst working on coins (replaced power with health for now)
-
-    // power(player, item) {
-    //   const difficulty = getDifficulty?.() ?? 'normal';
-    //   const amount = difficulty === 'hard' ? 5 : 10;
-    //   player.power.current = Math.max(
-    //     0,
-    //     Math.min(player.power.current + amount, player.power.maxPower)
-    //   );
-    // },  
+    power(player, item) {
+      const difficulty = getDifficulty?.() ?? "normal";
+      const amount = difficulty === "hard" ? 5 : 10;
+      player.power.current = Math.max(
+        0,
+        Math.min(player.power.current + amount, player.power.maxPower),
+      );
+    },
     health(player, item) {
       const difficulty = getDifficulty?.() ?? "normal";
       const amount = difficulty === "hard" ? 2 : 5;
@@ -105,17 +102,13 @@ export function createResourceManagementSystem(
         Math.min(player.power.current + amount, player.power.maxPower),
       );
     },
-    coin(player, item) {
-      player.coins += 100;
-    }
   };
 
   //======================================
   // HAZARD OVERLAP + DRAIN
   //  penalty on first contact, then continuous drain while on hazard
   //======================================
-  // TODO: move this to a different system to do with player entity interactions
-  function processHazards(deltaTime) {
+  function processHazards(fixedDeltaTime) {
     const hazards = getHazards ? getHazards() : [];
 
     for (const h of hazards) {

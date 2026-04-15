@@ -26,6 +26,17 @@ export function createMenuSystem() {
 
   const btnY = CANVAS.HEIGHT / 2;
   const settingsY = btnY + btnHeight + 20;
+  const hoverSettings =
+    mouseX > startX &&
+    mouseX < startX + totalWidth &&
+    mouseY > settingsY &&
+    mouseY < settingsY + btnHeight;
+
+  fill(hoverSettings ? color(60, 140, 220) : color(30, 100, 180));
+  rect(startX, settingsY, totalWidth, btnHeight, 10);
+
+  fill(255);
+  text("SETTINGS", startX + totalWidth / 2, settingsY + btnHeight / 2);
 
   return {
     draw(titleImage) {
@@ -77,7 +88,6 @@ export function createMenuSystem() {
       fill(255);
       text("HARD", btnHardX + btnWidth / 2, btnY + btnHeight / 2);
 
-      // 5. SETTINGS Button
       const hoverSettings =
         mouseX > startX &&
         mouseX < startX + totalWidth &&

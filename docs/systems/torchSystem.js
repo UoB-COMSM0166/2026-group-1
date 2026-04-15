@@ -28,7 +28,7 @@ RESPONSIBILITIES:
 DEPENDENCIES:
 - torch object (instance of Torch)
 - player object with a power system
-- Config object for drain rate (POWER.DRAIN_RATE)
+- Config object for drain rate (TORCH.DRAIN_RATE)
 
 USAGE:
 import { createTorchSystem } from './torchSystem.js';
@@ -51,17 +51,11 @@ TODO / LIMITATIONS:
 //======================
 // TORCH SYSTEM
 //======================
-import { POWER, TORCH } from '../config.js';
+import { TORCH } from '../config.js';
 
-export function createTorchSystem(torch, player, { drainRate = POWER.DRAIN_RATE, getDifficulty = () => 'normal' } = {}) {
-  const baseRadius = TORCH.RADIUS;
-  const upgradeBonusPerLevel = TORCH.UPGRADE_RADIUS_BONUS ?? 20;
-  const reducedRadius = TORCH.MIN_RADIUS_WHEN_DRAINED ?? 50;
-
-  function getUpgradedRadius() {
-    const torchLevel = Math.max(1, player?.upgrades?.torch ?? 1);
-    return baseRadius + (torchLevel - 1) * upgradeBonusPerLevel;
-  }
+export function createTorchSystem(torch, player, { drainRate = TORCH.DRAIN_RATE, getDifficulty = () => 'normal' } = {}) {
+  const fullRadius = TORCH.RADIUS;
+  const reducedRadius = 50;
 
   return {
     //---UPDATE---//
@@ -95,7 +89,7 @@ export function createTorchSystem(torch, player, { drainRate = POWER.DRAIN_RATE,
       if (player.power.isEmpty()) {
         torch.radius = reducedRadius;
       } else {
-        torch.radius = getUpgradedRadius();
+        torch.radius = fullRadius;
       }
     }
   };

@@ -48,34 +48,44 @@ import { PLAYER } from '../config.js';
 
 export function createPlayerSystem(player) {
   return {
-    update(deltaTime) {
-      // Apply drag
-      player.velocity.x *= PLAYER.DRAG;
-      player.velocity.y *= PLAYER.DRAG;
+    update(fixedDeltaTime) {
 
-      // Apply acceleration based on intent
+      let velocityX;
+      let velocityY;
+      let normalizedSpeed;
+      let normalizedAcceleration;
+
+      normalizedSpeed = PLAYER.MAX_SPEED * fixedDeltaTime;
+      normalizedAcceleration = PLAYER.ACCELERATION * fixedDeltaTime;
+
+      if((Object.values(player.getMoveIntent()).some(Boolean))){
+        velocityX = normalizedAcceleration;
+        velocityY = normalizedAcceleration;
+      }else{
+        player.velocity.x *= Math.pow(PLAYER.FRICTION, fixedDeltaTime);
+        player.velocity.y *= Math.pow(PLAYER.FRICTION, fixedDeltaTime);
+      }
+
       if (player.moveIntent.right) {
-        player.velocity.x += PLAYER.ACCELERATION;
+        player.velocity.x += velocityX;
         player.facing = 1;
       }
       if (player.moveIntent.left) {
-        player.velocity.x -= PLAYER.ACCELERATION;
+        player.velocity.x -= velocityX;
         player.facing = -1;
       }
       if (player.moveIntent.up) {
-        player.velocity.y -= PLAYER.ACCELERATION;
+        player.velocity.y -= velocityY;
       }
       if (player.moveIntent.down) {
-        player.velocity.y += PLAYER.ACCELERATION;
+        player.velocity.y += velocityY;
       }
-
-      // Clamp velocity
-      const maxSpeed = PLAYER.MOVE_SPEED / 60;
-      player.velocity.x = constrain(player.velocity.x, -maxSpeed, maxSpeed);
-      player.velocity.y = constrain(player.velocity.y, -maxSpeed, maxSpeed);
+      
+      player.velocity.x = constrain(player.velocity.x, -normalizedSpeed, normalizedSpeed);
+      player.velocity.y = constrain(player.velocity.y, -normalizedSpeed, normalizedSpeed);
 
       // Bubble trail — spawn behind submarine when moving
-      const dt = Math.max(0, deltaTime ?? 16);
+      const dt = Math.max(0, fixedDeltaTime * 1000 ?? 16);
       const isMoving = Math.abs(player.velocity.x) > 0.1 || Math.abs(player.velocity.y) > 0.1;
       if (isMoving && Math.random() < 0.4) {
         const backX = player.position.x - player.facing * player.w * 0.8;

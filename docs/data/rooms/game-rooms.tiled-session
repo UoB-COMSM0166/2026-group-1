@@ -3,39 +3,13 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "untitled.tmj",
+    "activeFile": "roomA.json",
     "expandedProjectPaths": [
-        ".",
         "tilesets/prototype-tileset",
+        ".",
         "tilesets"
     ],
-    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
-        "/Users/archiebrown/2026-group-1/docs/assets/backgrounds/backgrounds.tsx": {
-            "dynamicWrapping": true,
-            "scaleInDock": 0.27
-        },
-        "/Users/archiebrown/2026-group-1/docs/data/tilesets/Cave textures/CaveG.tsx": {
-            "dynamicWrapping": false
-        },
-        "/Users/archiebrown/2026-group-1/docs/data/tilesets/Cave textures/ParallaxCave1.tsx": {
-            "dynamicWrapping": false
-        },
-        "/Users/archiebrown/2026-group-1/docs/data/tilesets/prototype-tileset/prototype-tileset.tsx": {
-            "dynamicWrapping": false,
-            "scaleInDock": 1
-        },
-        "/Users/archiebrown/2026-group-1/docs/mapdata/tilesets/Cave textures/CaveG.tsx": {
-            "dynamicWrapping": false,
-            "scaleInDock": 0.9559
-        },
-        "/Users/archiebrown/2026-group-1/docs/mapdata/tilesets/Cave textures/ParallaxCave1.tsx": {
-            "scaleInDock": 0.1687
-        },
-        "/Users/archiebrown/2026-group-1/docs/mapdata/tilesets/prototype-tileset/prototype-tileset.tsx": {
-            "dynamicWrapping": false,
-            "scaleInDock": 1.1716
-        },
         "/Users/georgia/COMSCI/SEP/backgrounds.tsx": {
             "scaleInDock": 1
         },
@@ -71,79 +45,65 @@
         },
         "roomA.json": {
             "expandedObjectLayers": [
-                9,
                 5,
+                9,
                 8,
-                2,
-                7
+                7,
+                2
             ],
-            "scale": 0.6038,
-            "selectedLayer": 1,
+            "scale": 0.9923,
+            "selectedLayer": 7,
             "viewCenter": {
-                "x": 400.7949652202716,
-                "y": 400.7949652202717
+                "x": 339.6150357754711,
+                "y": 380.93318552856994
             }
         },
         "roomB.json": {
             "expandedObjectLayers": [
-                3,
                 5,
-                8,
                 4,
-                2,
-                6
+                3,
+                6,
+                8,
+                2
             ],
-            "scale": 0.76,
+            "scale": 0.77,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 239.4736842105263,
-                "y": 552.6315789473684
+                "x": 240.25974025974028,
+                "y": 559.7402597402598
             }
-        },
-        "roomB.json#prototype": {
-            "scaleInDock": 1
         },
         "tilesets/prototype-tileset/protoype-tileset.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1,
             "scaleInEditor": 1.96
-        },
-        "untitled.tmj": {
-            "scale": 0.946,
-            "selectedLayer": 1,
-            "viewCenter": {
-                "x": 125.79281183932346,
-                "y": 318.1818181818182
-            }
         }
     },
-    "last.externalTilesetPath": "/Users/archiebrown/2026-group-1/docs/mapdata/tilesets/Cave textures",
+    "last.externalTilesetPath": "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset",
     "last.imagePath": "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/backgrounds",
-    "map.height": 16,
+    "map.height": 70,
     "map.lastUsedFormat": "json",
     "map.layerDataFormat": "3",
-    "map.tileHeight": 32,
-    "map.tileWidth": 32,
-    "map.width": 16,
-    "mapScene.enableWorlds": false,
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
     "openFiles": [
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/backgrounds/backgrounds.tsx",
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/prototype-tileset.tsx",
         "roomB.json",
-        "roomA.json",
-        "untitled.tmj"
+        "roomA.json"
     ],
     "project": "game-rooms.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "roomB.json",
-        "roomA.json",
-        "untitled.tmj",
         "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/backgrounds/backgrounds.tsx",
         "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/prototype-tileset.tsx",
+        "roomB.json",
+        "roomA.json",
         "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/protoype-tileset.tsx",
         "tilesets/prototype-tileset/protoype-tileset.tsx",
         "/Users/georgia/COMSCI/SEP/roomB.tmj"
     ],
-    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
     "tileset.lastUsedFormat": "tsx",
     "tileset.type": 1
 }
