@@ -76,8 +76,8 @@ export function createLightingSystem(player = null, getSonarLights = () => []) {
                kind: 'ambient',
                x,
                y,
-               radius: LIGHTING.PLAYER_AMBIENT.radius,
-               intensity: LIGHTING.PLAYER_AMBIENT.brightness
+               radius: LIGHTING.PLAYER_AMBIENT.RADIUS,
+               intensity: LIGHTING.PLAYER_AMBIENT.BRIGHTNESS
             });
          }
 

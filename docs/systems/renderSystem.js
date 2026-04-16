@@ -413,17 +413,29 @@ export function createRenderSystem({
          const screenX = (x - cam.x) * camScale;
          const screenY = (y - cam.y) * camScale;
          const scaledRadius = radius * (0.8 + 0.2 * intensity) * camScale;
+         // prevents crash when using PLAYER.WIDTH in config
+         if (!Number.isFinite(screenX) || !Number.isFinite(screenY) || !Number.isFinite(scaledRadius) || scaledRadius <= 0) continue;
          const gradient = ctx.createRadialGradient(
             screenX, screenY, scaledRadius * 0.1,
             screenX, screenY, scaledRadius
          );
          if (kind === 'ambient') {
             gradient.addColorStop(0, 'rgba(255,255,255,0.55)');
-            gradient.addColorStop(0.6, 'rgba(255,255,255,0.18)');
+            gradient.addColorStop(0.25, 'rgba(255,255,255,0.3)');
+            gradient.addColorStop(0.5, 'rgba(255,255,255,0.15)');
+            gradient.addColorStop(0.65, 'rgba(255,255,255,0.1)');
+            gradient.addColorStop(0.9, 'rgba(255,255,255,0.05)');
             gradient.addColorStop(1, 'rgba(0,0,0,0)');
          } else {
+            //torch light
             gradient.addColorStop(0, 'rgba(255,255,255,1)');
-            gradient.addColorStop(0.25, 'rgba(255,255,255,0.85)');
+            gradient.addColorStop(0.005, 'rgba(255,255,255,8)');
+            gradient.addColorStop(0.01, 'rgba(255,255,255,7)');
+            gradient.addColorStop(0.1, 'rgba(255,255,255,0.65)');
+            gradient.addColorStop(0.25, 'rgba(255,255,255,0.4)');
+            gradient.addColorStop(0.45, 'rgba(255,255,255,0.35)');
+            gradient.addColorStop(0.7, 'rgba(255,255,255,0.1)');
+            gradient.addColorStop(0.85, 'rgba(255,255,255,0.05)');
             gradient.addColorStop(1, 'rgba(0,0,0,0)');
          }
 
