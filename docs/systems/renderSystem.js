@@ -318,7 +318,7 @@ export function createRenderSystem({
 
 
    //===PLAYER===//
-   function drawPlayer() {
+   function drawPlayer(alpha) {
       push();
       translate(renderInterpolate(player.previousPos.x, player.position.x, alpha), renderInterpolate(player.previousPos.y, player.position.y, alpha));
       scale(player.facing, 1);
@@ -373,6 +373,10 @@ export function createRenderSystem({
          pulse?.show?.();
       }
       pop();
+      // Explicit reset — push/pop does not reliably restore blendMode in all p5.js builds
+      if (typeof blendMode === 'function' && typeof BLEND !== 'undefined') {
+         blendMode(BLEND);
+      }
    }
 
    //===SONAR WALLS===//
@@ -451,18 +455,35 @@ export function createRenderSystem({
 
    //===UI===//
    function drawUI() {
-      fill(255);
+      push();
+
+      // Panel backdrop — drawn in absolute screen space, unaffected by camera
+      const panelX = 16;
+      const panelY = 16;
+      const panelW = 220;
+      const panelH = 68;
       noStroke();
-      text(`Power: ${Math.round(player.power.current)}`, 20, 30);
+      fill(0, 0, 0, 160);
+      rect(panelX, panelY, panelW, panelH, 6);
+
+      // Text
+      textSize(22);
+      textAlign(LEFT, TOP);
+
+      const power = player?.power?.current ?? 0;
+      fill(255, 220, 60);
+      text(`Power: ${Math.round(power)}`, panelX + 12, panelY + 10);
 
       const sonarCooldown = getSonarCooldown?.() ?? 0;
       if (Number.isFinite(sonarCooldown) && sonarCooldown > 0) {
-         fill('#d61b1b');
-         text(`Sonar: cooling`, 20, 55);
+         fill(220, 60, 60);
+         text(`Sonar: cooling`, panelX + 12, panelY + 38);
       } else {
-         fill('#64ff64');
-         text(`Sonar: ready (K)`, 20, 55);
+         fill(80, 220, 100);
+         text(`Sonar: ready (K)`, panelX + 12, panelY + 38);
       }
+
+      pop();
    }
 
 //======================================

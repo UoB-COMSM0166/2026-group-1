@@ -467,6 +467,8 @@ function setup() {
 
 function draw() {
   frameRate(GAME.FPS);
+  // Draw-loop health check — remove once confirmed stable
+  if (frameCount % 60 === 0) console.log('[draw] frame', frameCount, '| fps:', Math.round(frameRate()));
   if (gameState === "MENU") {
     menuSystem.draw(null);
     return;
@@ -507,9 +509,12 @@ function draw() {
     // Render last frame + pause overlay only
     pauseMenuSystem.draw();
   } else {
-    engine.update(deltaTime);
-    renderSystem?.draw?.(deltaTime, 1);
-    drawHudPanel();
+    while (accumulator >= TIME.fixedDeltaTime) {
+      engine.update(TIME.fixedDeltaTime);
+      accumulator -= TIME.fixedDeltaTime;
+    }
+    alpha = accumulator / TIME.fixedDeltaTime;
+    renderSystem?.draw?.(alpha);
   }
 }
 
