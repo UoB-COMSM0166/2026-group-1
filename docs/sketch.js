@@ -64,7 +64,7 @@ const WIN_STATE = "WIN";
 let assets = {};
 const INITIAL_ROOM_ID = "startArea";
 // NOTE: Some rooms are placeholders (see docs/data/rooms/*.json) so the build runs end-to-end.
-const ROOM_IDS = ["startArea", "spikeMaze", "tunnel", "crabCaverns", "deepCaverns",
+const ROOM_IDS = ["roomA", "roomB", "startArea", "spikeMaze", "tunnel", "crabCaverns", "deepCaverns",
                   "theDrop", "endlessAbyss", "theBiolume", "jellyfishAtrium", "theSurface"];
 const roomData = {};
 const FIT_CANVAS_TO_ROOM = false;
@@ -101,12 +101,12 @@ function normalizeRelativePath(basePath, relativePath) {
   return baseParts.join("/");
 }
 
-function tilesetSourceToImagePath(source) {
+function tilesetSourceToImagePath(source, mapDir = "data/rooms") {
   if (!source) return null;
   // backgrounds.tsx is an image collection (no single .png atlas file to load).
   if (String(source).toLowerCase().endsWith("backgrounds.tsx")) return null;
   const pngSource = source.replace(/\.tsx$/i, ".png");
-  return normalizeRelativePath("data/rooms", pngSource);
+  return normalizeRelativePath(mapDir, pngSource);
 }
 
 function parseTsxTileProperties(xmlText) {
@@ -227,9 +227,11 @@ function ensureRoomAssetsLoaded(roomId) {
     assets[backgroundImageName] = loadImage(backgroundPath);
   }
 
+  const mapDir = roomMapDir(roomId);
   for (const tileset of room?.tilesets ?? []) {
-    const imagePath = tilesetSourceToImagePath(tileset?.source);
+    const imagePath = tilesetSourceToImagePath(tileset?.source, mapDir);
     if (!imagePath) continue;
+    tileset.resolvedImagePath = imagePath;
     const key = `tileset:${imagePath}`;
     if (!assets[key]) {
       assets[key] = loadImage(imagePath);
@@ -264,18 +266,20 @@ function syncCanvasToCurrentRoom() {
   applyDisplayScale();
 }
 
+function roomMapDir(_roomId) {
+  return `data/rooms`;
+}
+
 function preload() {
   for (const roomId of ROOM_IDS) {
     roomData[roomId] = loadJSON(`data/rooms/${roomId}.json`);
   }
 
   const tilePropsBySourcePath = {};
-  for (const room of Object.values(roomData)) {
+  for (const [roomId, room] of Object.entries(roomData)) {
+    const mapDir = roomMapDir(roomId);
     for (const tileset of room?.tilesets ?? []) {
-      const sourcePath = normalizeRelativePath(
-        "data/rooms",
-        tileset?.source ?? "",
-      );
+      const sourcePath = normalizeRelativePath(mapDir, tileset?.source ?? "");
       if (!sourcePath.toLowerCase().endsWith(".tsx")) continue;
       if (tilePropsBySourcePath[sourcePath]) continue;
 
@@ -286,13 +290,14 @@ function preload() {
     }
   }
 
-  for (const room of Object.values(roomData)) {
+  for (const [roomId, room] of Object.entries(roomData)) {
+    const mapDir = roomMapDir(roomId);
     for (const tileset of room?.tilesets ?? []) {
-      const sourcePath = normalizeRelativePath(
-        "data/rooms",
-        tileset?.source ?? "",
-      );
+      const sourcePath = normalizeRelativePath(mapDir, tileset?.source ?? "");
       tileset.tilePropertiesById = tilePropsBySourcePath[sourcePath] ?? {};
+      // Attach the resolved image path so the render system can look it up
+      // without needing to re-derive the map directory at draw time.
+      tileset.resolvedImagePath = tilesetSourceToImagePath(tileset?.source, mapDir);
     }
   }
 
@@ -317,9 +322,10 @@ function preload() {
   }
 
   const tilesetImagePaths = new Set();
-  for (const room of Object.values(roomData)) {
+  for (const [roomId, room] of Object.entries(roomData)) {
+    const mapDir = roomMapDir(roomId);
     for (const tileset of room?.tilesets ?? []) {
-      const imagePath = tilesetSourceToImagePath(tileset?.source);
+      const imagePath = tilesetSourceToImagePath(tileset?.source, mapDir);
       if (imagePath) tilesetImagePaths.add(imagePath);
     }
   }
@@ -362,7 +368,7 @@ function setup() {
       gameState = WIN_STATE;
     },
   });
-  roomSystem.goToRoom(INITIAL_ROOM_ID, { spawnId: "default" });
+  roomSystem.goToRoom(initialRoom, { spawnId: "default" });
   syncCanvasToCurrentRoom();
   const playerStart = roomSystem.getPlayerStart();
   if (playerStart) {

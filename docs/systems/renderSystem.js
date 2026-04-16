@@ -65,16 +65,9 @@ export function createRenderSystem({
       return baseParts.join('/');
    }
 
-   function resolveTilesetSourcePath(source) {
+   function tilesetSourceToImagePath(source, mapDir = 'data/rooms') {
       if (!source) return null;
-      const cleanSource = String(source).replace(/\\/g, '/');
-      const basePath = cleanSource.startsWith('tilesets/') ? 'mapdata' : 'mapdata/rooms';
-      return normalizeRelativePath(basePath, cleanSource);
-   }
-
-   function tilesetSourceToImagePath(source) {
-      const tsxPath = resolveTilesetSourcePath(source);
-      return tsxPath ? tsxPath.replace(/\.tsx$/i, '.png') : null;
+      return normalizeRelativePath(mapDir, source).replace(/\.tsx$/i, '.png');
    }
 
    function getTilesetForGid(gid, tilesets = []) {
@@ -122,9 +115,12 @@ export function createRenderSystem({
          return false;
       }
 
-      const imagePath = tilesetSourceToImagePath(tileset.source);
+      const imagePath = tileset.resolvedImagePath ?? tilesetSourceToImagePath(tileset.source);
       const tilesetImage = imagePath ? assets?.[`tileset:${imagePath}`] : null;
-      if (!tilesetImage) return false;
+      if (!tilesetImage) {
+         console.warn(`[renderSystem] Missing tileset image for path: "${imagePath}" (source: "${tileset.source}")`);
+         return false;
+      }
 
       const rect = getObjectRect(obj);
       if (!rect) return false;

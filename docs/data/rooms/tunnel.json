@@ -366,7 +366,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"tilesets\/prototype-tileset\/prototype-tileset.tsx"
+         "source":"..\/tilesets\/prototype-tileset\/prototype-tileset.tsx"
         }],
  "tilewidth":16,
  "type":"map",
