@@ -267,6 +267,7 @@ function normalizeLegacyRoom(roomKey, roomConfig) {
     platforms: [],
     hazards: [],
     collectables: [],
+    enemies: [],
     triggers: [],
     foreground: []
   };

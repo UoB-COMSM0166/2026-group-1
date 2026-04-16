@@ -21,7 +21,7 @@ RESPONSIBILITIES:
 - Maintain on/off state
 - Track internal flicker timer
 - Compute visible intensity based on power percentage
-- Provide isVisible() and getIntensity() methods for lighting system
+- Provide getIntensity() method for lighting system
 
 DEPENDENCIES:
 - Config object with RADIUS and FLICKER_POWER_THRESHOLD
@@ -68,11 +68,6 @@ export class Torch {
    update(deltaTime) {
       if (!this.isOn) return;
       this.flickerTimer += deltaTime;
-   }
-
-   // Returns true/false
-   isVisible(powerPercent) {
-      return this.getIntensity(powerPercent) > 0;
    }
 
    // Returns smooth intensity between 0 (off) and 1 (full brightness)
