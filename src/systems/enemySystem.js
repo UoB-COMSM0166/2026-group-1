@@ -81,13 +81,9 @@ export function createEnemySystem(player, getEnemies) {
     crab.nextPos.y = crab.position.y;
   }
 
-<<<<<<< HEAD:docs/systems/enemySystem.js
-  function updateJellyfish(jelly, dtSeconds) {
+  function updateJellyfish(jelly) {
     if (jelly.pendingDestroy) return;
 
-=======
-  function updateJellyfish(jelly) {
->>>>>>> main:src/systems/enemySystem.js
     jelly.previousPos.x = jelly.position.x;
     jelly.previousPos.y = jelly.position.y;
  
@@ -134,17 +130,12 @@ export function createEnemySystem(player, getEnemies) {
         }
       }
 
-<<<<<<< HEAD:docs/systems/enemySystem.js
       // Clean up dead jellyfish
       for (let i = jellyfish.length - 1; i >= 0; i--) {
         if (jellyfish[i].pendingDestroy) {
           jellyfish.splice(i, 1);
         }
       }
-      
-=======
-
->>>>>>> main:src/systems/enemySystem.js
       for (const crab of crabs) {
         updateCrab(crab);
         checkPlayerContact(crab, CRAB_CONTACT_PENALTY, CRAB_DRAIN_RATE);

@@ -576,11 +576,6 @@ function setup() {
 
   miniMapSystem = createMiniMapSystem({
     player,
-<<<<<<< HEAD:docs/sketch.js
-    () => enemySystem.getEnemies(),
-    () => roomSystem.getPlatforms()
-  );
-=======
     zoom: MINIMAP.ZOOM,
     centerX: MINIMAP.CENTER_X,
     centerY: MINIMAP.CENTER_Y,
@@ -592,7 +587,6 @@ function setup() {
     getPlatforms: () => roomSystem.getPlatforms(),
     getSonarReveals: () => sonarSystem?.getRevealedWalls?.() ?? [],
   });
->>>>>>> main:src/sketch.js
   
   renderSystem = createRenderSystem({
     player,
