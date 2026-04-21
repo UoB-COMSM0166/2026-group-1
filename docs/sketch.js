@@ -432,7 +432,7 @@ function setup() {
 
   missileSystem = createMissileSystem(
     player,
-    () => enemySystem.getCrabs(),
+    () => enemySystem.getEnemies(),
     () => roomSystem.getPlatforms()
   );
   

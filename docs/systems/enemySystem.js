@@ -80,6 +80,8 @@ export function createEnemySystem(player, getEnemies) {
   }
 
   function updateJellyfish(jelly, dtSeconds) {
+    if (jelly.pendingDestroy) return;
+
     jelly.previousPos.x = jelly.position.x;
     jelly.previousPos.y = jelly.position.y;
  
@@ -126,6 +128,13 @@ export function createEnemySystem(player, getEnemies) {
       for (let i = crabs.length - 1; i >= 0; i--) {
         if (crabs[i].pendingDestroy) {
           crabs.splice(i, 1);
+        }
+      }
+
+      // Clean up dead jellyfish
+      for (let i = jellyfish.length - 1; i >= 0; i--) {
+        if (jellyfish[i].pendingDestroy) {
+          jellyfish.splice(i, 1);
         }
       }
       

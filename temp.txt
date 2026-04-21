@@ -1,0 +1,5 @@
+  missileSystem = createMissileSystem(
+    player,
+    () => enemySystem.getCrabs(),
+    () => roomSystem.getPlatforms()
+  );
