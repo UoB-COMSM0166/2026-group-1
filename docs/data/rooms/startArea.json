@@ -431,262 +431,136 @@
          "x":0,
          "y":0
         }, 
-       {
-              "draworder": "topdown",
-              "id": 5,
-              "name": "entities",
-              "objects": [
-                     {
-                            "gid": 69,
-                            "height": 16,
-                            "id": 27,
-                            "name": "",
-                            "properties": [
-                                   {
-                                          "name": "spawnId",
-                                          "type": "string",
-                                          "value": "default"
-                                   }
-                            ],
-                            "rotation": 0,
-                            "type": "",
-                            "visible": true,
-                            "width": 16,
-                            "x": 320,
-                            "y": 64
-                     },
-                     {
-                            "gid": 69,
-                            "height": 16,
-                            "id": 29,
-                            "name": "",
-                            "properties": [
-                                   {
-                                          "name": "spawnId",
-                                          "type": "string",
-                                          "value": "bottomRightEnterance"
-                                   }
-                            ],
-                            "rotation": 0,
-                            "type": "",
-                            "visible": true,
-                            "width": 16,
-                            "x": 1648,
-                            "y": 1328
-                     },
-                     {
-                            "gid": 69,
-                            "height": 16,
-                            "id": 31,
-                            "name": "",
-                            "properties": [
-                                   {
-                                          "name": "spawnId",
-                                          "type": "string",
-                                          "value": "bottomLeftEnterance"
-                                   }
-                            ],
-                            "rotation": 0,
-                            "type": "",
-                            "visible": true,
-                            "width": 16,
-                            "x": 16,
-                            "y": 1400
-                     }
-              ],
-              "opacity": 1,
-              "type": "objectgroup",
-              "visible": true,
-              "x": 0,
-              "y": 0
-       },
-       {
-              "draworder": "topdown",
-              "id": 10,
-              "name": "enemies",
-              "objects": [
-                     {
-                            "gid": 79,
-                            "height": 16,
-                            "id": 25,
-                            "name": "crab",
-                            "properties": [
-                                   {
-                                          "name": "patrolDistance",
-                                          "type": "int",
-                                          "value": 64
-                                   },
-                                   {
-                                          "name": "speed",
-                                          "type": "float",
-                                          "value": 8
-                                   }
-                            ],
-                            "rotation": 0,
-                            "type": "enemy",
-                            "visible": true,
-                            "width": 16,
-                            "x": 1180,
-                            "y": 1376
-                     },
-                     {
-                            "gid": 79,
-                            "height": 16,
-                            "id": 26,
-                            "name": "crab",
-                            "properties": [
-                                   {
-                                          "name": "patrolDistance",
-                                          "type": "int",
-                                          "value": 64
-                                   },
-                                   {
-                                          "name": "speed",
-                                          "type": "float",
-                                          "value": 8
-                                   }
-                            ],
-                            "rotation": 0,
-                            "type": "enemy",
-                            "visible": true,
-                            "width": 16,
-                            "x": 464,
-                            "y": 960
-                     },
-                     {
-                            "gid": 79,
-                            "height": 16,
-                            "id": 26,
-                            "name": "crab",
-                            "properties": [
-                                   {
-                                          "name": "patrolDistance",
-                                          "type": "int",
-                                          "value": 64
-                                   },
-                                   {
-                                          "name": "speed",
-                                          "type": "float",
-                                          "value": 8
-                                   }
-                            ],
-                            "rotation": 0,
-                            "type": "enemy",
-                            "visible": true,
-                            "width": 16,
-                            "x": 269,
-                            "y": 460
-                     },
-                     {
-                            "gid": 80,
-                            "height": 22,
-                            "id": 30,
-                            "name": "jellyfish",
-                            "properties": [
-                                   {
-                                          "name": "amplitude",
-                                          "type": "int",
-                                          "value": 32
-                                   },
-                                   {
-                                          "name": "frequency",
-                                          "type": "float",
-                                          "value": 1
-                                   },
-                                   {
-                                          "name": "driftSpeed",
-                                          "type": "float",
-                                          "value": 0.3
-                                   }
-                            ],
-                            "rotation": 0,
-                            "type": "enemy",
-                            "visible": true,
-                            "width": 18,
-                            "x": 270,
-                            "y": 500
-                     },
-                     {
-                            "gid": 80,
-                            "height": 22,
-                            "id": 31,
-                            "name": "jellyfish",
-                            "properties": [
-                                   {
-                                          "name": "variant",
-                                          "type": "string",
-                                          "value": "fast"
-                                   }
-                            ],
-                            "rotation": 0,
-                            "type": "enemy",
-                            "visible": true,
-                            "width": 18,
-                            "x": 200,
-                            "y": 800
-                     },
-                     {
-                            "gid": 80,
-                            "height": 22,
-                            "id": 30,
-                            "name": "jellyfish",
-                            "properties": [
-                                   {
-                                          "name": "amplitude",
-                                          "type": "int",
-                                          "value": 32
-                                   },
-                                   {
-                                          "name": "frequency",
-                                          "type": "float",
-                                          "value": 1
-                                   },
-                                   {
-                                          "name": "driftSpeed",
-                                          "type": "float",
-                                          "value": 0.3
-                                   }
-                            ],
-                            "rotation": 0,
-                            "type": "enemy",
-                            "visible": true,
-                            "width": 18,
-                            "x": 1600,
-                            "y": 1000
-                     }
-              ],
-              "opacity": 1,
-              "type": "objectgroup",
-              "visible": true,
-              "x": 0,
-              "y": 0
-       },
-       {
-              "draworder": "topdown",
-              "id": 9,
-              "name": "foreground",
-              "objects": [],
-              "opacity": 1,
-              "type": "objectgroup",
-              "visible": true,
-              "x": 0,
-              "y": 0
-       }
-],
-"nextlayerid": 11,
-"nextobjectid": 45,
-"orientation": "orthogonal",
-"renderorder": "right-down",
-"tiledversion": "1.11.2",
-"tileheight": 16,
-"tilesets": [
-       {
-              "firstgid": 1,
-              "source": "..\/tilesets\/prototype-tileset\/prototype-tileset.tsx"
-       }
-],
-"tilewidth": 16,
-"type": "map",
-"version": "1.10",
-"width": 160
+        {
+         "draworder":"topdown",
+         "id":5,
+         "name":"entities",
+         "objects":[
+                {
+                 "gid":79,
+                 "height":16,
+                 "id":25,
+                 "name":"crab",
+                 "properties":[
+                        {
+                         "name":"patrolDisatnce",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"speed",
+                         "type":"float",
+                         "value":0.8
+                        }],
+                 "rotation":0,
+                 "type":"enemy",
+                 "visible":true,
+                 "width":16,
+                 "x":1168,
+                 "y":1376
+                }, 
+                {
+                 "gid":79,
+                 "height":16,
+                 "id":26,
+                 "name":"crab",
+                 "properties":[
+                        {
+                         "name":"patrolDistance",
+                         "type":"int",
+                         "value":5
+                        }],
+                 "rotation":0,
+                 "type":"enemies",
+                 "visible":true,
+                 "width":16,
+                 "x":464,
+                 "y":960
+                }, 
+                {
+                 "gid":69,
+                 "height":16,
+                 "id":27,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"spawnId",
+                         "type":"string",
+                         "value":"default"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":320,
+                 "y":64
+                }, 
+                {
+                 "gid":69,
+                 "height":16,
+                 "id":29,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"spawnId",
+                         "type":"string",
+                         "value":"bottomRightEnterance"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":1648,
+                 "y":1328
+                }, 
+                {
+                 "gid":69,
+                 "height":16,
+                 "id":31,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"spawnId",
+                         "type":"string",
+                         "value":"bottomLeftEnterance"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":16,
+                 "y":1400
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":9,
+         "name":"foreground",
+         "objects":[],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }],
+ "nextlayerid":11,
+ "nextobjectid":45,
+ "orientation":"orthogonal",
+ "renderorder":"right-down",
+ "tiledversion":"1.11.2",
+ "tileheight":16,
+ "tilesets":[
+        {
+         "firstgid":1,
+         "source":"..\/tilesets\/prototype-tileset\/prototype-tileset.tsx"
+        }],
+ "tilewidth":16,
+ "type":"map",
+ "version":"1.10",
+ "width":160
 }

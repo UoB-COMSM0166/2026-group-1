@@ -1,0 +1,209 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "roomA.json",
+    "expandedProjectPaths": [
+        "tilesets",
+        ".",
+        "tilesets/prototype-tileset"
+    ],
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "/Users/archiebrown/2026-group-1/src/assets/backgrounds/backgrounds.tsx": {
+            "dynamicWrapping": true
+        },
+        "/Users/archiebrown/2026-group-1/src/data/tilesets/Atlantis/atlantis-tileset-1.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.8824
+        },
+        "/Users/archiebrown/2026-group-1/src/data/tilesets/Atlantis/atlantis-tileset-2.tsx": {
+            "scaleInDock": 1
+        },
+        "/Users/archiebrown/2026-group-1/src/data/tilesets/Atlantis/atlantis-tileset-3.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "/Users/archiebrown/2026-group-1/src/data/tilesets/prototype-tileset/prototype-tileset.tsx": {
+            "dynamicWrapping": false
+        },
+        "/Users/benmounce/Documents/Software Engineering/Coursework/2026-group-1/docs/assets/backgrounds/backgrounds.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "/Users/benmounce/Documents/Software Engineering/Coursework/2026-group-1/docs/data/tilesets/prototype-tileset/prototype-tileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "/Users/georgia/COMSCI/SEP/backgrounds.tsx": {
+            "scaleInDock": 1
+        },
+        "/Users/georgia/COMSCI/SEP/cave.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/backgrounds/backgrounds.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 0.1584,
+            "scaleInEditor": 1
+        },
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/prototype-tileset/prototype-tileset.tsx": {
+            "scaleInDock": 1
+        },
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/prototype-tileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1.615,
+            "scaleInEditor": 1
+        },
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/protoype-tileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "/Users/georgia/COMSCI/SEP/roomB.tmj": {
+            "scale": 0.91,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 399.9999999999999,
+                "y": 399.99999999999994
+            }
+        },
+        "crabCaverns.json": {
+            "scale": 2.4403125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 159.81559738762965,
+                "y": 95.8893584325778
+            }
+        },
+        "deepCaverns.json": {
+            "scale": 2.4403125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 159.81559738762965,
+                "y": 95.8893584325778
+            }
+        },
+        "endlessAbyss.json": {
+            "scale": 0.40671874999999996,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 958.893584325778,
+                "y": 720.399538993469
+            }
+        },
+        "jellyfishAtrium.json": {
+            "scale": 2.4403125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 159.81559738762965,
+                "y": 95.8893584325778
+            }
+        },
+        "roomA.json": {
+            "scale": 1.4528,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 245.0440528634361,
+                "y": 518.9977973568282
+            }
+        },
+        "roomA.json#prototype": {
+            "scaleInEditor": 1
+        },
+        "roomB.json": {
+            "expandedObjectLayers": [
+                5
+            ],
+            "scale": 0.588,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 365.6462585034013,
+                "y": 443.8775510204082
+            }
+        },
+        "spikeMaze.json": {
+            "scale": 0.4762,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 655.1868962620748,
+                "y": 621.587568248635
+            }
+        },
+        "startArea.json": {
+            "scale": 0.3050390625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1278.5247791010372,
+                "y": 721.2191061595595
+            }
+        },
+        "theBiolume.json": {
+            "scale": 2.4403125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 159.81559738762965,
+                "y": 95.8893584325778
+            }
+        },
+        "theDrop.json": {
+            "scale": 0.4345,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 89.75834292289994,
+                "y": 646.7203682393556
+            }
+        },
+        "theSurface.json": {
+            "scale": 2.4403125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 159.81559738762965,
+                "y": 95.8893584325778
+            }
+        },
+        "tilesets/prototype-tileset/protoype-tileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1.96
+        },
+        "tunnel.json": {
+            "scale": 0.6068,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 540.5405405405406,
+                "y": 1117.3368490441662
+            }
+        }
+    },
+    "last.externalTilesetPath": "/Users/archiebrown/2026-group-1/src/data/tilesets/Atlantis",
+    "last.imagePath": "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/backgrounds",
+    "map.height": 70,
+    "map.lastUsedFormat": "json",
+    "map.layerDataFormat": "3",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "openFiles": [
+        "roomB.json",
+        "roomA.json"
+    ],
+    "project": "game-rooms.tiled-project",
+    "property.type": "string",
+    "recentFiles": [
+        "roomB.json",
+        "roomA.json",
+        "/Users/benmounce/Documents/Software Engineering/Coursework/2026-group-1/docs/data/tilesets/prototype-tileset/prototype-tileset.tsx",
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/assets/backgrounds/backgrounds.tsx",
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/prototype-tileset.tsx",
+        "/Users/georgia/COMSCI/SEP/gameProject/docs/data/tilesets/prototype-tileset/protoype-tileset.tsx",
+        "tilesets/prototype-tileset/protoype-tileset.tsx",
+        "/Users/georgia/COMSCI/SEP/roomB.tmj"
+    ],
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.type": 1
+}

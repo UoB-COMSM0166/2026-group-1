@@ -4,4 +4,4 @@ node_modules/
 specs/
 .github/
 .vscode/
-
+.venv/
