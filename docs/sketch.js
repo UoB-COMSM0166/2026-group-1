@@ -516,16 +516,12 @@ function preload() {
     assets[`tile:${gid}`] = loadImage(tilePath);
   }
 
-  assets[GAMEPLAY_OVERLAY_ASSET_KEY] = loadImage(
-    GAMEPLAY_OVERLAY_PATH,
-    undefined,
-    () => {
-      assets[GAMEPLAY_OVERLAY_ASSET_KEY] = null;
-      console.warn(
-        `[sketch] Gameplay overlay image not found at ${GAMEPLAY_OVERLAY_PATH}`,
-      );
-    },
-  );
+  assets[GAMEPLAY_OVERLAY_ASSET_KEY] = loadImage(GAMEPLAY_OVERLAY_PATH, () => {
+    assets[GAMEPLAY_OVERLAY_ASSET_KEY] = null;
+    console.warn(
+      `[sketch] Gameplay overlay image not found at ${GAMEPLAY_OVERLAY_PATH}`,
+    );
+  });
 
 
   mainPageBg = loadImage("assets/backgrounds/titleBackground.png");
