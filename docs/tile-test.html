@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tile Render Test — THE ABYSS</title>
+  <style>
+    body { background: #0d1117; color: #e6edf3; font-family: monospace; margin: 20px; font-size: 13px; }
+    h1 { font-size: 15px; color: #f0f6fc; margin-bottom: 4px; }
+    h2 { font-size: 13px; color: #8b949e; margin: 20px 0 6px; border-bottom: 1px solid #21262d; padding-bottom: 4px; }
+    .ok    { color: #3fb950; }
+    .fail  { color: #f85149; }
+    .warn  { color: #d29922; }
+    .info  { color: #58a6ff; }
+    .dim   { color: #8b949e; }
+    canvas { border: 1px solid #30363d; margin: 6px 0; display: block; }
+    #results { margin-top: 16px; max-width: 900px; }
+    .result-line { margin: 1px 0; font-size: 12px; }
+    .section { margin: 12px 0; padding: 10px; background: #161b22; border-radius: 6px; border: 1px solid #21262d; }
+    #summary { position: sticky; top: 0; background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 8px 14px; z-index: 10; margin-bottom: 16px; font-size: 12px; }
+    .bold { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Tile Render Diagnostic — THE ABYSS</h1>
+  <div id="summary">Loading...</div>
+  <div id="results"></div>
+
+  <script src="p5.js"></script>
+  <script>
+    // ============================================================
+    // Serve from repo root:  npx serve .
+    // Open: http://127.0.0.1:5500/docs/tile-test.html
+    // Adjust BASE if your port is different
+    // ============================================================
+    const BASE = 'http://127.0.0.1:5500';
+
+    const TILE_W      = 16;
+    const TILE_DISPLAY = 64;
+
+    const TILESETS = [
+      { firstgid: 1,    source: "../tilesets/prototype-tileset/prototype-tileset.tsx",  name: "prototype" },
+      { firstgid: 111,  source: "../tilesets/Atlantis/atlantis-tileset-1.tsx",       name: "atlantis-1" },
+      { firstgid: 687,  source: "../tilesets/Atlantis/atlantis-tileset-2.tsx",       name: "atlantis-2" },
+      { firstgid: 1263, source: "../tilesets/Atlantis/atlantis-tileset-3.tsx",       name: "atlantis-3" },
+    ];
+
+    const TEST_GIDS = [23, 508];
+
+    const metaCache  = {};
+    const atlasCache = {};
+    const resultsEl = document.getElementById('results');
+    const summaryEl = document.getElementById('summary');
+
+    function normalizeRelativePath(basePath, relativePath) {
+      const baseParts = String(basePath).split("/").filter(Boolean);
+      const relParts  = String(relativePath ?? "").split("/").filter(Boolean);
+      for (const part of relParts) {
+        if (part === ".")  continue;
+        if (part === "..") { baseParts.pop(); continue; }
+        baseParts.push(part);
+      }
+      return baseParts.join("/");
+    }
+
+    function getPathDir(path) {
+      const parts = String(path ?? "").split("/").filter(Boolean);
+      parts.pop();
+      return parts.join("/");
+    }
+
+    function fallbackPath(source, mapDir = "data/rooms") {
+      if (!source) return null;
+      if (String(source).toLowerCase().endsWith("backgrounds.tsx")) return null;
+      const resolved = normalizeRelativePath(mapDir, source);
+      const dir      = getPathDir(resolved);
+      const fname    = resolved.split("/").pop().replace(/\.tsx$/i, ".png");
+      return normalizeRelativePath(dir, fname);
+    }
+
+    function parseTsxMetadata(xmlText, sourcePath = "") {
+      const empty = { tilePropertiesById: {}, tileImagesById: {}, resolvedImagePath: null, tilewidth: null, tileheight: null, columns: null, tilecount: null };
+      if (!xmlText || typeof DOMParser === "undefined") return empty;
+      const parser = new DOMParser();
+      const doc    = parser.parseFromString(xmlText, "application/xml");
+      const tsNode = doc.querySelector("tileset");
+      if (!tsNode) return empty;
+      const baseDir = getPathDir(sourcePath);
+      const tilePropertiesById = {};
+      const tileImagesById     = {};
+      const rootChildren = Array.from(tsNode.children ?? []);
+      const rootImageNode = rootChildren.find(n => String(n?.tagName).toLowerCase() === "image");
+      const rootImageSource = rootImageNode?.getAttribute("source") ?? null;
+      const resolvedImagePath = rootImageSource ? normalizeRelativePath(baseDir, rootImageSource) : null;
+      for (const tileNode of Array.from(tsNode.querySelectorAll("tile"))) {
+        const localId = Number(tileNode.getAttribute("id"));
+        if (!Number.isFinite(localId)) continue;
+        const props = {};
+        for (const p of Array.from(tileNode.querySelectorAll("properties > property"))) {
+          const n = p.getAttribute("name");
+          if (n) props[n] = p.getAttribute("value") ?? p.textContent ?? "";
+        }
+        if (Object.keys(props).length) tilePropertiesById[localId] = props;
+        const tileChildren = Array.from(tileNode.children ?? []);
+        const tileImgNode = tileChildren.find(n => String(n?.tagName).toLowerCase() === "image");
+        const tileImgSrc  = tileImgNode?.getAttribute("source") ?? null;
+        if (!tileImgSrc) continue;
+        tileImagesById[localId] = { source: tileImgSrc, resolvedImagePath: normalizeRelativePath(baseDir, tileImgSrc) };
+      }
+      return {
+        tilePropertiesById, tileImagesById, resolvedImagePath,
+        tilewidth:  Number(tsNode.getAttribute("tilewidth")  ?? 0) || null,
+        tileheight: Number(tsNode.getAttribute("tileheight") ?? 0) || null,
+        columns:    Number(tsNode.getAttribute("columns")    ?? 0) || null,
+        tilecount:  Number(tsNode.getAttribute("tilecount")  ?? 0) || null,
+      };
+    }
+
+    function getTilesetForGid(gid) {
+      let best = null;
+      for (const ts of TILESETS) {
+        const fg = Number(ts?.firstgid ?? 0);
+        if (!fg || gid < fg) continue;
+        if (!best || fg > best.firstgid) best = { ...ts, firstgid: fg };
+      }
+      return best;
+    }
+
+    function log(msg, type = "info") {
+      console.warn(`[tile-test] ${msg}`);
+      const el = document.createElement("div");
+      el.className = `result-line ${type}`;
+      el.textContent = msg;
+      resultsEl.appendChild(el);
+    }
+
+    function sec(title) {
+      const s = document.createElement("div");
+      s.className = "section";
+      const h = document.createElement("h2");
+      h.textContent = title;
+      s.appendChild(h);
+      resultsEl.appendChild(s);
+      return s;
+    }
+
+    async function getText(url) {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) return null;
+        return r.status === 204 ? "" : await r.text();
+      } catch { return null; }
+    }
+
+    let finished = false;
+
+    function setup() {
+      createCanvas(820, 160);
+      pixelDensity(1);
+      textSize(11);
+      loadAll();
+    }
+
+    async function loadAll() {
+      log("=== Tile Render Diagnostic ===");
+      log(`BASE = ${BASE}  |  Serve from repo root: npx serve .`);
+      log("");
+
+      // Step 1: Parse TSX
+      sec("Step 1 — TSX <image source> attribute vs filename fallback");
+      for (const ts of TILESETS) {
+        const mapDir  = "data/rooms";
+        const resolved = normalizeRelativePath(mapDir, ts.source);
+        ts._resolved = resolved;
+        const xml = await getText(`${BASE}/${resolved}`);
+        if (!xml) { log(`  ✗ ${ts.name}: TSX not found at ${resolved}`, "fail"); metaCache[resolved] = null; continue; }
+        const meta = parseTsxMetadata(xml, resolved);
+        metaCache[resolved] = meta;
+        ts._meta = meta;
+        ts._fromTsx     = meta.resolvedImagePath;
+        ts._fromFallback = fallbackPath(ts.source, mapDir);
+        const same = ts._fromTsx === ts._fromFallback;
+        log(`  ✓ ${ts.name}: firstgid=${ts.firstgid}  tiles=${meta.tilecount}  ${meta.tilewidth}×${meta.tileheight}px  cols=${meta.columns}`, "ok");
+        log(`    tsx <image>:   "${ts._fromTsx || '(none)'}"${same ? '  ⚠ SAME as fallback' : ts._fromTsx ? '  ✗ DIFF from fallback' : ''}`, ts._fromTsx ? (same ? "warn" : "fail") : "warn");
+        log(`    filename.fb:   "${ts._fromFallback}"`, "dim");
+      }
+
+      // Step 2: HTTP HEAD check
+      sec("Step 2 — Atlas file HTTP existence check");
+      for (const ts of TILESETS) {
+        const resolved = ts._resolved;
+        const meta = metaCache[resolved];
+        if (!meta) continue;
+        const fromTsx     = ts._fromTsx;
+        const fromFallback = ts._fromFallback;
+        const paths = [...new Set([fromTsx, fromFallback].filter(Boolean))];
+        let ok = false;
+        for (const p of paths) {
+          const url = `${BASE}/${p}`;
+          try {
+            const r = await fetch(url, { method: "HEAD" });
+            if (r.ok) { log(`  ✓ "${p}" → HTTP ${r.status} EXISTS`, "ok"); ok = true; break; }
+            else log(`  ✗ "${p}" → HTTP ${r.status}`, "fail");
+          } catch { log(`  ✗ "${p}" → network error`, "fail"); }
+        }
+        if (!ok) log(`  ✗ ${ts.name}: all paths 404`, "fail");
+        ts._atlasExists = ok;
+      }
+
+      // Step 3: p5.js loadImage
+      sec("Step 3 — p5.js loadImage (actual atlas pixels)");
+      for (const ts of TILESETS) {
+        const resolved = ts._resolved;
+        const meta = metaCache[resolved];
+        if (!meta) continue;
+        const path = ts._fromTsx || ts._fromFallback;
+        if (!path) { log(`  − ${ts.name}: no path`); continue; }
+        const url = `${BASE}/${path}`;
+        log(`  Loading ${ts.name}: ${url}`);
+        const img = await new Promise(res => { loadImage(url, i => res(i), () => res(null)); });
+        if (img && img.width > 0) {
+          atlasCache[resolved] = { img, w: img.width, h: img.height, loaded: true };
+          ts._atlasLoaded = true; ts._atlasW = img.width; ts._atlasH = img.height;
+          log(`  ✓ ${ts.name}: ${img.width}×${img.height}px loaded`, "ok");
+        } else {
+          atlasCache[resolved] = { img: null, w: 0, h: 0, loaded: false };
+          ts._atlasLoaded = false;
+          log(`  ✗ ${ts.name}: null or zero-size (likely 404)`, "fail");
+        }
+      }
+
+      // Step 4: Render tiles
+      sec("Step 4 — Tile render preview  [green border=OK | red border=MISSING/OUT_OF_BOUNDS]");
+      background(30);
+      fill(180);
+      text("Rendering TEST_GIDS from demoStart.json collision layer:", 10, 16);
+
+      let x = 10, y = 32, row = 0;
+      const PER_ROW = 6;
+      for (const gid of TEST_GIDS) {
+        const ts   = getTilesetForGid(gid);
+        const meta = ts ? metaCache[ts._resolved] : null;
+        const atlas = ts ? (atlasCache[ts._resolved] || {}) : {};
+        const localId = ts ? gid - ts.firstgid : -1;
+        const tW    = meta?.tilewidth  ?? 16;
+        const tH    = meta?.tileheight ?? 16;
+        const cols  = meta?.columns ?? Math.max(1, Math.floor((atlas.w || 16) / tW));
+        const srcX  = (localId % cols) * tW;
+        const srcY  = Math.floor(localId / cols) * tH;
+        const fits  = atlas.w > 0 && srcX + tW <= atlas.w && srcY + tH <= atlas.h;
+        const ok    = atlas.loaded && fits;
+
+        // Background
+        fill(ok ? color(0, 50, 30) : color(50, 0, 0));
+        noStroke();
+        rect(x, y, TILE_DISPLAY, TILE_DISPLAY);
+        // Tile image
+        if (atlas.img && ok) image(atlas.img, x, y, TILE_DISPLAY, TILE_DISPLAY, srcX, srcY, tW, tH);
+        // Border
+        noFill();
+        stroke(ok ? color(0, 220, 100) : color(255, 60, 60));
+        strokeWeight(2);
+        rect(x, y, TILE_DISPLAY, TILE_DISPLAY);
+        noStroke();
+        // Label
+        fill(ok ? color(0, 220, 100) : color(255, 60, 60));
+        textAlign(CENTER);
+        text(`GID=${gid}`, x + TILE_DISPLAY / 2, y + TILE_DISPLAY + 12);
+        fill(150);
+        text(`${ts?.name || "?"} id=${localId}`, x + TILE_DISPLAY / 2, y + TILE_DISPLAY + 24);
+        textAlign(LEFT);
+
+        x += TILE_DISPLAY + 10;
+        row++;
+        if (row % PER_ROW === 0) { x = 10; y += TILE_DISPLAY + 38; }
+      }
+
+      const loaded = TILESETS.filter(ts => ts._atlasLoaded).length;
+      setSummary(
+        `<span class="bold">${loaded}/${TILESETS.length} atlases loaded</span>  |  ` +
+        `BASE=${BASE}  |  If tiles are red/out-of-bounds: the atlas 404'd or tile coords are wrong`
+      );
+
+      finished = true;
+    }
+
+    function draw() {
+      if (!finished) {
+        background(30);
+        fill(200); textAlign(CENTER, CENTER);
+        text("Loading tilesets...", width / 2, height / 2);
+        textAlign(LEFT);
+      }
+    }
+  </script>
+</body>
+</html>
