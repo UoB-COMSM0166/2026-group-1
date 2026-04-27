@@ -191,3 +191,49 @@ describe('createPowerSystem — edge cases', () => {
       expect(() => system.update()).not.toThrow();
    });
 });
+
+//======================================
+// UPGRADE WIRING
+//======================================
+describe('createPowerSystem — upgrade wiring', () => {
+   it('update() applies setMaxPower using entity.upgrades.power', () => {
+      const { entity, system } = makeSystem({ upgrades: { power: 1, torch: 1, sonar: 1 } });
+      system.update();
+      expect(entity.power.maxPower).toBe(100); // level 1: base
+   });
+
+   it('update() increases maxPower when upgrades.power is level 2', () => {
+      const { entity, system } = makeSystem({ upgrades: { power: 2, torch: 1, sonar: 1 } });
+      system.update();
+      expect(entity.power.maxPower).toBe(120); // level 2: 100 + 20
+   });
+
+   it('update() increases maxPower when upgrades.power is level 5', () => {
+      const { entity, system } = makeSystem({ upgrades: { power: 5, torch: 1, sonar: 1 } });
+      system.update();
+      expect(entity.power.maxPower).toBe(180); // level 5: 100 + 4*20
+   });
+
+   it('update() uses upgrade level 1 when upgrades is undefined', () => {
+      const { entity, system } = makeSystem({ upgrades: undefined });
+      expect(() => system.update()).not.toThrow();
+      expect(entity.power.maxPower).toBe(100); // falls back to level 1
+   });
+
+   it('update() uses upgrade level 1 when upgrades.power is undefined', () => {
+      const { entity, system } = makeSystem({ upgrades: { torch: 1, sonar: 1 } });
+      system.update();
+      expect(entity.power.maxPower).toBe(100); // falls back to level 1
+   });
+
+   it('maxPower is updated every frame — level change is picked up immediately', () => {
+      const { entity, system } = makeSystem({ upgrades: { power: 1, torch: 1, sonar: 1 } });
+      system.update();
+      expect(entity.power.maxPower).toBe(100);
+
+      // Simulate buying an upgrade mid-game
+      entity.upgrades.power = 3;
+      system.update();
+      expect(entity.power.maxPower).toBe(140); // 100 + 2*20
+   });
+});

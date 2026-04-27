@@ -230,3 +230,54 @@ describe('PowerSystem — getPercent()', () => {
       expect(() => power.isEmpty()).not.toThrow();
    });
 });
+
+//======================================
+// UPGRADE WIRING
+//======================================
+describe('PowerSystem — upgrade wiring', () => {
+   it('setMaxPower(level) scales maxPower above base at level 1', () => {
+      const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 100, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
+      power.setMaxPower(1);
+      expect(power.maxPower).toBe(100); // base, no bonus
+   });
+
+   it('setMaxPower(level) adds bonus per level above 1', () => {
+      const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 100, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
+      power.setMaxPower(2);
+      expect(power.maxPower).toBe(120); // 100 + (2-1)*20
+   });
+
+   it('setMaxPower(level) scales linearly with level', () => {
+      const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 100, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
+      power.setMaxPower(5);
+      expect(power.maxPower).toBe(180); // 100 + (5-1)*20
+   });
+
+   it('setMaxPower caps current power at new maxPower', () => {
+      const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 90, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
+      power.setMaxPower(2); // new max = 120, current stays 90
+      expect(power.maxPower).toBe(120);
+      expect(power.current).toBe(90); // not capped
+   });
+
+   it('setMaxPower clamps current to new max if current exceeds it', () => {
+      const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 100, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
+      power.setMaxPower(1); // current = maxPower = 100
+      power.current = 100;
+      power.setMaxPower(2); // new max = 120, current 100 < 120 — no clamp needed
+      expect(power.current).toBe(100);
+   });
+
+   it('setMaxPower is safe for level 0 or negative (treated as level 1)', () => {
+      const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 100, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
+      power.setMaxPower(0);
+      expect(power.maxPower).toBe(100); // treated as level 1
+   });
+
+   it('getPercent reflects maxPower change after setMaxPower', () => {
+      const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 100, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
+      power.setMaxPower(2); // max = 120
+      // At level 2 with current=100, percent = 100/120 ≈ 0.833
+      expect(power.getPercent()).toBeCloseTo(100 / 120, 2);
+   });
+});
