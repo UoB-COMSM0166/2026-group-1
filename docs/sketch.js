@@ -816,7 +816,7 @@ function draw() {
     accumulator += deltaTime / 1000;
     // if accumulator gained enough frames
     while (accumulator >= TIME.fixedDeltaTime) {
-      engine.update();
+      engine.update(TIME.fixedDeltaTime);
       accumulator -= TIME.fixedDeltaTime;
     }
     if (player.power?.isEmpty()) {

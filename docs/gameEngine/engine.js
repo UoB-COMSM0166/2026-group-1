@@ -59,9 +59,9 @@ export class Engine {
     this.systems.push(system);
   }
 
-  update() {
+  update(dt) {
     for (const system of this.systems) {
-      system.update?.();
+      system.update?.(dt);
     }
   }
 }

@@ -51,6 +51,7 @@ engine.register(sonarSystem);
 */
 
 import { SONAR } from '../config.js';
+import { TIME } from '../config.js';
 
 const RAY_COUNT = 360;
 const BASE_RAY_SPEED = 2;
@@ -58,7 +59,6 @@ const RAY_DECAY = 2;
 const BASE_RAY_LIFETIME = 255;
 
 const REVEAL_BONUS = 70;
-const REVEAL_FADE_PER_MS = 2;
 
 function getNormalisedWalls(getWallsFinal) {
   const input = getWallsFinal?.() || [];
@@ -109,31 +109,41 @@ export function createSonarSystem(player, getWalls, getHazards = () => [], getCo
   let prevCollectableSet = new Set();
 
   return {
-    update() {
+    update(dt) {
+      const dtScaled = dt ?? (TIME.fixedDeltaTime * 1000); // ms equivalent of one physics tick
+
       if (cooldownTimer > 0) {
-        cooldownTimer = Math.max(0, cooldownTimer - 0.01);
+        cooldownTimer = Math.max(0, cooldownTimer - dtScaled);
       }
-  
+
       if (player?.actionIntent?.emitSonar) {
         if (cooldownTimer <= 0) {
           const px = typeof player.getX === 'function' ? player.getX() : player.x;
           const py = typeof player.getY === 'function' ? player.getY() : player.y;
-          
+
           if (Number.isFinite(px) && Number.isFinite(py)) {
             const sonarLevel = player?.upgrades?.sonar ?? 1;
-          const rangeBonus = Math.max(0, sonarLevel - 1) * (SONAR.RANGE_BONUS_PER_LEVEL ?? 50);
-          const effectiveRange = (SONAR.BASE_RANGE ?? 250) + rangeBonus;
-          // Scale ray speed so pulse travels the effective range
-          // range ≈ raySpeed * (RAY_LIFETIME / RAY_DECAY)
-          const raySpeed = effectiveRange * RAY_DECAY / BASE_RAY_LIFETIME;
-          pulses.push(new Pulse(px, py, raySpeed));
-            cooldownTimer = SONAR.COOLDOWN_MS ?? 0;
+            const rangeBonus = Math.max(0, sonarLevel - 1) * (SONAR.RANGE_BONUS_PER_LEVEL ?? 50);
+            const effectiveRange = (SONAR.BASE_RANGE ?? 250) + rangeBonus;
+            const raySpeed = effectiveRange * RAY_DECAY / BASE_RAY_LIFETIME;
+            pulses.push(new Pulse(px, py, raySpeed));
+
+            // Scaled cooldown: base minus reduction per level, clamped to minimum
+            const cooldownReduction = (sonarLevel - 1) * (SONAR.COOLDOWN_REDUCTION_PER_LEVEL ?? 150);
+            const effectiveCooldown = Math.max(SONAR.MIN_COOLDOWN ?? 300,
+              (SONAR.BASE_COOLDOWN ?? 1200) - cooldownReduction);
+            cooldownTimer = effectiveCooldown;
             soundSystem?.play('sonarPing', 0.8);
           }
         }
         player.actionIntent.emitSonar = false;
-
       }
+
+      // Scaled decay: base minus reduction per level, clamped to minimum
+      const sonarLevel = player?.upgrades?.sonar ?? 1;
+      const decayReduction = (sonarLevel - 1) * (SONAR.DECAY_REDUCTION_PER_LEVEL ?? 0.3);
+      const effectiveDecay = Math.max(0.2,
+        (SONAR.BASE_DECAY ?? 1.8) - decayReduction);
 
       const inputWalls = getNormalisedWalls(getWalls);
       const inputHazards = getNormalisedObjects(getHazards);
@@ -161,7 +171,7 @@ export function createSonarSystem(player, getWalls, getHazards = () => [], getCo
         
         const currentAlpha = wallAlpha.get(wall);
         if (currentAlpha != null) {
-          const nextAlpha = Math.max(0, currentAlpha - (REVEAL_FADE_PER_MS));
+          const nextAlpha = Math.max(0, currentAlpha - effectiveDecay);
           if (nextAlpha <= 0) {
             wallAlpha.delete(wall);
           } else {
@@ -178,7 +188,7 @@ export function createSonarSystem(player, getWalls, getHazards = () => [], getCo
 
         const currentAlpha = hazardAlpha.get(hazard);
         if (currentAlpha != null) {
-          const nextAlpha = Math.max(0, currentAlpha - (REVEAL_FADE_PER_MS));
+          const nextAlpha = Math.max(0, currentAlpha - effectiveDecay);
           if (nextAlpha <= 0) {
             hazardAlpha.delete(hazard);
           } else {
@@ -195,7 +205,7 @@ export function createSonarSystem(player, getWalls, getHazards = () => [], getCo
 
         const currentAlpha = collectableAlpha.get(collectable);
         if (currentAlpha != null) {
-          const nextAlpha = Math.max(0, currentAlpha - (REVEAL_FADE_PER_MS));
+          const nextAlpha = Math.max(0, currentAlpha - effectiveDecay);
           if (nextAlpha <= 0) {
             collectableAlpha.delete(collectable);
           } else {
@@ -212,7 +222,7 @@ export function createSonarSystem(player, getWalls, getHazards = () => [], getCo
 
         const currentAlpha = enemyAlpha.get(enemy);
         if (currentAlpha != null) {
-          const nextAlpha = Math.max(0, currentAlpha - REVEAL_FADE_PER_MS);
+          const nextAlpha = Math.max(0, currentAlpha - effectiveDecay);
           if (nextAlpha <= 0) {
             enemyAlpha.delete(enemy);
           } else {
@@ -239,8 +249,12 @@ export function createSonarSystem(player, getWalls, getHazards = () => [], getCo
       if (cooldownTimer <= 0) {
         return 0;
       }
-      print(cooldownTimer);
-      return cooldownTimer / (SONAR.COOLDOWN_MS);
+      // Recalculate effective cooldown for accurate fill ratio display
+      const sonarLevel = player?.upgrades?.sonar ?? 1;
+      const cooldownReduction = (sonarLevel - 1) * (SONAR.COOLDOWN_REDUCTION_PER_LEVEL ?? 150);
+      const maxCooldown = Math.max(SONAR.MIN_COOLDOWN ?? 300,
+        (SONAR.BASE_COOLDOWN ?? 1200) - cooldownReduction);
+      return cooldownTimer / maxCooldown;
     },
 
     getRevealedWalls() {

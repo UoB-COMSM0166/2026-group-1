@@ -247,13 +247,23 @@ export const GLOW = {
 // SONAR CONFIG
 //======================
 export const SONAR = {
-  // Cooldown in seconds for readability; derived ms used by sonarSystem
-  COOLDOWN: 1,
-  COOLDOWN_MS: 1,
+  // Cooldown in milliseconds at level 1
+  BASE_COOLDOWN: 1200,
+  // Reduction per upgrade level (ms saved per level)
+  COOLDOWN_REDUCTION_PER_LEVEL: 150,
+  // Minimum cooldown regardless of level
+  MIN_COOLDOWN: 300,
+
   // Base pulse travel range in pixels (at level 1)
   BASE_RANGE: 250,
   // Additional range pixels added per upgrade level
   RANGE_BONUS_PER_LEVEL: 50,
+
+  // Alpha fade per ms at level 1 (higher = faster fade = shorter visibility)
+  BASE_DECAY: 1.8,
+  // Reduction per upgrade level (lower = slower fade = longer visibility)
+  DECAY_REDUCTION_PER_LEVEL: 0.3,
+  // min 0.2 so tiles never stop fading completely
 };
 
 //======================
