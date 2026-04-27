@@ -1,287 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Tile Render Test — THE ABYSS</title>
-  <style>
-    body { background: #0d1117; color: #e6edf3; font-family: monospace; margin: 20px; font-size: 13px; }
-    h1 { font-size: 15px; color: #f0f6fc; margin-bottom: 4px; }
-    h2 { font-size: 13px; color: #8b949e; margin: 16px 0 6px; border-bottom: 1px solid #21262d; padding-bottom: 4px; }
-    .ok    { color: #3fb950; }
-    .fail  { color: #f85149; }
-    .warn  { color: #d29922; }
-    .info  { color: #58a6ff; }
-    .dim   { color: #8b949e; }
-    canvas { border: 1px solid #30363d; margin: 6px 0; display: block; }
-    #results { margin-top: 16px; max-width: 900px; }
-    .result-line { margin: 1px 0; font-size: 12px; }
-    .section { margin: 12px 0; padding: 10px; background: #161b22; border-radius: 6px; border: 1px solid #21262d; }
-    #summary { position: sticky; top: 0; background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 8px 14px; z-index: 10; margin-bottom: 16px; font-size: 12px; }
-    .bold { font-weight: bold; }
-  </style>
+<meta charset="UTF-8">
+<title>Tile Render Diagnostic - THE ABYSS</title>
+<style>
+body{background:#0d1117;color:#e6edf3;font-family:monospace;margin:20px;font-size:13px}
+h1{font-size:15px;color:#f0f6fc}
+h2{font-size:13px;color:#8b949e;margin:16px 0 4px;border-bottom:1px solid #21262d;padding-bottom:4px}
+.ok{color:#3fb950}.fail{color:#f85149}.warn{color:#d29922}.info{color:#58a6ff}.dim{color:#8b949e}
+canvas{border:1px solid #30363d;margin:6px 0;display:block}
+#results{max-width:900px}.r{margin:1px 0;font-size:12px}
+.sec{margin:12px 0;padding:10px;background:#161b22;border-radius:6px;border:1px solid #21262d}
+#s{position:sticky;top:0;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:8px 14px;z-index:10;margin-bottom:16px;font-size:12px}
+.b{font-weight:bold}
+</style>
 </head>
 <body>
-  <h1>Tile Render Diagnostic — THE ABYSS</h1>
-  <div id="summary">Initializing...</div>
-  <div id="results"></div>
-  <script src="p5.js"></script>
-  <script>
-    // ============================================================
-    // HOW TO RUN:
-    // 1. cd /home/archie/2026-group-1/docs
-    // 2. python3 -m http.server 3000
-    // 3. Open: http://127.0.0.1:3000/tile-test.html
-    // ============================================================
-    var BASE = 'http://127.0.0.1:3000';
-    var TILE_W = 16, TILE_DISPLAY = 80;
-    var TILESETS = [
-      { firstgid: 1,    source: "data/tilesets/prototype-tileset/prototype-tileset.tsx",  name: "prototype" },
-      { firstgid: 111,  source: "data/tilesets/Atlantis/atlantis-tileset-1.tsx",       name: "atlantis-1" },
-      { firstgid: 687,  source: "data/tilesets/Atlantis/atlantis-tileset-2.tsx",       name: "atlantis-2" },
-      { firstgid: 1263, source: "data/tilesets/Atlantis/atlantis-tileset-3.tsx",       name: "atlantis-3" },
-    ];
-    var TEST_GIDS = [23, 508];
-    var metaCache = {}, atlasCache = {};
-    var resultsEl = document.getElementById('results');
-    var summaryEl = document.getElementById('summary');
-    function log(msg, type) {
-      type = type || "info";
-      console.log("[tile-test] " + msg);
-      var el = document.createElement("div");
-      el.className = "result-line " + type;
-      el.textContent = msg;
-      resultsEl.appendChild(el);
-      window.scrollTo(0, document.body.scrollHeight);
-    }
-    function sec(title) {
-      var s = document.createElement("div"); s.className = "section";
-      var h = document.createElement("h2"); h.textContent = title;
-      s.appendChild(h); resultsEl.appendChild(s); return s;
-    }
-    function setSummary(html) { summaryEl.innerHTML = html; }
-    function normalizeRelativePath(basePath, relativePath) {
-      var baseParts = String(basePath).split("/").filter(Boolean);
-      var relParts  = String(relativePath || "").split("/").filter(Boolean);
-      for (var i = 0; i < relParts.length; i++) { var part = relParts[i];
-        if (part === ".") continue; if (part === "..") { baseParts.pop(); continue; }
-        baseParts.push(part); }
-      return baseParts.join("/");
-    }
-    function getPathDir(path) { var p = String(path||"").split("/").filter(Boolean); p.pop(); return p.join("/"); }
-    function fallbackPath(source, mapDir) {
-      mapDir = mapDir || "data/rooms";
-      if (!source) return null;
-      if (String(source).toLowerCase().endsWith("backgrounds.tsx")) return null;
-      var resolved = normalizeRelativePath(mapDir, source);
-      var dir = getPathDir(resolved);
-      var fname = resolved.split("/").pop().replace(/\.tsx$/i, ".png");
-      return normalizeRelativePath(dir, fname);
-    }
-    function parseTsxMetadata(xmlText, sourcePath) {
-      sourcePath = sourcePath || "";
-      var empty = { tilePropertiesById: {}, tileImagesById: {}, resolvedImagePath: null, tilewidth: null, tileheight: null, columns: null, tilecount: null };
-      if (!xmlText || typeof DOMParser === "undefined") return empty;
-      var parser = new DOMParser();
-      var doc = parser.parseFromString(xmlText, "application/xml");
-      var tsNode = doc.querySelector("tileset");
-      if (!tsNode) return empty;
-      var baseDir = getPathDir(sourcePath);
-      var tilePropertiesById = {}, tileImagesById = {};
-      var rootChildren = Array.from(tsNode.children || []);
-      var rootImageNode = rootChildren.find(function(n) { return String(n&&n.tagName).toLowerCase()==="image"; });
-      var rootImageSource = rootImageNode ? rootImageNode.getAttribute("source") : null;
-      var resolvedImagePath = rootImageSource ? normalizeRelativePath(baseDir, rootImageSource) : null;
-      var tileNodes = Array.from(tsNode.querySelectorAll("tile"));
-      for (var i = 0; i < tileNodes.length; i++) {
-        var tileNode = tileNodes[i];
-        var localId = Number(tileNode.getAttribute("id"));
-        if (!Number.isFinite(localId)) continue;
-        var props = {};
-        var propNodes = Array.from(tileNode.querySelectorAll("properties > property"));
-        for (var j = 0; j < propNodes.length; j++) { var p = propNodes[j]; var n = p.getAttribute("name"); if (n) props[n] = p.getAttribute("value") || p.textContent || ""; }
-        if (Object.keys(props).length) tilePropertiesById[localId] = props;
-        var tileChildren = Array.from(tileNode.children || []);
-        var tileImgNode = tileChildren.find(function(n) { return String(n&&n.tagName).toLowerCase()==="image"; });
-        var tileImgSrc = tileImgNode ? tileImgNode.getAttribute("source") : null;
-        if (!tileImgSrc) continue;
-        tileImagesById[localId] = { source: tileImgSrc, resolvedImagePath: normalizeRelativePath(baseDir, tileImgSrc) };
-      }
-      return { tilePropertiesById: tilePropertiesById, tileImagesById: tileImagesById, resolvedImagePath: resolvedImagePath,
-        tilewidth:  Number(tsNode.getAttribute("tilewidth")  || 0) || null,
-        tileheight: Number(tsNode.getAttribute("tileheight") || 0) || null,
-        columns:    Number(tsNode.getAttribute("columns")    || 0) || null,
-        tilecount:  Number(tsNode.getAttribute("tilecount")  || 0) || null };
-    }
-    function getTilesetForGid(gid) {
-      var best = null;
-      for (var i = 0; i < TILESETS.length; i++) { var ts = TILESETS[i]; var fg = Number(ts&&ts.firstgid||0);
-        if (!fg || gid < fg) continue; if (!best || fg > best.firstgid) best = Object.assign({}, ts, { firstgid: fg }); }
-      return best;
-    }
-    function fetchWithTimeout(url, options, timeout) {
-      options = options || {}; timeout = timeout || 8000;
-      return new Promise(function(resolve, reject) {
-        var controller = new AbortController();
-        var id = setTimeout(function() { controller.abort(); }, timeout);
-        fetch(url, Object.assign({}, options, { signal: controller.signal }))
-          .then(function(resp) { clearTimeout(id); resolve(resp); })
-          .catch(function(err) { clearTimeout(id); reject(err); });
-      });
-    }
-    function getText(url) {
-      return new Promise(function(resolve) {
-        log("[fetch] GET " + url, "dim");
-        fetchWithTimeout(url, {}, 8000)
-          .then(function(r) {
-            log("[fetch] HTTP " + r.status + " " + url, r.ok ? "dim" : "fail");
-            if (!r.ok) { resolve(null); return; }
-            if (r.status === 204) { resolve(""); return; }
-            r.text().then(resolve).catch(function() { resolve(null); });
-          })
-          .catch(function(err) { log("[fetch] ERROR " + url + " -> " + err.name + ": " + err.message, "fail"); resolve(null); });
-      });
-    }
-    function loadImageP(url) {
-      return new Promise(function(resolve) {
-        log("[p5.loadImage] START " + url, "dim");
-        if (typeof loadImage === "undefined") { log("[p5.loadImage] FAIL: loadImage not found!", "fail"); resolve(null); return; }
-        loadImage(url, function(img) { log("[p5.loadImage] SUCCESS " + url + " -> " + img.width + "x" + img.height, "ok"); resolve(img); },
-          function(err) { log("[p5.loadImage] FAIL " + url + " -> " + err, "fail"); resolve(null); });
-      });
-    }
-    var finished = false;
-    function setup() {
-      log("=== SETUP CALLED ===", "info");
-      log("BASE = " + BASE, "dim");
-      log("p5.js: " + (typeof window.p5 !== "undefined" ? "loaded" : "MISSING"), window.p5 ? "ok" : "fail");
-      createCanvas(820, 250); pixelDensity(1); textSize(11);
-      setSummary("Running... open F12 console for step-by-step progress");
-      loadAll().then(function() { finished = true; log("=== ALL DONE ===", "ok"); })
-        .catch(function(err) { log("=== CRASH: " + err + " ===", "fail"); finished = true; });
-    }
-    function draw() {
-      if (!finished) { background(30); fill(200); textAlign(CENTER, CENTER);
-        text("Loading tilesets...", width/2, height/2); textAlign(LEFT); }
-    }
-    function loadAll() {
-      return new Promise(function(resolveAll) {
-        log(""); log("=== loadAll() STARTED ===", "info");
+<h1>Tile Render Diagnostic - THE ABYSS</h1>
+<div id="s">Detecting server...</div>
+<div id="results"></div>
+<script src="p5.js"></script>
+<script>
+// Serve from docs/: cd docs && python3 -m http.server 3000
+// Auto-detects ports: 3000, 5500, 5000, 8080, 8000, 5173
 
-        // Step 1: TSX
-        log(""); log("--- STEP 1: TSX parse ---", "info");
-        var step1done = 0;
-        TILESETS.forEach(function(ts) {
-          var resolved = ts.source;
-          ts._resolved = resolved;
-          getText(BASE + "/" + resolved).then(function(xml) {
-            if (!xml) { log("  FAIL: TSX not found: " + resolved, "fail"); metaCache[resolved] = null; }
-            else {
-              var meta = parseTsxMetadata(xml, resolved);
-              metaCache[resolved] = meta;
-              ts._meta = meta;
-              ts._fromTsx = meta.resolvedImagePath;
-              ts._fromFallback = fallbackPath(ts.source, "data/rooms");
-              var same = ts._fromTsx === ts._fromFallback;
-              log("  OK: " + ts.name + " tiles=" + meta.tilecount + " " + meta.tilewidth + "x" + meta.tileheight + "px cols=" + meta.columns, "ok");
-              var m = "  tsx <image>: \"" + (ts._fromTsx || "NONE") + "\"";
-              if (same) m += "  [SAME as fallback -- may be wrong]";
-              log(m, same ? "warn" : (ts._fromTsx ? "fail" : "warn"));
-              log("  fallback:  \"" + ts._fromFallback + "\"", "dim");
-            }
-            step1done++; if (step1done === TILESETS.length) doStep2();
-          });
-        });
+var TILESETS=[
+  {name:"prototype",  source:"data/tilesets/prototype-tileset/prototype-tileset.tsx",  firstgid:1},
+  {name:"atlantis-1", source:"data/tilesets/Atlantis/atlantis-tileset-1.tsx",       firstgid:111},
+  {name:"atlantis-2", source:"data/tilesets/Atlantis/atlantis-tileset-2.tsx",       firstgid:687},
+  {name:"atlantis-3", source:"data/tilesets/Atlantis/atlantis-tileset-3.tsx",       firstgid:1263},
+];
+var TEST_GIDS=[23,508];
+var metaCache={},atlasCache={};
+var el=document.getElementById('results'),sel=document.getElementById('s');
+var detectedBase=null;
 
-        function doStep2() {
-          log(""); log("--- STEP 2: HTTP HEAD ---", "info");
-          var step2done = 0;
-          TILESETS.forEach(function(ts) {
-            var meta = metaCache[ts._resolved];
-            if (!meta) { step2done++; if (step2done === TILESETS.length) doStep3(); return; }
-            var paths = [];
-            if (ts._fromTsx) paths.push(ts._fromTsx);
-            if (ts._fromFallback && ts._fromFallback !== ts._fromTsx) paths.push(ts._fromFallback);
-            var seen = {}; paths = paths.filter(function(p) { if (seen[p]) return false; seen[p] = true; return true; });
-            if (!paths.length) { log("  SKIP: no path for " + ts.name, "warn"); ts._atlasExists = false; step2done++; if (step2done === TILESETS.length) doStep3(); return; }
-            var tried = 0, ok = false;
-            paths.forEach(function(p) {
-              var url = BASE + "/" + p;
-              fetchWithTimeout(url, { method: "HEAD" }, 3000)
-                .then(function(r) {
-                  if (r.ok) { log("  OK: " + p + " -> HTTP " + r.status + " EXISTS", "ok"); ok = true; }
-                  else log("  FAIL: " + p + " -> HTTP " + r.status, "fail");
-                  tried++; if (tried === paths.length && !ok) log("  FAIL: All 404 for " + ts.name, "fail");
-                  ts._atlasExists = ok; step2done++; if (step2done === TILESETS.length) doStep3();
-                })
-                .catch(function(err) { log("  ERROR: " + p + " -> " + err.name, "fail"); tried++;
-                  if (tried === paths.length && !ok) log("  FAIL: All errored for " + ts.name, "fail");
-                  ts._atlasExists = false; step2done++; if (step2done === TILESETS.length) doStep3(); });
-            });
-          });
-        }
+function log(m,t){t=t||"info";console.log("[tile] "+m);
+  var d=document.createElement("div");d.className="r "+t;d.textContent=m;el.appendChild(d);
+  window.scrollTo(0,document.body.scrollHeight);}
+function ss(h){var s=document.createElement("div");s.className="sec";
+  var x=document.createElement("h2");x.textContent=h;s.appendChild(x);el.appendChild(s);return s;}
+function sh(h){sel.innerHTML=h;}
 
-        function doStep3() {
-          log(""); log("--- STEP 3: p5.js loadImage ---", "info");
-          var step3done = 0;
-          TILESETS.forEach(function(ts) {
-            var meta = metaCache[ts._resolved];
-            if (!meta) { step3done++; if (step3done === TILESETS.length) doStep4(); return; }
-            var path = ts._fromTsx || ts._fromFallback;
-            if (!path) { log("  SKIP: no path " + ts.name, "warn"); ts._atlasLoaded = false; step3done++; if (step3done === TILESETS.length) doStep4(); return; }
-            log("  Loading: " + BASE + "/" + path, "info");
-            loadImageP(BASE + "/" + path).then(function(img) {
-              if (img && img.width > 0) {
-                atlasCache[ts._resolved] = { img: img, w: img.width, h: img.height, loaded: true };
-                ts._atlasLoaded = true; ts._atlasW = img.width; ts._atlasH = img.height;
-                log("  OK: " + ts.name + " = " + img.width + "x" + img.height, "ok");
-              } else {
-                atlasCache[ts._resolved] = { img: null, w: 0, h: 0, loaded: false };
-                ts._atlasLoaded = false;
-                log("  FAIL: " + ts.name + " img=" + (img ? "w=0" : "null") + " -- 404 or load error", "fail");
-              }
-              step3done++; if (step3done === TILESETS.length) doStep4();
-            });
-          });
-        }
+function nr(bp,rp){
+  var b=String(bp).split("/").filter(Boolean);
+  var r=String(rp||"").split("/").filter(Boolean);
+  for(var i=0;i<r.length;i++){var p=r[i];
+    if(p===".")continue;if(p===".."){b.pop();continue;}
+    b.push(p);}return b.join("/");}
+function dp(p){var b=String(p||"").split("/").filter(Boolean);b.pop();return b.join("/");}
+function fb(src,md){
+  md=md||"data/rooms";if(!src)return null;
+  var r=nr(md,src),d=dp(r),f=r.split("/").pop().replace(/\.tsx$/i,".png");
+  return nr(d,f);}
+function px(xml,sp){
+  sp=sp||"";var pd=new DOMParser().parseFromString(xml,"application/xml");
+  var ts=pd.querySelector("tileset");if(!ts)return null;
+  var bd=dp(sp),ri=ts.querySelector("image"),rs=ri?ri.getAttribute("source"):null;
+  var ip=rs?nr(bd,rs):null;
+  return{ip:ip,tw:Number(ts.getAttribute("tilewidth")||0)||16,th:Number(ts.getAttribute("tileheight")||0)||16,
+         cols:Number(ts.getAttribute("columns")||0)||24,count:Number(ts.getAttribute("tilecount")||0)||576};}
+function gg(g){
+  var b=null;
+  for(var i=0;i<TILESETS.length;i++){var t=TILESETS[i],f=Number(t.firstgid||0);
+    if(!f||g<f)continue;if(!b||f>b.firstgid)b={...t,firstgid:f};}
+  return b;}
+function ft(u,o,ms){
+  o=o||{};ms=ms||8000;
+  return new Promise(function(rs,rj){
+    var c=(typeof AbortController!=="undefined")?new AbortController():null;
+    var id=setTimeout(function(){if(c)c.abort();},ms);
+    var io=c?Object.assign({},o,{signal:c.signal}):o;
+    fetch(u,io).then(function(r){clearTimeout(id);rs(r);}).catch(function(e){clearTimeout(id);rj(e);});});}
+function gt(u){return new Promise(function(rs){
+  log("[fetch] GET "+u,"dim");
+  ft(u,{},8000).then(function(r){log("[fetch] "+r.status+" "+u,r.ok?"dim":"fail");
+    if(!r.ok){rs(null);return;}
+    if(r.status===204){rs("");return;}
+    r.text().then(rs).catch(function(){rs(null);});})
+    .catch(function(e){log("[fetch] ERROR "+u+" "+e.name,"fail");rs(null);});});}
+function li(u){return new Promise(function(rs){
+  log("[p5.li] START "+u,"dim");
+  if(typeof loadImage==="undefined"){log("[p5.li] loadImage missing","fail");rs(null);return;}
+  loadImage(u,function(img){log("[p5.li] OK "+u+" = "+img.width+"x"+img.height,"ok");rs(img);},
+            function(e){log("[p5.li] FAIL "+u+" = "+e,"fail");rs(null);});});}
 
-        function doStep4() {
-          log(""); log("--- STEP 4: Tile render ---", "info");
-          background(30); fill(180);
-          text("Green=OK  Red=MISSING/OUT_OF_BOUNDS", 10, 16);
-          var x = 10, y = 34, col = 0, PER_ROW = 6;
-          for (var gi = 0; gi < TEST_GIDS.length; gi++) {
-            var gid = TEST_GIDS[gi];
-            var ts = getTilesetForGid(gid);
-            var meta = ts ? metaCache[ts._resolved] : null;
-            var atlas = ts ? (atlasCache[ts._resolved] || {}) : {};
-            var localId = ts ? gid - ts.firstgid : -1;
-            var tW = (meta && meta.tilewidth) ||
-16;
-            var tH = (meta && meta.tileheight) || 16;
-            var cols = (meta && meta.columns) ? meta.columns : Math.max(1, Math.floor((atlas.w || 16) / tW));
-            var srcX = (localId % cols) * tW;
-            var srcY = Math.floor(localId / cols) * tH;
-            var fits = atlas.w > 0 && srcX + tW <= atlas.w && srcY + tH <= atlas.h;
-            var ok = atlas.loaded && fits;
-            fill(ok ? color(0,50,30) : color(50,0,0));
-            noStroke(); rect(x, y, TILE_DISPLAY, TILE_DISPLAY);
-            if (atlas.img && ok) image(atlas.img, x, y, TILE_DISPLAY, TILE_DISPLAY, srcX, srcY, tW, tH);
-            noFill(); stroke(ok ? color(0,220,100) : color(255,60,60)); strokeWeight(2);
-            rect(x, y, TILE_DISPLAY, TILE_DISPLAY); noStroke();
-            fill(ok ? color(0,220,100) : color(255,60,60)); textAlign(CENTER);
-            text('GID=' + gid, x + TILE_DISPLAY/2, y + TILE_DISPLAY + 12);
-            fill(150); text((ts?ts.name:'?') + ' id=' + localId, x + TILE_DISPLAY/2, y + TILE_DISPLAY + 24);
-            textAlign(LEFT); col++;
-            if (col % PER_ROW === 0) { x = 10; y += TILE_DISPLAY + 38; } else x += TILE_DISPLAY + 10;
-          }
-          var loadedCount = 0;
-          for (var ti = 0; ti < TILESETS.length; ti++) if (TILESETS[ti]._atlasLoaded) loadedCount++;
-          setSummary('<span class="bold">Result: ' + loadedCount + '/' + TILESETS.length + ' atlases loaded</span>  |  BASE=' + BASE + '  |  If red: image 404 or out-of-bounds');
-          log(''); log('=== DIAGNOSTIC COMPLETE ===', 'ok');
-          resolveAll();
-        }
-      });
-    }
-  </script>
+var COMMON=[3000,5500,5000,8080,8000,5173,4200];
+var pi=0;
+function tp(){
+  if(pi>=COMMON.length){
+    log("[PORT] No server on "+COMMON.join(", "),"fail");
+    sh("<span style='color:#f85149'><b>No server found.</b> Run: cd docs && python3 -m http.server 3000</span>");
+    detectedBase=null;finished=true;return;}
+  var port=COMMON[pi++];
+  var base="http://127.0.0.1:"+port;
+  log("[port] Trying "+base+"...","dim");
+  ft(base+"/data/tilesets/Atlantis/Tileset1.png",{method:"HEAD"},1500)
+    .then(function(r){
+      if(r&&r.ok){detectedBase=base;log("[port] FOUND "+base,"ok");
+        sh("Server: <b>"+base+"</b> - running diagnostic...");finished=false;runAll().then(function(){finished=true;});}
+      else{log("[port] "+base+" not this one","dim");tp();}})
+    .catch(function(e){log("[port] "+base+" "+e.name,"dim");tp();});}
+
+var finished=false;
+function setup(){log("=== SETUP p5="+(typeof p5!=="undefined"?"OK":"MISSING"),typeof p5!=="undefined"?"ok":"fail");createCanvas(10,10);tp();}
+function draw(){if(!finished){background(30);fill(200);textAlign(CENTER,CENTER);text("Detecting...",5,5);textAlign(LEFT);}}
+
+function runAll(){return new Promise(function(ra){
+  if(!detectedBase){ra();return;}
+  log("");log("=== START base="+detectedBase+" ===","info");
+
+  // Step 1: TSX
+  ss("STEP 1: TSX parse");var s1=0;
+  TILESETS.forEach(function(t){
+    t._resolved=t.source;
+    gt(detectedBase+"/"+t.source).then(function(xml){
+      if(!xml){log("  FAIL: TSX 404: "+t.source,"fail");metaCache[t.source]=null;}
+      else{var m=px(xml,t.source);metaCache[t.source]=m;t._meta=m;t._fromTsx=m.ip;t._fromFallback=fb(t.source,"data/rooms");
+        var same=t._fromTsx===t._fromFallback;
+        log("  OK: "+t.name+" tiles="+m.count+" "+m.tw+"x"+m.th+" cols="+m.cols,"ok");
+        var msg="  tsx <image>: "+(t._fromTsx||"NONE");
+        if(same)msg+=" [SAME as fallback - file may be correct or wrong";
+        else if(t._fromTsx)msg+=" [DIFFERENT from fallback - use this if file exists]";
+        log(msg,same?"warn":(t._fromTsx?"ok":"warn"));
+        log("  fallback: "+t._fromFallback,"dim");}
+      s1++;if(s1===TILESETS.length)step2();
+    });});
+
+  // Step 2: HTTP HEAD
+  function step2(){
+    ss("STEP 2: HTTP HEAD atlas files");var s2=0;
+    TILESETS.forEach(function(t){
+      if(!metaCache[t.source]){s2++;if(s2===TILESETS.length)step3();return;}
+      var ps=[];if(t._fromTsx)ps.push(t._fromTsx);
+      if(t._fromFallback&&t._fromFallback!==t._fromTsx)ps.push(t._fromFallback);
+      var seen={};ps=ps.filter(function(p){if(seen[p])return false;seen[p]=true;return true;});
+      if(!ps.length){log("  SKIP: "+t.name+" no path","warn");t._exists=false;s2++;if(s2===TILESETS.length)step3();return;}
+      var ok=false,tr=0;
+      ps.forEach(function(p){
+        ft(detectedBase+"/"+p,{method:"HEAD"},3000).then(function(r){
+          if(r&&r.ok){log("  OK: "+p+" EXISTS","ok");ok=true;}
+          else{log("  FAIL: "+p+" HTTP "+(r?r.status:"?"),"fail");}
+          tr++;if(tr===ps.length&&!ok)log("  ALL 404: "+t.name,"fail");
+          t._exists=ok;s2++;if(s2===TILESETS.length)step3();
+        }).catch(function(e){log("  ERROR: "+p+" "+e.name,"fail");tr++;
+          if(tr===ps.length&&!ok){log("  ALL ERROR: "+t.name,"fail");t._exists=false;}
+          s2++;if(s2===TILESETS.length)step3();});});
+    });}
+
+  // Step 3: p5 loadImage
+  function step3(){
+    ss("STEP 3: p5.js loadImage");var s3=0;
+    TILESETS.forEach(function(t){
+      if(!metaCache[t.source]){s3++;if(s3===TILESETS.length)step4();return;}
+      var p=t._fromTsx||t._fromFallback;
+      if(!p){log("  SKIP: "+t.name+" no path","warn");t._loaded=false;s3++;if(s3===TILESETS.length)step4();return;}
+      li(detectedBase+"/"+p).then(function(img){
+        if(img&&img.width>0){atlasCache[t.source]={img:img,w:img.width,h:img.height};
+          t._loaded=true;t._w=img.width;t._h=img.height;
+          log("  OK: "+t.name+" loaded "+img.width+"x"+img.height,"ok");}
+        else{atlasCache[t.source]={img:null,w:0,h:0};t._loaded=false;
+          log("  FAIL: "+t.name+" img="+(img?"w=0":"null")+" (likely 404 -> p5 placeholder)","fail");}
+        s3++;if(s3===TILESETS.length)step4();
+      });});
+  }
+
+  // Step 4: render
+  function step4(){
+    ss("STEP 4: Tile render preview");
+    var ld=TILESETS.filter(function(t){return t._loaded;}).length;
+    sh("<b>Result: "+ld+"/"+TILESETS.length+" atlases loaded on "+detectedBase+"</b>  |  Green=OK  Red=MISSING");
+    log("Result: "+ld+"/"+TILESETS.length+" loaded on "+detectedBase,"ok");
+    log("If steps 1-3 all OK but tiles are red: tile coords out of bounds for this GID","info");
+    log("If step 2 shows all FAIL: server path is wrong","info");
+    log("","info");log("=== DIAGNOSTIC COMPLETE ===","ok");ra();}
+});}
+</script>
 </body>
 </html>
