@@ -151,6 +151,7 @@ export function createMissileSystem(player, getTargets, getWalls, soundSystem = 
                         }
                     } else {
                         entity.pendingDestroy = true;
+                        entity.hitFlashTime = millis(); // trigger white flash
                     }
 
                     missile.pendingDestroy = true;

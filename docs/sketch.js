@@ -1017,6 +1017,16 @@ function mousePressed() {
     return;
   }
 
+  // Workshop hint button click (TAB to open, or click the button)
+  if (gameState === "PLAYING") {
+    const panelX = 16, panelY = 72, panelW = 175, panelH = 34;
+    if (mouseX >= panelX && mouseX <= panelX + panelW &&
+        mouseY >= panelY && mouseY <= panelY + panelH) {
+      shopSystem?.toggleWorkshop();
+      return;
+    }
+  }
+
   // Forward clicks to pause menu while game is paused mid-play
   if (pauseMenuSystem?.isPaused()) {
     pauseMenuSystem.onMousePressed();

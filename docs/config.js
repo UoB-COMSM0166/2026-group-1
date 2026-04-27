@@ -158,7 +158,7 @@ export const PLAYER = {
 //======================
 export const POWER = {
   MAX_POWER: 100,
-  CURRENT_POWER: 100,
+  CURRENT_POWER: 50,  // Start lower to incentivise upgrades
   LOW_POWER_THRESHOLD: 0.15,
   DRAIN_RATE: 0.5,
   UPGRADE_MAX_POWER_BONUS: 20,  // extra capacity per upgrade level
@@ -353,6 +353,7 @@ export const CONTROLS = {
       TOGGLE_WORKSHOP:    9,     // Tab
       ACCEPT:            81,    // Q
       TOGGLE_FULLSCREEN: 192,   // Backtick
+      MOVE_SLOW:     16,     // Shift (slow movement to 40% speed)
     },
     /* Arrow-keys option for movement */
     arrows: {
@@ -367,6 +368,7 @@ export const CONTROLS = {
       TOGGLE_WORKSHOP:    9,     // Tab
       ACCEPT:            81,    // Q
       TOGGLE_FULLSCREEN: 192,   // Backtick
+      MOVE_SLOW:     16,     // Shift (slow movement to 40% speed)
     },
   },
 };

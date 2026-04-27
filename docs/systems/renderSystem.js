@@ -338,6 +338,18 @@ export function createRenderSystem({
          translate(renderInterpolate(prevX, currX, alpha), renderInterpolate(prevY, currY, alpha));
          scale(facing, 1);
 
+         // Hit flash effect
+         if (crab.hitFlashTime != null) {
+            const elapsed = millis() - crab.hitFlashTime;
+            if (elapsed < 200) {
+               fill(255, 255, 255, Math.round(180 * (1 - elapsed / 200)));
+               noStroke();
+               ellipse(0, 0, crabW + 6, crabH + 6);
+            } else {
+               delete crab.hitFlashTime;
+            }
+         }
+
          noStroke();
          fill(200, 80, 50);
          ellipse(0, 0, crabW, crabH);
@@ -367,6 +379,18 @@ export function createRenderSystem({
 
          push();
          translate(renderInterpolate(prevX, currX, alpha), renderInterpolate(prevY, currY, alpha));
+
+         // Hit flash effect
+         if (jelly.hitFlashTime != null) {
+            const elapsed = millis() - jelly.hitFlashTime;
+            if (elapsed < 200) {
+               fill(255, 255, 255, Math.round(200 * (1 - elapsed / 200)));
+               noStroke();
+               ellipse(0, -jellyH / 4, jellyW + 8, jellyH + 8);
+            } else {
+               delete jelly.hitFlashTime;
+            }
+         }
 
          const pulse = Math.abs(Math.sin(jelly.pulsePhase || 0)) * 0.15 + 0.85;
          scale(1.5, pulse*1.5);
@@ -410,6 +434,18 @@ export function createRenderSystem({
          push();
          translate(renderInterpolate(prevX, currX, alpha), renderInterpolate(prevY, currY, alpha));
          scale(facing, 1);
+
+         // Hit flash effect
+         if (piranha.hitFlashTime != null) {
+            const elapsed = millis() - piranha.hitFlashTime;
+            if (elapsed < 200) {
+               fill(255, 255, 255, Math.round(180 * (1 - elapsed / 200)));
+               noStroke();
+               ellipse(0, 0, pW + 8, pH + 8);
+            } else {
+               delete piranha.hitFlashTime;
+            }
+         }
 
          noStroke();
          fill(isChasing ? color(220, 40, 40) : color(60, 120, 180));

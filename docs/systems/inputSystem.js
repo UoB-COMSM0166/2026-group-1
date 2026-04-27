@@ -77,6 +77,7 @@ export function createInputSystem(player) {
       player.moveIntent.right = keyIsDown(map.MOVE_RIGHT);
       player.moveIntent.up    = keyIsDown(map.MOVE_UP);
       player.moveIntent.down  = keyIsDown(map.MOVE_DOWN);
+      player.moveIntent.slow  = keyIsDown(map.MOVE_SLOW);
     },
 
     onKeyPressed(key, keyCode) {

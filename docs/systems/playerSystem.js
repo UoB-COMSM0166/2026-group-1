@@ -71,7 +71,8 @@ export function createPlayerSystem(player) {
       }
 
       // Clamp velocity to max speed (MOVE_SPEED is px/sec, clamped per frame)
-      const maxSpeed = PLAYER.MOVE_SPEED * TIME.fixedDeltaTime;
+      const slowFactor = player.moveIntent?.slow ? 0.4 : 1.0;
+      const maxSpeed = PLAYER.MOVE_SPEED * TIME.fixedDeltaTime * slowFactor;
       player.velocity.x = constrain(player.velocity.x, -maxSpeed, maxSpeed);
       player.velocity.y = constrain(player.velocity.y, -maxSpeed, maxSpeed);
 
