@@ -511,20 +511,34 @@ function preload() {
   // Extracted tiles live at data/tiles/{tilesetName}/{gid}.png (GID = Tiled global ID)
   const tileGidToPath = new Map();
   for (const [roomId, room] of Object.entries(roomData)) {
-    for (const ts of room?.tilesets ?? []) {
-      const tsName = ts.name ?? path.basename(String(ts.source ?? ''), '.tsx');
-      const firstgid = Number(ts.firstgid || 0);
-      for (const layer of (room.layers || [])) {
-        const dataArr = layer.type === 'tilelayer' ? (layer.data || []) : null;
-        if (dataArr) {
-          for (const gid of dataArr) {
-            if (gid >>> 0) tileGidToPath.set(gid >>> 0, `data/tiles/${tsName}/${gid >>> 0}.png`);
-          }
+    // Collect all tilesets with their GID ranges for this room
+    const roomTilesets = (room.tilesets || []).map(ts => ({
+      firstgid: Number(ts.firstgid || 0),
+      name:     ts.name ?? path.basename(String(ts.source ?? ''), '.tsx'),
+    })).sort((a, b) => a.firstgid - b.firstgid);
+
+    function tilesetForGid(gid) {
+      let best = null;
+      for (const ts of roomTilesets) {
+        if (gid >= ts.firstgid && (!best || ts.firstgid > best.firstgid)) best = ts;
+      }
+      return best; // null for gid=0
+    }
+
+    for (const layer of (room.layers || [])) {
+      if (layer.type === 'tilelayer') {
+        for (const gid of (layer.data || [])) {
+          const g = gid >>> 0;
+          if (!g) continue;
+          const ts = tilesetForGid(g);
+          if (ts) tileGidToPath.set(g, `data/tiles/${ts.name}/${g}.png`);
         }
-        if (layer.type === 'objectgroup') {
-          for (const obj of (layer.objects || [])) {
-            if (obj.gid >>> 0) tileGidToPath.set(obj.gid >>> 0, `data/tiles/${tsName}/${obj.gid >>> 0}.png`);
-          }
+      } else if (layer.type === 'objectgroup') {
+        for (const obj of (layer.objects || [])) {
+          const g = obj.gid >>> 0;
+          if (!g) continue;
+          const ts = tilesetForGid(g);
+          if (ts) tileGidToPath.set(g, `data/tiles/${ts.name}/${g}.png`);
         }
       }
     }
@@ -533,6 +547,7 @@ function preload() {
   // Load each unique tile file
   for (const [gid, tilePath] of tileGidToPath) {
     assets[`tile:${gid}`] = loadImage(tilePath);
+  }
   }
 
   assets[GAMEPLAY_OVERLAY_ASSET_KEY] = loadImage(
