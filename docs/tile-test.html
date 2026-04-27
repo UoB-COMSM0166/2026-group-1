@@ -85,7 +85,7 @@ function li(u){return new Promise(function(rs){
   loadImage(u,function(img){log("[p5.li] OK "+u+" = "+img.width+"x"+img.height,"ok");rs(img);},
             function(e){log("[p5.li] FAIL "+u+" = "+e,"fail");rs(null);});});}
 
-var COMMON=[3000,5500,5000,8080,8000,5173,4200];
+var COMMON=[5501,3000,5500,5000,8080,8000,5173,4200];
 var pi=0;
 function tp(){
   if(pi>=COMMON.length){
