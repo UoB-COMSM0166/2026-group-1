@@ -73,9 +73,13 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
   let shopOpen = false;
   let controlMode = initialControlMode;
 
-  const INITIAL_UPGRADE_COSTS = { power: 50, torch: 40, sonar: 60 };
+  const INITIAL_UPGRADE_COSTS = { power: 50, torch: 40 };
+  const INITIAL_SONAR_COSTS = { range: 60, cooldown: 45, decay: 55 };
 
-  // Upgrade levels (now synced with player)
+  // Upgrade levels — synced with player.
+  // sonar: range key → player.upgrades.sonar
+  // sonarCooldown: key → player.upgrades.sonarCooldown
+  // sonarDecay: key → player.upgrades.sonarDecay
   const upgrades = {
     power: {
       level: player?.upgrades?.power ?? 1,
@@ -89,8 +93,18 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
     },
     sonar: {
       level: player?.upgrades?.sonar ?? 1,
-      cost: INITIAL_UPGRADE_COSTS.sonar,
-      description: "Increase sonar range"
+      cost: INITIAL_SONAR_COSTS.range,
+      description: "Ping range",
+    },
+    sonarCooldown: {
+      level: player?.upgrades?.sonarCooldown ?? 1,
+      cost: INITIAL_SONAR_COSTS.cooldown,
+      description: "Faster recharge",
+    },
+    sonarDecay: {
+      level: player?.upgrades?.sonarDecay ?? 1,
+      cost: INITIAL_SONAR_COSTS.decay,
+      description: "Tiles stay visible longer",
     },
   };
 
@@ -183,7 +197,7 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
 
     const upgradeCards = [];
     let i = 0;
-    for (const key of Object.keys(upgrades)) {
+    for (const key of ['power', 'torch']) {
       upgradeCards.push({
         key,
         x: upgradesStartX + i * (CARD_W + cardGap),
@@ -194,13 +208,24 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
       i += 1;
     }
 
-    const itemCards = [];
-    let j = 0;
+    // SUBSYSTEMS row: 3 sonar sub-upgrades + item cards
+    const subCards = [];
+    const subStartY = upgradesStartY + sectionGapY;
+    for (const subKey of ['sonarRange', 'sonarCooldown', 'sonarDecay']) {
+      subCards.push({
+        key: subKey,
+        x: upgradesStartX + subCards.length * (CARD_W + cardGap),
+        y: subStartY,
+        w: CARD_W,
+        h: CARD_H,
+      });
+    }
+    let j = 3;
     for (const key of Object.keys(items)) {
-      itemCards.push({
+      subCards.push({
         key,
         x: upgradesStartX + j * (CARD_W + cardGap),
-        y: upgradesStartY + sectionGapY,
+        y: subStartY,
         w: CARD_W,
         h: CARD_H,
       });
@@ -221,7 +246,7 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
       h: BUTTON_H,
     };
 
-    return { panelX, panelY, upgradeCards, itemCards, rightPanel, closeButton };
+    return { panelX, panelY, upgradeCards, subCards, rightPanel, closeButton };
   }
 
   function drawUpgradeCard(name, upgrade, x, y) {
@@ -299,6 +324,44 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
     text(canAfford ? "CLICK TO BUY +1" : "INSUFFICIENT CREDITS", x + CARD_W - 10, y + 100);
   }
 
+  function drawSubUpgradeCard(subName, subUpgrade, currentLevel, label, baseCost, x, y) {
+    const playerCredits = player?.credits ?? 0;
+    const cost = Math.ceil(baseCost * 1.5 ** (currentLevel - 1));
+    const canAfford = playerCredits >= cost;
+
+    noStroke();
+    fill(26, 31, 40, 240);
+    rect(x, y, CARD_W, CARD_H, 7);
+
+    stroke(canAfford ? color(143, 234, 255) : color(109, 109, 109));
+    strokeWeight(1.8);
+    noFill();
+    rect(x, y, CARD_W, CARD_H, 7);
+
+    textAlign(LEFT, TOP);
+    textSize(15);
+    fill(234, 246, 248);
+    noStroke();
+    text(label, x + 10, y + 8);
+
+    fill(149, 177, 182);
+    textSize(11);
+    text(subUpgrade.description, x + 10, y + 29);
+
+    fill(174, 205, 211);
+    text(`LEVEL ${currentLevel}`, x + 10, y + 50);
+    drawLevelTicks(x + 10, y + 68, currentLevel, 8);
+
+    fill(canAfford ? color(255, 223, 136) : color(132, 132, 132));
+    textSize(12);
+    text(`COST ${cost}`, x + 10, y + 98);
+
+    textAlign(RIGHT, TOP);
+    textSize(10);
+    fill(canAfford ? color(148, 252, 165) : color(129, 129, 129));
+    text(canAfford ? "CLICK TO UPGRADE" : "INSUFFICIENT CREDITS", x + CARD_W - 10, y + 100);
+  }
+
   //--------------------------------------
   // SHOP DISPLAY
   //--------------------------------------
@@ -330,8 +393,16 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
       drawUpgradeCard(card.key, upgrades[card.key], card.x, card.y);
     }
 
-    for (const card of layout.itemCards) {
-      drawItemCard(card.key, items[card.key], card.x, card.y);
+    for (const card of layout.subCards) {
+      if (card.key === 'sonarRange') {
+        drawSubUpgradeCard('sonarRange', upgrades.sonar.sub.range, upgrades.sonar.level, 'SONAR RANGE', 60, card.x, card.y);
+      } else if (card.key === 'sonarCooldown') {
+        drawSubUpgradeCard('sonarCooldown', upgrades.sonar.sub.cooldown, upgrades.sonar.sub.cooldown.level, 'SONAR CD', 45, card.x, card.y);
+      } else if (card.key === 'sonarDecay') {
+        drawSubUpgradeCard('sonarDecay', upgrades.sonar.sub.decay, upgrades.sonar.sub.decay.level, 'SONAR DECAY', 55, card.x, card.y);
+      } else {
+        drawItemCard(card.key, items[card.key], card.x, card.y);
+      }
     }
 
     const info = layout.rightPanel;
@@ -345,6 +416,8 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
     text(`Power Lvl: ${player?.upgrades?.power ?? 1}`, info.x + 20, info.y + 108);
     text(`Torch Lvl: ${player?.upgrades?.torch ?? 1}`, info.x + 20, info.y + 134);
     text(`Sonar Lvl: ${player?.upgrades?.sonar ?? 1}`, info.x + 20, info.y + 160);
+    text(`Sonar CD: ${player?.upgrades?.sonarCooldown ?? 1}`, info.x + 20, info.y + 182);
+    text(`Sonar Decay: ${player?.upgrades?.sonarDecay ?? 1}`, info.x + 20, info.y + 204);
 
     fill(116, 160, 171);
     textSize(11);
@@ -378,9 +451,19 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
     // Deduct credits
     player.credits -= upgrade.cost;
     
-    // Increment upgrade level
-    if (player.upgrades && upgradeName in player.upgrades) {
-      player.upgrades[upgradeName]++;
+    // Sonar uses 3 sub-upgrades; range increments main sonar level,
+    // cooldown and decay each have their own independent level.
+    // Power and torch use standard player.upgrades key.
+    if (player.upgrades) {
+      if (upgradeName === 'sonar') {
+        player.upgrades.sonar = (player.upgrades.sonar ?? 1) + 1;
+      } else if (upgradeName === 'sonarCooldown') {
+        player.upgrades.sonarCooldown = (player.upgrades.sonarCooldown ?? 1) + 1;
+      } else if (upgradeName === 'sonarDecay') {
+        player.upgrades.sonarDecay = (player.upgrades.sonarDecay ?? 1) + 1;
+      } else if (upgradeName in player.upgrades) {
+        player.upgrades[upgradeName]++;
+      }
     }
 
     // Update shop display
@@ -441,10 +524,18 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
       }
     }
 
-    for (const card of layout.itemCards) {
+    for (const card of layout.subCards) {
       if (isOver(card.x, card.y, card.w, card.h)) {
-        console.log(`[shop] item card clicked: ${card.key}`);
-        attemptItemPurchase(card.key, 1);
+        console.log(`[shop] sub card clicked: ${card.key}`);
+        if (card.key === 'sonarRange') {
+          attemptUpgradePurchase('sonar');
+        } else if (card.key === 'sonarCooldown') {
+          attemptUpgradePurchase('sonarCooldown');
+        } else if (card.key === 'sonarDecay') {
+          attemptUpgradePurchase('sonarDecay');
+        } else {
+          attemptItemPurchase(card.key, 1);
+        }
         return;
       }
     }
@@ -499,7 +590,13 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
       shopOpen = false;
       for (const name of Object.keys(upgrades)) {
         upgrades[name].level = 1;
-        upgrades[name].cost  = INITIAL_UPGRADE_COSTS[name];
+        upgrades[name].cost = name === 'sonar'
+          ? INITIAL_SONAR_COSTS.range
+          : name === 'sonarCooldown'
+            ? INITIAL_SONAR_COSTS.cooldown
+            : name === 'sonarDecay'
+              ? INITIAL_SONAR_COSTS.decay
+              : INITIAL_UPGRADE_COSTS[name];
       }
       items.missiles.quantity = 0;
     },
