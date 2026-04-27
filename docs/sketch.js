@@ -545,9 +545,12 @@ function preload() {
   }
 
   // Load each unique tile file
+  console.warn(`[preload] Loading ${tileGidToPath.size} individual tiles...`);
   for (const [gid, tilePath] of tileGidToPath) {
+    console.warn(`[preload] tile:${gid} -> ${tilePath}`);
     assets[`tile:${gid}`] = loadImage(tilePath);
   }
+  console.warn(`[preload] Done loading tiles — total assets keys:`, Object.keys(assets).length);
   }
 
   assets[GAMEPLAY_OVERLAY_ASSET_KEY] = loadImage(

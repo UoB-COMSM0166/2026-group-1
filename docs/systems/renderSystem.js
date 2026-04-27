@@ -128,7 +128,8 @@ export function createRenderSystem({
       // Direct tile lookup: tiles are pre-extracted as data/tiles/{tileset}/{gid}.png
       const tileImg = assets?.[`tile:${gid}`];
       if (!tileImg || !(tileImg.width > 0)) {
-         // Fallback: solid rect so platforms are never invisible
+         // Debug: log why tile is missing
+         console.warn(`[drawSpriteFromTileset] gid=${gid} tileImg=${tileImg ? 'w='+tileImg.width : 'null'} assets keys containing '${gid}':`, Object.keys(assets||{}).filter(k=>k.includes(gid)));
          return false;
       }
 
