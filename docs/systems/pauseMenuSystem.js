@@ -216,7 +216,7 @@ export function createPauseMenuSystem({
       leftX, baseY + 207,
     );
     text(
-      `Shop: ${keyLabel(map.TOGGLE_SHOP)}   Pause: ${keyLabel(map.TOGGLE_PAUSE)}   Fullscreen: ${keyLabel(map.TOGGLE_FULLSCREEN)}`,
+      `Workshop: ${keyLabel(map.TOGGLE_WORKSHOP)}   Pause: ${keyLabel(map.TOGGLE_PAUSE)}   Fullscreen: ${keyLabel(map.TOGGLE_FULLSCREEN)}`,
       leftX, baseY + 221,
     );
 

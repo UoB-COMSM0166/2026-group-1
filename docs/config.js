@@ -293,13 +293,13 @@ export const COMBAT = {
 export const DIFFICULTY = {
   easy: {
     POWER_PICKUP:    10,
-    CREDIT_PICKUP:  100,
+    SCRAP_PICKUP:    100,
     POWER_DRAIN:    0.5,  // 0.5/s torch off: ~200s (~3m 20s)
     TORCH_DRAIN:    1.75, // 0.5 × 1.75 = 0.875/s torch on: ~114s (~1m 54s)
   },
   hard: {
     POWER_PICKUP:    5,
-    CREDIT_PICKUP:  50,
+    SCRAP_PICKUP:    50,
     POWER_DRAIN:    0.75, // 0.75/s torch off: ~133s (~2m 13s)
     TORCH_DRAIN:    2.0,  // 0.75 × 2.0 = 1.5/s torch on: ~67s (~1m 7s)
   },
@@ -350,7 +350,7 @@ export const CONTROLS = {
       SONAR:        69,    // E
       LAUNCH_MISSILE: 32,  // Space
       TOGGLE_PAUSE:      27,    // Escape
-      TOGGLE_SHOP:       9,     // Tab
+      TOGGLE_WORKSHOP:    9,     // Tab
       ACCEPT:            81,    // Q
       TOGGLE_FULLSCREEN: 192,   // Backtick
     },
@@ -364,7 +364,7 @@ export const CONTROLS = {
       SONAR:        69,    // E
       LAUNCH_MISSILE: 32,  // Space
       TOGGLE_PAUSE:      27,    // Escape
-      TOGGLE_SHOP:       9,     // Tab
+      TOGGLE_WORKSHOP:    9,     // Tab
       ACCEPT:            81,    // Q
       TOGGLE_FULLSCREEN: 192,   // Backtick
     },

@@ -31,6 +31,17 @@ function makeColor(r, g, b, a = 255) {
 
 global.width  = 1280;
 global.height = 720;
+global.drawingContext = {
+  createRadialGradient: jest.fn(() => ({
+    addColorStop: jest.fn(),
+  })),
+  fillRect: jest.fn(),
+  clearRect: jest.fn(),
+  beginPath: jest.fn(),
+  arc: jest.fn(),
+  fill: jest.fn(),
+  'canvas': { width: 1280, height: 720 },
+};
 global.noStroke     = jest.fn();
 global.stroke       = jest.fn();
 global.strokeWeight = jest.fn();

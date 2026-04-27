@@ -48,7 +48,16 @@ TODO / LIMITATIONS:
 //======================================
 import { LIGHTING, TORCH } from '../config.js';
 
-export function createLightingSystem(player = null, getSonarLights = () => [], getGlowLights = () => []) {
+// theSurface room vertical bounds (world-space pixels)
+const SURFACE_BOTTOM_Y = 3184; // player spawn row — darkest point
+const SURFACE_TOP_Y    = 320;  // win trigger row  — brightest point
+
+function _surfaceT(playerY) {
+   const raw = (SURFACE_BOTTOM_Y - playerY) / (SURFACE_BOTTOM_Y - SURFACE_TOP_Y);
+   return Math.max(0, Math.min(1, raw));
+}
+
+export function createLightingSystem(player = null, getSonarLights = () => [], getGlowLights = () => [], getCurrentRoom = () => null) {
    return {
 
       //--- GET LIGHT SOURCES ---//
@@ -93,8 +102,19 @@ export function createLightingSystem(player = null, getSonarLights = () => [], g
             lightSources.push(light);
          }
 
+         // Surface room: fixed-position ambient zones — brightness tied to world Y, not player Y
+         if (getCurrentRoom?.() === 'theSurface') {
+            lightSources.push({
+               kind: 'surfaceAmbient',
+               topY: SURFACE_TOP_Y,
+               bottomY: SURFACE_BOTTOM_Y,
+            });
+         }
+
          return lightSources;
-      }
+      },
+
+      getSurfaceDarknessAlpha() { return 255; },
    };
 }
 //======================================

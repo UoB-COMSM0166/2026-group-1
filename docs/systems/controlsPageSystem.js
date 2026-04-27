@@ -146,7 +146,7 @@ export function createControlsPageSystem(){
             drawKey(contentLeft+ keyW, y, "TAB");
             fill(255); noStroke();
             textAlign(LEFT, CENTER); textStyle(BOLD); textSize(labelSize);
-            text("Shop", labelX, y + midKey);
+            text("Workshop", labelX, y + midKey);
             y += rowH;
 
             drawKey(contentLeft+ keyW, y, "ESC");

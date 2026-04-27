@@ -83,7 +83,7 @@ export function createInputSystem(player) {
       if (!player?.actionIntent) return;
       const map = getMap();
       if (matchesBinding(map.TOGGLE_PAUSE,   key, keyCode)) player.actionIntent.togglePause   = true;
-      if (matchesBinding(map.TOGGLE_SHOP,    key, keyCode)) player.actionIntent.toggleShop    = true;
+      if (matchesBinding(map.TOGGLE_WORKSHOP,    key, keyCode)) player.actionIntent.toggleWorkshop    = true;
       if (matchesBinding(map.ACCEPT,         key, keyCode)) player.actionIntent.accept         = true;
       if (matchesBinding(map.TOGGLE_TORCH,   key, keyCode)) player.actionIntent.toggleTorch   = true;
       if (matchesBinding(map.SONAR,          key, keyCode)) player.actionIntent.emitSonar     = true;

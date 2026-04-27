@@ -19,7 +19,7 @@ jest.unstable_mockModule('../config.js', () => ({
         MOVE_UP: 87,            // 'w'
         MOVE_DOWN: 83,          // 's'
         TOGGLE_PAUSE: 27,       // Escape
-        TOGGLE_SHOP: 69,        // 'e'
+        TOGGLE_WORKSHOP: 9,  // Tab
         ACCEPT: 13,             // Enter
         TOGGLE_TORCH: 32,       // Space
         SONAR: 70,              // 'f'
@@ -31,7 +31,7 @@ jest.unstable_mockModule('../config.js', () => ({
         MOVE_UP: 38,
         MOVE_DOWN: 40,
         TOGGLE_PAUSE: 27,
-        TOGGLE_SHOP: 69,
+        TOGGLE_WORKSHOP: 9,  // Tab
         ACCEPT: 13,
         TOGGLE_TORCH: 32,
         SONAR: 70,
@@ -53,7 +53,7 @@ function makePlayer(overrides = {}) {
     moveIntent: { left: false, right: false, up: false, down: false },
     actionIntent: {
       togglePause: false,
-      toggleShop: false,
+      toggleWorkshop: false,
       accept: false,
       toggleTorch: false,
       emitSonar: false,
@@ -152,10 +152,10 @@ describe('InputSystem', () => {
       expect(player.actionIntent.togglePause).toBe(true);
     });
 
-    it('sets toggleShop = true when E (69) is pressed', () => {
+    it('sets toggleWorkshop = true when Tab (9) is pressed', () => {
       const input = createInputSystem(player);
-      input.onKeyPressed('e', 69);
-      expect(player.actionIntent.toggleShop).toBe(true);
+      input.onKeyPressed('Tab', 9);
+      expect(player.actionIntent.toggleWorkshop).toBe(true);
     });
 
     it('sets accept = true when Enter (13) is pressed', () => {
@@ -190,10 +190,10 @@ describe('InputSystem', () => {
       expect(player.actionIntent.togglePause).toBe(false);
     });
 
-    it('is case-insensitive for letter keys', () => {
+    it('sets toggleWorkshop = true when Tab is pressed (uppercase)', () => {
       const input = createInputSystem(player);
-      input.onKeyPressed('E', 69);
-      expect(player.actionIntent.toggleShop).toBe(true);
+      input.onKeyPressed('Tab', 9);
+      expect(player.actionIntent.toggleWorkshop).toBe(true);
     });
 
     it('unknown key does not set any action intent', () => {

@@ -13,7 +13,7 @@ DESCRIPTION:
 HIERARCHY:
 - type: "resource" (main category)
   - resourceType: "power" (specific resource)
-  - resourceType: "credits" (specific resource)
+  - resourceType: "scrap" (specific resource)
 
 RULES:
 - Runs in update()
@@ -71,7 +71,7 @@ export function createResourceManagementSystem(
     if (!best) return null;
 
     const localTileId = gid - best.firstgid;
-    if (localTileId === 20) return "credits";
+    if (localTileId === 20) return "scrap";
     if (localTileId === 41) return "power";
     return null;
   }
@@ -93,9 +93,9 @@ export function createResourceManagementSystem(
       const cfg = DIFFICULTY[getDifficulty?.() ?? "easy"] ?? DIFFICULTY.easy;
       player.power.current = Math.min(player.power.current + cfg.POWER_PICKUP, player.power.maxPower);
     },
-    credits(player, _item) {
+    scrap(player, _item) {
       const cfg = DIFFICULTY[getDifficulty?.() ?? "easy"] ?? DIFFICULTY.easy;
-      player.credits = (player.credits ?? 0) + cfg.CREDIT_PICKUP;
+      player.scrap = (player.scrap ?? 0) + cfg.SCRAP_PICKUP;
     },
   };
 

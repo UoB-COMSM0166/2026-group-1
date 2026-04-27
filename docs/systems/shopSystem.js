@@ -13,7 +13,7 @@ RULES:
 - No drawing inside update() function
 - No state changes inside draw() function
 - Mutations handled by other systems later
-- Only reads player.credits, does not modify player state directly
+- Only reads player.scrap, does not modify player state directly
 
 DESIGN GOALS:
 - Decouple shop UI from gameplay systems
@@ -250,7 +250,7 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
   }
 
   function drawUpgradeCard(name, upgrade, x, y) {
-    const playerCredits = player?.credits ?? 0;
+    const playerCredits = player?.scrap ?? 0;
     const canAfford = playerCredits >= upgrade.cost;
     const currentLevel = player?.upgrades?.[name] ?? upgrade.level;
 
@@ -288,7 +288,7 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
   }
 
   function drawItemCard(itemName, item, x, y) {
-    const playerCredits = player?.credits ?? 0;
+    const playerCredits = player?.scrap ?? 0;
     const canAfford = playerCredits >= item.costPerUnit;
     const currentQuantity = itemName === 'missiles' ? (player?.missiles ?? 0) : (item.quantity ?? 0);
 
@@ -325,7 +325,7 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
   }
 
   function drawSubUpgradeCard(subName, subUpgrade, currentLevel, label, baseCost, x, y) {
-    const playerCredits = player?.credits ?? 0;
+    const playerCredits = player?.scrap ?? 0;
     const cost = Math.ceil(baseCost * 1.5 ** (currentLevel - 1));
     const canAfford = playerCredits >= cost;
 
@@ -411,7 +411,7 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
     fill(190, 228, 236);
     textSize(13);
     textAlign(LEFT, TOP);
-    text(`Credits: ${player?.credits ?? 0}`, info.x + 20, info.y + 56);
+    text(`Credits: ${player?.scrap ?? 0}`, info.x + 20, info.y + 56);
     text(`Missiles: ${player?.missiles ?? 0}`, info.x + 20, info.y + 82);
     text(`Power Lvl: ${player?.upgrades?.power ?? 1}`, info.x + 20, info.y + 108);
     text(`Torch Lvl: ${player?.upgrades?.torch ?? 1}`, info.x + 20, info.y + 134);
@@ -442,14 +442,14 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
     const upgrade = upgrades[upgradeName];
     if (!upgrade) return false;
 
-    const playerCredits = player?.credits ?? 0;
+    const playerCredits = player?.scrap ?? 0;
     if (playerCredits < upgrade.cost) {
       console.log(`❌ Not enough credits for ${upgradeName} upgrade. Need: ${upgrade.cost}, Have: ${playerCredits}`);
       return false;
     }
 
     // Deduct credits
-    player.credits -= upgrade.cost;
+    player.scrap -= upgrade.cost;
     
     // Sonar uses 3 sub-upgrades; range increments main sonar level,
     // cooldown and decay each have their own independent level.
@@ -470,7 +470,7 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
     upgrade.level++;
     upgrade.cost = Math.ceil(upgrade.cost * 1.5); // Increase cost for next level
     
-    console.log(`✓ Purchased ${upgradeName} upgrade! New level: ${upgrade.level}, Credits left: ${player.credits}`);
+    console.log(`✓ Purchased ${upgradeName} upgrade! New level: ${upgrade.level}, Credits left: ${player.scrap}`);
     return true;
   }
 
@@ -479,14 +479,14 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
     if (!item) return false;
 
     const totalCost = item.costPerUnit * quantity;
-    const playerCredits = player?.credits ?? 0;
+    const playerCredits = player?.scrap ?? 0;
     if (playerCredits < totalCost) {
       console.log(`❌ Not enough credits for ${quantity}x ${itemName}. Need: ${totalCost}, Have: ${playerCredits}`);
       return false;
     }
 
     // Deduct credits
-    player.credits -= totalCost;
+    player.scrap -= totalCost;
     
     // Add to inventory
     if (itemName === 'missiles') {
@@ -496,7 +496,7 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
     // Update shop display
     item.quantity += quantity;
     
-    console.log(`✓ Purchased ${quantity}x ${itemName}! Total owned: ${item.quantity}, Credits left: ${player.credits}`);
+    console.log(`✓ Purchased ${quantity}x ${itemName}! Total owned: ${item.quantity}, Credits left: ${player.scrap}`);
     return true;
   }
 
@@ -506,7 +506,7 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
   function handleClick() {
     if (!shopOpen) return;
 
-    console.log(`[shop] click detected at mouseX=${mouseX}, mouseY=${mouseY}, credits=${player?.credits ?? 0}`);
+    console.log(`[shop] click detected at mouseX=${mouseX}, mouseY=${mouseY}, credits=${player?.scrap ?? 0}`);
 
     const layout = getLayout();
 
@@ -552,12 +552,20 @@ export function createShopSystem(player, initialControlMode = CONTROLS.DEFAULT_M
       return shopOpen;
     },
 
+    isWorkshopOpen() {
+      return shopOpen;
+    },
+
     setControlMode(mode) {
       if (CONTROLS.MODES[mode]) controlMode = mode;
     },
 
     // STATE CONTROL
     toggleShop() {
+      shopOpen = !shopOpen;
+    },
+
+    toggleWorkshop() {
       shopOpen = !shopOpen;
     },
 

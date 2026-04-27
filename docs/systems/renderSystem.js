@@ -12,7 +12,7 @@ DESCRIPTION:
 ========================================
 */
 
-import { DEBUG_COLOR, COMBAT } from "../config.js";
+import { DEBUG_COLOR, COMBAT, MISSILE, HUD_DIALS } from "../config.js";
 
 //======================================
 // RENDER SYSTEM
@@ -40,6 +40,7 @@ export function createRenderSystem({
    assets,
    darknessLayer,
    getLightSources,
+   getDarknessAlpha,
    getActivePulses,
    getRevealedWalls,
    getCameraOffset,
@@ -53,6 +54,9 @@ export function createRenderSystem({
    getHudDialSettings,
    getGameplayOverlay,
    getGameplayOverlaySettings,
+   getScrapIcon,
+   getPowerCellSprite,
+   getScrapSprite,
 }) {
 
 //======================================
@@ -153,12 +157,12 @@ export function createRenderSystem({
 
       // Fallback for prototype tileset ids when metadata is absent at runtime.
       if (localTileId === 41) return 'power';
-      if (localTileId === 20) return 'credits';
+      if (localTileId === 20) return 'scrap';
       return null;
    }
 
    function getCollectableColorByType(collectableType, alpha = 220) {
-      if (collectableType === 'credits') return color(255, 225, 80, alpha);
+      if (collectableType === 'scrap') return color(255, 225, 80, alpha);
       if (collectableType === 'power') return color(80, 220, 120, alpha);
       return color(80, 220, 120, alpha);
    }
@@ -219,11 +223,34 @@ export function createRenderSystem({
       const collectables = getCollectables?.() ?? [];
       if (!collectables.length) return;
 
+      const powerCell = getPowerCellProcessed();
+      const scrapSprite = getScrapSpriteProcessed();
+
       noStroke();
       for (const item of collectables) {
          if (item.visible === false) continue;
-         if (drawSpriteFromTileset(item)) continue;
          const collectableType = getCollectableType(item);
+
+         // Use custom power-cell sprite — hitbox stays 1 tile, image drawn larger
+         if (collectableType === 'power' && powerCell) {
+            const tileSize = Math.max(8, item.w);
+            const drawSize = tileSize * 2.5;
+            imageMode(CENTER);
+            image(powerCell, item.x, item.y, drawSize, drawSize);
+            imageMode(CORNER);
+            continue;
+         }
+
+         // Use custom scrap sprite at tile size
+         if (collectableType === 'scrap' && scrapSprite) {
+            const tileSize = Math.max(8, item.w);
+            imageMode(CENTER);
+            image(scrapSprite, item.x, item.y - tileSize * 0.3, tileSize * 1.8, tileSize * 1.8);
+            imageMode(CORNER);
+            continue;
+         }
+
+         if (drawSpriteFromTileset(item)) continue;
          fill(getCollectableColorByType(collectableType, 220));
          ellipse(item.x, item.y, Math.max(8, item.w), Math.max(8, item.h));
       }
@@ -520,18 +547,50 @@ export function createRenderSystem({
    //===LIGHTING===//
    function drawLighting(lightSources = [], cam = { x: 0, y: 0 }, camScale = 1) {
       darknessLayer.clear();
-      darknessLayer.background(0);
+      const darknessA = getDarknessAlpha?.() ?? 255;
+      darknessLayer.background(0, 0, 0, darknessA);
 
       const ctx = darknessLayer.drawingContext;
       ctx.globalCompositeOperation = 'destination-out';
 
       for (const light of lightSources) {
          const { x, y, radius, intensity = 1, kind } = light;
+
+         /* Fixed-position zone lighting for theSurface room.
+            Stepped linear gradient in world space — zones stay put as the player climbs.
+         */
+         if (kind === 'surfaceAmbient') {
+            const screenTop = (light.topY    - cam.y) * camScale;
+            const screenBot = (light.bottomY - cam.y) * camScale;
+            if (screenBot <= screenTop) continue;
+            const grad = ctx.createLinearGradient(0, screenTop, 0, screenBot);
+            // Paired stops create smooth but distinct vertical transitions
+            grad.addColorStop(0,     'rgba(255,255,255,0.97)');
+            grad.addColorStop(0.070, 'rgba(255,255,255,0.97)');
+            grad.addColorStop(0.075, 'rgba(255,255,255,0.75)');
+            grad.addColorStop(0.200, 'rgba(255,255,255,0.75)');
+            grad.addColorStop(0.205, 'rgba(255,255,255,0.55)');
+            grad.addColorStop(0.350, 'rgba(255,255,255,0.55)');
+            grad.addColorStop(0.355, 'rgba(255,255,255,0.38)');
+            grad.addColorStop(0.500, 'rgba(255,255,255,0.38)');
+            grad.addColorStop(0.505, 'rgba(255,255,255,0.24)');
+            grad.addColorStop(0.650, 'rgba(255,255,255,0.24)');
+            grad.addColorStop(0.655, 'rgba(255,255,255,0.13)');
+            grad.addColorStop(0.800, 'rgba(255,255,255,0.13)');
+            grad.addColorStop(0.805, 'rgba(255,255,255,0.05)');
+            grad.addColorStop(0.930, 'rgba(255,255,255,0.05)');
+            grad.addColorStop(1,     'rgba(255,255,255,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, darknessLayer.width, darknessLayer.height);
+            continue;
+         }
+
          const screenX = (x - cam.x) * camScale;
          const screenY = (y - cam.y) * camScale;
          const scaledRadius = radius * (0.8 + 0.2 * intensity) * camScale;
          // prevents crash when using PLAYER.WIDTH in config
          if (!Number.isFinite(screenX) || !Number.isFinite(screenY) || !Number.isFinite(scaledRadius) || scaledRadius <= 0) continue;
+
          const gradient = ctx.createRadialGradient(
             screenX, screenY, scaledRadius * 0.1,
             screenX, screenY, scaledRadius
@@ -611,6 +670,40 @@ export function createRenderSystem({
       image(darknessLayer, 0, 0);
    }
 
+   // Processed (white-background removed) sprite cache
+   let _powerCellProcessed = null;
+   let _scrapSpriteProcessed = null;
+
+   function removeWhiteBg(raw) {
+      const img = raw.get();
+      img.loadPixels();
+      for (let i = 0; i < img.pixels.length; i += 4) {
+         if (img.pixels[i] > 230 && img.pixels[i + 1] > 230 && img.pixels[i + 2] > 230) {
+            img.pixels[i + 3] = 0;
+         }
+      }
+      img.updatePixels();
+      return img;
+   }
+
+   function getPowerCellProcessed() {
+      const raw = getPowerCellSprite?.();
+      if (!raw) return null;
+      if (!_powerCellProcessed) _powerCellProcessed = removeWhiteBg(raw);
+      return _powerCellProcessed;
+   }
+
+   function getScrapSpriteProcessed() {
+      const raw = getScrapSprite?.();
+      if (!raw) return null;
+      if (!_scrapSpriteProcessed) _scrapSpriteProcessed = removeWhiteBg(raw);
+      return _scrapSpriteProcessed;
+   }
+
+   // Animation state for scrap counter pickup flash
+   let _lastScrap = null;
+   let _scrapAnimStart = -9999;
+
    //===UI===//
    function drawDial({
       x,
@@ -625,10 +718,18 @@ export function createRenderSystem({
 
       push();
       noFill();
-      stroke(255, 255, 255, 90);
+
+      // Outer tech-frame ring
+      stroke(126, 220, 224, 100);
+      strokeWeight(1.5);
+      circle(x, y, size + 18);
+
+      // Background ring (empty portion)
+      stroke(30, 50, 65, 200);
       strokeWeight(10);
       circle(x, y, size);
 
+      // Active fill arc
       stroke(ringColor);
       strokeWeight(10);
       strokeCap(ROUND);
@@ -642,10 +743,176 @@ export function createRenderSystem({
       );
 
       noStroke();
-      fill(labelColor ?? 255);
+      fill(labelColor ?? color(234, 246, 248));
       textAlign(CENTER, CENTER);
-      textSize(18);
+      textSize(16);
       text(centerLabel, x, y);
+      pop();
+   }
+
+   // Segmented upgrade bar
+   function drawSegmentBar(cx, y, level, maxLevel, segW, segH, segGap) {
+      const totalW = maxLevel * (segW + segGap) - segGap;
+      const startX = cx - totalW / 2;
+      for (let i = 0; i < maxLevel; i++) {
+         noStroke();
+         fill(i < level ? color(117, 250, 126) : color(53, 83, 65));
+         rect(startX + i * (segW + segGap), y - segH / 2, segW, segH, 1);
+      }
+   }
+
+   // Dot row — used for missiles (quantity)
+   function drawDotRow(cx, y, count, maxCount, dotSize, dotGap) {
+      const totalW = maxCount * (dotSize + dotGap) - dotGap;
+      const startX = cx - totalW / 2;
+      for (let i = 0; i < maxCount; i++) {
+         noStroke();
+         fill(i < count ? color(117, 250, 126) : color(53, 83, 65));
+         circle(startX + i * (dotSize + dotGap) + dotSize / 2, y, dotSize);
+      }
+   }
+
+   function drawScrapCounter() {
+      const scrap = player.scrap ?? 0;
+
+      // Detect pickup — animate scale on increase
+      if (_lastScrap !== null && scrap > _lastScrap) _scrapAnimStart = millis();
+      _lastScrap = scrap;
+
+      const elapsed = millis() - _scrapAnimStart;
+      const animDuration = 500;
+      const animScale = elapsed < animDuration
+         ? 1 + 0.18 * Math.sin((elapsed / animDuration) * Math.PI)
+         : 1;
+
+      const panelX = 16, panelY = 16, panelW = 175, panelH = 50;
+
+      push();
+
+      // Panel background
+      noStroke();
+      fill(12, 23, 31, 220);
+      rect(panelX, panelY, panelW, panelH, 6);
+
+      // Cyan border
+      stroke(126, 220, 224, 160);
+      strokeWeight(1.5);
+      noFill();
+      rect(panelX, panelY, panelW, panelH, 6);
+      noStroke();
+
+      // All elements vertically centred, left-justified: [icon] SCRAP [count]
+      const cy = panelY + panelH / 2;
+
+      // Scrap icon image
+      const iconSize = 34;
+      const ix = panelX + 24; // left edge aligns with TAB badge (panelX + 10)
+      const scrapIcon = getScrapIcon?.();
+      if (scrapIcon) {
+         imageMode(CENTER);
+         image(scrapIcon, ix, cy, iconSize, iconSize);
+         imageMode(CORNER);
+      }
+
+      // "SCRAP" label
+      noStroke();
+      fill(255, 223, 136);
+      textAlign(LEFT, CENTER);
+      textSize(12);
+      text('SCRAP:', ix + iconSize / 2 + 14, cy);
+
+      // Count with pickup scale animation
+      push();
+      translate(ix + iconSize / 2 + 68, cy);
+      scale(animScale, animScale);
+      fill(234, 246, 248);
+      textAlign(LEFT, CENTER);
+      textSize(20);
+      text(scrap, 0, 0);
+      pop();
+
+      pop();
+   }
+
+   function drawWorkshopHint() {
+      // Sits directly below the scrap counter (panelY=16, panelH=50)
+      const panelX = 16, panelY = 72, panelW = 175, panelH = 34;
+      const cy = panelY + panelH / 2;
+
+      push();
+
+      // Panel background
+      noStroke();
+      fill(12, 23, 31, 220);
+      rect(panelX, panelY, panelW, panelH, 6);
+
+      // Cyan border
+      stroke(126, 220, 224, 160);
+      strokeWeight(1.5);
+      noFill();
+      rect(panelX, panelY, panelW, panelH, 6);
+
+      // TAB key badge
+      const keyX = panelX + 10;
+      const keyW = 34, keyH = 18;
+      fill(26, 42, 54, 240);
+      stroke(126, 220, 224, 120);
+      strokeWeight(1);
+      rect(keyX, cy - keyH / 2, keyW, keyH, 3);
+
+      noStroke();
+      fill(174, 205, 211);
+      textAlign(CENTER, CENTER);
+      textSize(10);
+      text('TAB', keyX + keyW / 2, cy);
+
+      // Label
+      fill(174, 205, 211);
+      textAlign(LEFT, CENTER);
+      textSize(11);
+      text('OPEN WORKSHOP', keyX + keyW + 8, cy);
+
+      pop();
+   }
+
+   function drawUpgradeBars() {
+      const rowY    = HUD_DIALS.BOTTOM_ROW_Y        ?? 1025;
+      const labelY  = HUD_DIALS.BOTTOM_ROW_LABEL_Y  ?? 1048;
+      const spacing = HUD_DIALS.BOTTOM_ROW_SPACING  ?? 150;
+      const centerX = HUD_DIALS.BOTTOM_ROW_CENTER_X ?? 960;
+
+      const MAX_UPGRADE = 8;
+      const MAX_MISSILES = MISSILE.MAX_CONCURRENT ?? 5;
+
+      const torchOn = player.torch?.isOn ?? false;
+
+      const items = [
+         { label: 'POWER',    value: Math.min(player.upgrades?.power  ?? 1, MAX_UPGRADE), type: 'bar',  max: MAX_UPGRADE  },
+         { label: 'SONAR',    value: Math.min(player.upgrades?.sonar  ?? 1, MAX_UPGRADE), type: 'bar',  max: MAX_UPGRADE  },
+         { label: 'TORCH',    value: Math.min(player.upgrades?.torch  ?? 1, MAX_UPGRADE), type: 'bar',  max: MAX_UPGRADE  },
+         { label: 'MISSILES', value: Math.min(player.missiles ?? 0,   MAX_MISSILES),      type: 'dots', max: MAX_MISSILES },
+      ];
+
+      const startX = centerX - spacing * ((items.length - 1) / 2);
+
+      push();
+      for (let i = 0; i < items.length; i++) {
+         const item = items[i];
+         const cx = startX + i * spacing;
+
+         if (item.type === 'bar') {
+            drawSegmentBar(cx, rowY, item.value, item.max, 8, 12, 2);
+         } else {
+            drawDotRow(cx, rowY, item.value, item.max, 12, 3);
+         }
+
+         // Label — TORCH turns gold when active
+         noStroke();
+         fill(item.label === 'TORCH' && torchOn ? color(255, 200, 80) : color(174, 205, 211));
+         textAlign(CENTER, TOP);
+         textSize(10);
+         text(item.label, cx, labelY);
+      }
       pop();
    }
 
@@ -663,9 +930,37 @@ export function createRenderSystem({
 
       const powerFillRatio = Math.max(0, Math.min(1, player.power.getPercent()));
       const powerPercent = Math.round(powerFillRatio * 100);
-      const lowPowerColor = color(220, 60, 60, 240);
-      const fullPowerColor = color(80, 230, 120, 240);
-      const powerStrokeColor = lerpColor(lowPowerColor, fullPowerColor, powerFillRatio);
+
+      // Hard colour steps: green above 40%, amber 40–15%, red below 15%
+      let powerStrokeColor;
+      if (powerFillRatio > 0.40) {
+         powerStrokeColor = color(80, 230, 120, 240);
+      } else if (powerFillRatio > 0.15) {
+         powerStrokeColor = color(255, 160, 40, 240);
+      } else {
+         powerStrokeColor = color(220, 60, 60, 240);
+      }
+
+      if (powerFillRatio <= 0.15) {
+         const pulse = Math.abs(Math.sin(millis() * 0.004));
+
+         // Red glow — transparent at centre (text area), peaks at ring band, fades beyond
+         const pulseAlpha = 0.25 + 0.20 * pulse;
+         const ctx = drawingContext;
+         const glowRadius = powerDialSize * 1.2;
+         const grad = ctx.createRadialGradient(
+            powerDialX, powerDialY, 0,
+            powerDialX, powerDialY, glowRadius
+         );
+         grad.addColorStop(0,    `rgba(220, 30, 30, 0)`);
+         grad.addColorStop(0.20, `rgba(220, 30, 30, 0)`);
+         grad.addColorStop(0.35, `rgba(220, 30, 30, ${pulseAlpha * 0.6})`);
+         grad.addColorStop(0.45, `rgba(220, 30, 30, ${pulseAlpha})`);
+         grad.addColorStop(0.60, `rgba(180, 20, 20, ${pulseAlpha * 0.5})`);
+         grad.addColorStop(1,    `rgba(180, 0,  0,  0)`);
+         ctx.fillStyle = grad;
+         ctx.fillRect(0, 0, width, height);
+      }
 
       drawDial({
          x: powerDialX,
@@ -674,13 +969,30 @@ export function createRenderSystem({
          fillRatio: powerFillRatio,
          centerLabel: `${powerPercent}%`,
          ringColor: powerStrokeColor,
-         labelColor: color(255),
+         labelColor: color(234, 246, 248),
       });
+
+      // Thin gold inner ring,  TORCH text glow when torch is on
+      if (player.torch?.isOn) {
+         // Gold glow: strongest at ring's inner edge, fades toward centre
+         const ctx = drawingContext;
+         const glowRadius = powerDialSize / 2 - 5; // inner edge of the ring stroke
+         const grad = ctx.createRadialGradient(
+            powerDialX, powerDialY, 0,
+            powerDialX, powerDialY, glowRadius
+         );
+         grad.addColorStop(0,    'rgba(255, 200, 80, 0)');
+         grad.addColorStop(0.55, 'rgba(255, 200, 80, 0)');
+         grad.addColorStop(0.75, 'rgba(255, 200, 80, 0.25)');
+         grad.addColorStop(0.88, 'rgba(255, 185, 60, 0.55)');
+         grad.addColorStop(1,    'rgba(255, 170, 40, 0)');
+         ctx.fillStyle = grad;
+         ctx.fillRect(0, 0, width, height);
+      }
 
       const sonarCooldown = getSonarCooldown?.() ?? 0;
       const isSonarCooling = Number.isFinite(sonarCooldown) && sonarCooldown > 0;
 
-      // Keep existing sonar cooldown logic.
       // Existing value is 0 when ready and >0 while cooling, so invert for "refill" visual.
       const sonarFillRatio = isSonarCooling
          ? Math.max(0, Math.min(1, 1 - sonarCooldown))
@@ -697,6 +1009,9 @@ export function createRenderSystem({
       });
 
       drawMiniMap?.();
+      drawScrapCounter();
+      drawWorkshopHint();
+      drawUpgradeBars();
    }
 
    function drawGameplayOverlay() {
@@ -909,14 +1224,14 @@ function renderInterpolate(oldState, newState, alpha){
          drawSonarEnemyReveals();
          pop();
          
-         // --- World Space UI overlays (drawn above everything) --- //
-         push();
-         resetMatrix(); // Returns drawing to default screen space (cancels camera transform)
-         drawUI();
-         pop();
-
          // --- Absolute top gameplay layer --- //
          drawGameplayOverlay();
+
+         // --- HUD (rendered last so lighting never covers interface) --- //
+         push();
+         resetMatrix();
+         drawUI();
+         pop();
       }
    };
 }

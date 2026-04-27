@@ -114,9 +114,9 @@ function clickAt(shop, x, y) {
 describe('ShopSystem — state management', () => {
   function makePlayer(overrides = {}) {
     return {
-      credits: 500,
+      scrap: 500,
       missiles: 0,
-      upgrades: { power: 1, torch: 1, sonar: 1 },
+      upgrades: { power: 1, torch: 1, sonar: 1, sonarCooldown: 1, sonarDecay: 1 },
       ...overrides,
     };
   }
@@ -149,7 +149,7 @@ describe('ShopSystem — state management', () => {
   });
 
   it('reset() closes the shop', () => {
-    const shop = createShopSystem(makePlayer({ upgrades: { power: 3, torch: 2, sonar: 4 } }));
+    const shop = createShopSystem(makePlayer({ upgrades: { power: 3, torch: 2, sonar: 4, sonarCooldown: 1, sonarDecay: 1 } }));
     shop.openShop();
     shop.reset();
     expect(shop.isShopOpen()).toBe(false);
@@ -161,15 +161,15 @@ describe('ShopSystem — state management', () => {
 describe('ShopSystem — upgrade purchases via click', () => {
   function makePlayer(overrides = {}) {
     return {
-      credits: 500,
+      scrap: 500,
       missiles: 0,
-      upgrades: { power: 1, torch: 1, sonar: 1 },
+      upgrades: { power: 1, torch: 1, sonar: 1, sonarCooldown: 1, sonarDecay: 1 },
       ...overrides,
     };
   }
 
   it('clicking power upgrade card deducts 50 credits and increments level', () => {
-    const player = makePlayer({ credits: 200 });
+    const player = makePlayer({ scrap: 200 });
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -177,12 +177,12 @@ describe('ShopSystem — upgrade purchases via click', () => {
     const powerCard = layout.upgradeCards[0]; // 'power'
     clickAt(shop, powerCard.x + 10, powerCard.y + 10);
 
-    expect(player.credits).toBe(150);    // 200 - 50
+    expect(player.scrap).toBe(150);    // 200 - 50
     expect(player.upgrades.power).toBe(2);
   });
 
   it('clicking torch upgrade card deducts 40 credits and increments level', () => {
-    const player = makePlayer({ credits: 200 });
+    const player = makePlayer({ scrap: 200 });
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -190,12 +190,12 @@ describe('ShopSystem — upgrade purchases via click', () => {
     const torchCard = layout.upgradeCards[1]; // 'torch'
     clickAt(shop, torchCard.x + 10, torchCard.y + 10);
 
-    expect(player.credits).toBe(160);    // 200 - 40
+    expect(player.scrap).toBe(160);    // 200 - 40
     expect(player.upgrades.torch).toBe(2);
   });
 
   it('clicking sonar range sub-card deducts 60 credits and increments sonar range level', () => {
-    const player = makePlayer({ credits: 300 });
+    const player = makePlayer({ scrap: 300 });
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -203,12 +203,12 @@ describe('ShopSystem — upgrade purchases via click', () => {
     const sonarRangeCard = layout.subCards[0]; // 'sonarRange'
     clickAt(shop, sonarRangeCard.x + 10, sonarRangeCard.y + 10);
 
-    expect(player.credits).toBe(240);    // 300 - 60
+    expect(player.scrap).toBe(240);    // 300 - 60
     expect(player.upgrades.sonar).toBe(2);
   });
 
   it('clicking sonar cooldown sub-card deducts 45 credits and increments cooldown level', () => {
-    const player = makePlayer({ credits: 300, upgrades: { power: 1, torch: 1, sonar: 1, sonarCooldown: 1, sonarDecay: 1 } });
+    const player = makePlayer({ scrap: 300, upgrades: { power: 1, torch: 1, sonar: 1, sonarCooldown: 1, sonarDecay: 1 } });
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -216,12 +216,12 @@ describe('ShopSystem — upgrade purchases via click', () => {
     const sonarCooldownCard = layout.subCards[1]; // 'sonarCooldown'
     clickAt(shop, sonarCooldownCard.x + 10, sonarCooldownCard.y + 10);
 
-    expect(player.credits).toBe(255);    // 300 - 45
+    expect(player.scrap).toBe(255);    // 300 - 45
     expect(player.upgrades.sonarCooldown).toBe(2);
   });
 
   it('clicking sonar decay sub-card deducts 55 credits and increments decay level', () => {
-    const player = makePlayer({ credits: 300, upgrades: { power: 1, torch: 1, sonar: 1, sonarCooldown: 1, sonarDecay: 1 } });
+    const player = makePlayer({ scrap: 300, upgrades: { power: 1, torch: 1, sonar: 1, sonarCooldown: 1, sonarDecay: 1 } });
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -229,12 +229,12 @@ describe('ShopSystem — upgrade purchases via click', () => {
     const sonarDecayCard = layout.subCards[2]; // 'sonarDecay'
     clickAt(shop, sonarDecayCard.x + 10, sonarDecayCard.y + 10);
 
-    expect(player.credits).toBe(245);    // 300 - 55
+    expect(player.scrap).toBe(245);    // 300 - 55
     expect(player.upgrades.sonarDecay).toBe(2);
   });
 
   it('upgrade cost scales by 1.5× after first purchase', () => {
-    const player = makePlayer({ credits: 500 });
+    const player = makePlayer({ scrap: 500 });
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -243,22 +243,22 @@ describe('ShopSystem — upgrade purchases via click', () => {
 
     // First purchase: cost = 50
     clickAt(shop, powerCard.x + 10, powerCard.y + 10);
-    expect(player.credits).toBe(450);
+    expect(player.scrap).toBe(450);
     expect(player.upgrades.power).toBe(2);
 
     // Second purchase: cost = ceil(50 * 1.5) = 75
     clickAt(shop, powerCard.x + 10, powerCard.y + 10);
-    expect(player.credits).toBe(375);  // 450 - 75
+    expect(player.scrap).toBe(375);  // 450 - 75
     expect(player.upgrades.power).toBe(3);
 
     // Third purchase: cost = ceil(75 * 1.5) = 113
     clickAt(shop, powerCard.x + 10, powerCard.y + 10);
-    expect(player.credits).toBe(262);  // 375 - 113
+    expect(player.scrap).toBe(262);  // 375 - 113
     expect(player.upgrades.power).toBe(4);
   });
 
   it('rejects purchase when credits are insufficient', () => {
-    const player = makePlayer({ credits: 10 }); // can't afford any upgrade
+    const player = makePlayer({ scrap: 10 }); // can't afford any upgrade
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -268,19 +268,19 @@ describe('ShopSystem — upgrade purchases via click', () => {
     clickAt(shop, powerCard.x + 10, powerCard.y + 10);
 
     // Credits unchanged — purchase was rejected
-    expect(player.credits).toBe(10);
+    expect(player.scrap).toBe(10);
     expect(player.upgrades.power).toBe(1); // unchanged
   });
 
   it('rejects purchase at exact cost boundary', () => {
-    const player = makePlayer({ credits: 49 }); // one short of power cost (50)
+    const player = makePlayer({ scrap: 49 }); // one short of power cost (50)
     const shop = createShopSystem(player);
     shop.openShop();
 
     const layout = getLayout();
     clickAt(shop, layout.upgradeCards[0].x + 10, layout.upgradeCards[0].y + 10);
 
-    expect(player.credits).toBe(49); // no change
+    expect(player.scrap).toBe(49); // no change
     expect(player.upgrades.power).toBe(1);
   });
 
@@ -299,15 +299,15 @@ describe('ShopSystem — upgrade purchases via click', () => {
 describe('ShopSystem — item purchases via click', () => {
   function makePlayer(overrides = {}) {
     return {
-      credits: 500,
+      scrap: 500,
       missiles: 0,
-      upgrades: { power: 1, torch: 1, sonar: 1 },
+      upgrades: { power: 1, torch: 1, sonar: 1, sonarCooldown: 1, sonarDecay: 1 },
       ...overrides,
     };
   }
 
   it('clicking missiles card deducts 20 credits and adds 1 missile', () => {
-    const player = makePlayer({ credits: 100 });
+    const player = makePlayer({ scrap: 100 });
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -315,12 +315,12 @@ describe('ShopSystem — item purchases via click', () => {
     const missileCard = layout.subCards[3];
     clickAt(shop, missileCard.x + 10, missileCard.y + 10);
 
-    expect(player.credits).toBe(80);   // 100 - 20
+    expect(player.scrap).toBe(80);   // 100 - 20
     expect(player.missiles).toBe(1);
   });
 
   it('multiple missile purchases accumulate correctly', () => {
-    const player = makePlayer({ credits: 200 });
+    const player = makePlayer({ scrap: 200 });
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -332,18 +332,18 @@ describe('ShopSystem — item purchases via click', () => {
     }
 
     expect(player.missiles).toBe(5);
-    expect(player.credits).toBe(100); // 200 - 5*20
+    expect(player.scrap).toBe(100); // 200 - 5*20
   });
 
   it('rejects missile purchase when credits are insufficient', () => {
-    const player = makePlayer({ credits: 5 }); // can't afford missile (20)
+    const player = makePlayer({ scrap: 5 }); // can't afford missile (20)
     const shop = createShopSystem(player);
     shop.openShop();
 
     const layout = getLayout();
     clickAt(shop, layout.subCards[3].x + 10, layout.subCards[3].y + 10);
 
-    expect(player.credits).toBe(5);
+    expect(player.scrap).toBe(5);
     expect(player.missiles).toBe(0);
   });
 });
@@ -351,9 +351,9 @@ describe('ShopSystem — item purchases via click', () => {
 describe('ShopSystem — data queries', () => {
   function makePlayer(overrides = {}) {
     return {
-      credits: 500,
+      scrap: 500,
       missiles: 5,
-      upgrades: { power: 3, torch: 2, sonar: 1 },
+      upgrades: { power: 3, torch: 2, sonar: 1, sonarCooldown: 1, sonarDecay: 1 },
       ...overrides,
     };
   }
@@ -383,7 +383,7 @@ describe('ShopSystem — data queries', () => {
 
 describe('ShopSystem — control mode', () => {
   function makePlayer() {
-    return { credits: 500, missiles: 0, upgrades: { power: 1, torch: 1, sonar: 1 } };
+    return { scrap: 500, missiles: 0, upgrades: { power: 1, torch: 1, sonar: 1 } };
   }
 
   it('setControlMode accepts valid mode without throwing', () => {
@@ -402,15 +402,15 @@ describe('ShopSystem — control mode', () => {
 describe('ShopSystem — integration scenarios', () => {
   function makePlayer(overrides = {}) {
     return {
-      credits: 500,
+      scrap: 500,
       missiles: 0,
-      upgrades: { power: 1, torch: 1, sonar: 1 },
+      upgrades: { power: 1, torch: 1, sonar: 1, sonarCooldown: 1, sonarDecay: 1 },
       ...overrides,
     };
   }
 
   it('can buy one upgrade and multiple missiles in sequence', () => {
-    const player = makePlayer({ credits: 300 });
+    const player = makePlayer({ scrap: 300 });
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -425,11 +425,11 @@ describe('ShopSystem — integration scenarios', () => {
 
     expect(player.upgrades.power).toBe(2);
     expect(player.missiles).toBe(5);
-    expect(player.credits).toBe(150); // 300 - 50 - 100
+    expect(player.scrap).toBe(150); // 300 - 50 - 100
   });
 
   it('cannot purchase when completely broke', () => {
-    const player = makePlayer({ credits: 0 });
+    const player = makePlayer({ scrap: 0 });
     const shop = createShopSystem(player);
     shop.openShop();
 
@@ -438,13 +438,13 @@ describe('ShopSystem — integration scenarios', () => {
     clickAt(shop, layout.upgradeCards[0].x + 10, layout.upgradeCards[0].y + 10);
     clickAt(shop, layout.subCards[3].x + 10, layout.subCards[3].y + 10);
 
-    expect(player.credits).toBe(0);
+    expect(player.scrap).toBe(0);
     expect(player.upgrades.power).toBe(1);
     expect(player.missiles).toBe(0);
   });
 
   it('handles player with undefined upgrades — falls back to defaults', () => {
-    const player = { credits: 100 }; // no upgrades property
+    const player = { scrap: 100 }; // no upgrades property
     const shop = createShopSystem(player);
 
     // Shop initialises missing upgrade levels to 1 (default)
@@ -455,10 +455,10 @@ describe('ShopSystem — integration scenarios', () => {
   });
 
   it('onMousePressed does nothing when shop is closed', () => {
-    const player = makePlayer({ credits: 500 });
+    const player = makePlayer({ scrap: 500 });
     const shop = createShopSystem(player);
     // shop is closed
     shop.onMousePressed();
-    expect(player.credits).toBe(500); // no change
+    expect(player.scrap).toBe(500); // no change
   });
 });
