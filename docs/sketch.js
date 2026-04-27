@@ -525,14 +525,14 @@ function preload() {
           const g = gid >>> 0;
           if (!g) continue;
           const ts = tilesetForGid(g);
-          if (ts) tileGidToPath.set(g, `docs/data/tiles/${ts.name}/${g}.png`);
+          if (ts) tileGidToPath.set(g, `data/tiles/${ts.name}/${g}.png`);
         }
       } else if (layer.type === 'objectgroup') {
         for (const obj of (layer.objects || [])) {
           const g = obj.gid >>> 0;
           if (!g) continue;
           const ts = tilesetForGid(g);
-          if (ts) tileGidToPath.set(g, `docs/data/tiles/${ts.name}/${g}.png`);
+          if (ts) tileGidToPath.set(g, `data/tiles/${ts.name}/${g}.png`);
         }
       }
     }
