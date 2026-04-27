@@ -125,34 +125,14 @@ export function createRenderSystem({
       const rect = getObjectRect(obj);
       if (!rect) return false;
 
-      const localTileId = gid - Number(tileset.firstgid);
-      const collectionTileImagePath = tileset?.tileImagesById?.[localTileId]?.resolvedImagePath;
-      if (collectionTileImagePath) {
-         const collectionTileImage = assets?.[`tileset:${collectionTileImagePath}`];
-         if (!collectionTileImage) {
-            console.warn(`[renderSystem] Missing tile image for path: "${collectionTileImagePath}" (source: "${tileset.source}")`);
-            return false;
-         }
-         image(collectionTileImage, rect.x, rect.y, rect.w, rect.h);
-         return true;
-      }
-
-      const imagePath = tileset.resolvedImagePath ?? tilesetSourceToImagePath(tileset.source);
-      const tilesetImage = imagePath ? assets?.[`tileset:${imagePath}`] : null;
-      // Validate the atlas image is actually loaded (p5.js creates a zero-size placeholder on 404)
-      if (!tilesetImage || !(tilesetImage.width > 0)) {
-         console.warn(`[renderSystem] Missing or unloaded tileset image for path: "${imagePath}" (source: "${tileset.source}")`);
+      // Direct tile lookup: tiles are pre-extracted as data/tiles/{tileset}/{gid}.png
+      const tileImg = assets?.[`tile:${gid}`];
+      if (!tileImg || !(tileImg.width > 0)) {
+         // Fallback: solid rect so platforms are never invisible
          return false;
       }
 
-      const tileSize = getTileSize?.() ?? {};
-      const tileWidth = tileSize.tileWidth ?? tileset.tilewidth ?? 16;
-      const tileHeight = tileSize.tileHeight ?? tileset.tileheight ?? 16;
-      const columns = Number(tileset.columns) || Math.max(1, Math.floor(tilesetImage.width / tileWidth));
-      const srcX = (localTileId % columns) * tileWidth;
-      const srcY = Math.floor(localTileId / columns) * tileHeight;
-
-      image(tilesetImage, rect.x, rect.y, rect.w, rect.h, srcX, srcY, tileWidth, tileHeight);
+      image(tileImg, rect.x, rect.y, rect.w, rect.h);
       return true;
    }
 

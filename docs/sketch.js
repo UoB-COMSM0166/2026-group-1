@@ -507,24 +507,32 @@ function preload() {
     }
   }
 
-  const tilesetImagePaths = new Set();
+  // Load individual extracted tiles instead of atlas images.
+  // Extracted tiles live at data/tiles/{tilesetName}/{gid}.png (GID = Tiled global ID)
+  const tileGidToPath = new Map();
   for (const [roomId, room] of Object.entries(roomData)) {
-    const mapDir = roomMapDir(roomId);
-    for (const tileset of room?.tilesets ?? []) {
-      const imagePath =
-        tileset.resolvedImagePath ??
-        tilesetSourceToImagePath(tileset?.source, mapDir);
-      if (imagePath) tilesetImagePaths.add(imagePath);
-      for (const tileImage of Object.values(tileset?.tileImagesById ?? {})) {
-        if (tileImage?.resolvedImagePath) {
-          tilesetImagePaths.add(tileImage.resolvedImagePath);
+    for (const ts of room?.tilesets ?? []) {
+      const tsName = ts.name ?? path.basename(String(ts.source ?? ''), '.tsx');
+      const firstgid = Number(ts.firstgid || 0);
+      for (const layer of (room.layers || [])) {
+        const dataArr = layer.type === 'tilelayer' ? (layer.data || []) : null;
+        if (dataArr) {
+          for (const gid of dataArr) {
+            if (gid >>> 0) tileGidToPath.set(gid >>> 0, `data/tiles/${tsName}/${gid >>> 0}.png`);
+          }
+        }
+        if (layer.type === 'objectgroup') {
+          for (const obj of (layer.objects || [])) {
+            if (obj.gid >>> 0) tileGidToPath.set(obj.gid >>> 0, `data/tiles/${tsName}/${obj.gid >>> 0}.png`);
+          }
         }
       }
     }
   }
 
-  for (const imagePath of tilesetImagePaths) {
-    assets[`tileset:${imagePath}`] = loadImage(imagePath);
+  // Load each unique tile file
+  for (const [gid, tilePath] of tileGidToPath) {
+    assets[`tile:${gid}`] = loadImage(tilePath);
   }
 
   assets[GAMEPLAY_OVERLAY_ASSET_KEY] = loadImage(
