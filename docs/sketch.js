@@ -376,12 +376,10 @@ function ensureRoomAssetsLoaded(roomId) {
     const imagePath =
       tileset.resolvedImagePath ??
       tilesetSourceToImagePath(tileset?.source, mapDir);
-    console.warn(`[ensureRoomAssetsLoaded] tileset.source="${tileset.source}" resolvedImagePath="${tileset.resolvedImagePath}" imagePath="${imagePath}" tsxDirForImage="${tileset.resolvedImagePath ? getPathDir(tileset.resolvedImagePath) : 'N/A(resolvedImagePath was undefined)'}"`);
     if (imagePath) {
       tileset.resolvedImagePath = imagePath;
       const key = `tileset:${imagePath}`;
       if (!assets[key]) {
-        console.warn(`[preload] Loading ATLAS image: imagePath="${imagePath}" key="${key}" assetsDir=docs/data/`);
         assets[key] = loadImage(imagePath);
       }
     }
@@ -395,9 +393,7 @@ function ensureRoomAssetsLoaded(roomId) {
         if (!ensureRoomAssetsLoaded._loggedTileImages) {
           ensureRoomAssetsLoaded._loggedTileImages = true;
           const allTileImages = Object.values(tileset?.tileImagesById ?? {}).map(ti => ti?.resolvedImagePath);
-          console.warn(`[preload] tileImagesById sample for ${tileset?.name}: ${JSON.stringify(allTileImages.slice(0, 5))} (${Object.keys(tileset?.tileImagesById ?? {}).length} total)`);
         }
-        console.warn(`[preload] Loading individual tile image: tileImagePath="${tileImagePath}" tileKey="${tileKey}"`);
         assets[tileKey] = loadImage(tileImagePath);
       }
     }
@@ -461,7 +457,6 @@ function preload() {
         tsxLines.join("\n"),
         sourcePath,
       );
-      console.warn(`[preload] TSX parsed: "${sourcePath}" → resolvedImagePath="${tsxMetaBySourcePath[sourcePath].resolvedImagePath}" tileImagesById count=${Object.keys(tsxMetaBySourcePath[sourcePath].tileImagesById).length}`);
     }
   }
 
@@ -479,7 +474,6 @@ function preload() {
         tilesetSourceToImagePath(tileset?.source, mapDir);
       const tileImgKeys = Object.keys(tsxMeta.tileImagesById ?? {});
       const tileImgSample = tileImgKeys.slice(0, 3).map(k => `${k}:"${tsxMeta.tileImagesById[k]?.resolvedImagePath}"`);
-      console.warn(`[preload] Tileset "${tileset.source}" resolvedImagePath="${tileset.resolvedImagePath}" tileImagesById=${tileImgSample.join(', ')}${tileImgKeys.length > 3 ? ' ...' : ''} (${tileImgKeys.length} total)`);
       if (tsxMeta.tilewidth) tileset.tilewidth = tsxMeta.tilewidth;
       if (tsxMeta.tileheight) tileset.tileheight = tsxMeta.tileheight;
       if (tsxMeta.columns != null) tileset.columns = tsxMeta.columns;
@@ -545,12 +539,8 @@ function preload() {
   }
 
   // Load each unique tile file
-  console.warn(`[preload] Loading ${tileGidToPath.size} individual tiles...`);
   for (const [gid, tilePath] of tileGidToPath) {
-    console.warn(`[preload] tile:${gid} -> ${tilePath}`);
     assets[`tile:${gid}`] = loadImage(tilePath);
-  }
-  console.warn(`[preload] Done loading tiles — total assets keys:`, Object.keys(assets).length);
   }
 
   assets[GAMEPLAY_OVERLAY_ASSET_KEY] = loadImage(
