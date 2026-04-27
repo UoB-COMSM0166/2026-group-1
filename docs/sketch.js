@@ -404,14 +404,18 @@ function roomMapDir(_roomId) {
   return `data/rooms`;
 }
 
-function preload() {
+async function preload() {
 
   soundSystem = createSoundSystem();
   soundSystem.preload();
 
-  for (const roomId of ROOM_IDS) {
-    roomData[roomId] = loadJSON(`data/rooms/${roomId}.json`);
-  }
+  // Load all rooms in parallel, wait for all before processing.
+  // Using raw fetch (not p5 loadJSON) so preload() can await them properly.
+  await Promise.all(ROOM_IDS.map(roomId =>
+    fetch(`data/rooms/${roomId}.json`)
+      .then(r => r.json())
+      .then(data => { roomData[roomId] = data; })
+  ));
 
   const tsxMetaBySourcePath = {};
   for (const [roomId, room] of Object.entries(roomData)) {
@@ -440,13 +444,9 @@ function preload() {
       const tsxMeta = tsxMetaBySourcePath[sourcePath] ?? {};
       tileset.tilePropertiesById = tsxMeta.tilePropertiesById ?? {};
       tileset.tileImagesById = tsxMeta.tileImagesById ?? {};
-      // Attach the resolved image path so the render system can look it up
-      // without needing to re-derive the map directory at draw time.
       tileset.resolvedImagePath =
         tsxMeta.resolvedImagePath ??
         tilesetSourceToImagePath(tileset?.source, mapDir);
-      const tileImgKeys = Object.keys(tsxMeta.tileImagesById ?? {});
-      const tileImgSample = tileImgKeys.slice(0, 3).map(k => `${k}:"${tsxMeta.tileImagesById[k]?.resolvedImagePath}"`);
       if (tsxMeta.tilewidth) tileset.tilewidth = tsxMeta.tilewidth;
       if (tsxMeta.tileheight) tileset.tileheight = tsxMeta.tileheight;
       if (tsxMeta.columns != null) tileset.columns = tsxMeta.columns;
@@ -457,7 +457,6 @@ function preload() {
   const imageNames = new Set();
   for (const room of Object.values(roomData)) {
     const imageName = getBackgroundImageName(room);
-
     if (imageName) imageNames.add(imageName);
   }
 
@@ -478,18 +477,18 @@ function preload() {
   // Extracted tiles live at data/tiles/{tilesetName}/{gid}.png (GID = Tiled global ID)
   const tileGidToPath = new Map();
   for (const [roomId, room] of Object.entries(roomData)) {
-    // Collect all tilesets with their GID ranges for this room
     const roomTilesets = (room.tilesets || []).map(ts => ({
       firstgid: Number(ts.firstgid || 0),
       name:     ts.name ?? path.basename(String(ts.source ?? ''), '.tsx'),
+      tilecount: Number(ts.tilecount || 0) || 999999,
     })).sort((a, b) => a.firstgid - b.firstgid);
 
     function tilesetForGid(gid) {
       let best = null;
       for (const ts of roomTilesets) {
-        if (gid >= ts.firstgid && (!best || ts.firstgid > best.firstgid)) best = ts;
+        if (gid >= ts.firstgid && gid < ts.firstgid + ts.tilecount && (!best || ts.firstgid > best.firstgid)) best = ts;
       }
-      return best; // null for gid=0
+      return best;
     }
 
     for (const layer of (room.layers || [])) {
@@ -511,7 +510,6 @@ function preload() {
     }
   }
 
-  // Load each unique tile file
   for (const [gid, tilePath] of tileGidToPath) {
     assets[`tile:${gid}`] = loadImage(tilePath);
   }
