@@ -67,9 +67,10 @@ function pressAt(pauseMenu, x, y) {
 function mainPageLayout() {
   const baseY = height / 2 - 80;
   return {
-    resume:    { x: cx() - BUTTON_W / 2, y: baseY + 50 },
-    settings:  { x: cx() - BUTTON_W / 2, y: baseY + 50 + 55 },
-    difficulty: { x: cx() - BUTTON_W / 2, y: baseY + 50 + 55 + 55 },
+    resume:     { x: cx() - BUTTON_W / 2, y: baseY + 50 },
+    settings:   { x: cx() - BUTTON_W / 2, y: baseY + 50 + 55 },
+    controls:   { x: cx() - BUTTON_W / 2, y: baseY + 50 + 55 + 55 },
+    difficulty: { x: cx() - BUTTON_W / 2, y: baseY + 50 + 55 + 55 + 55 },
   };
 }
 

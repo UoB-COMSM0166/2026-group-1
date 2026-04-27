@@ -724,6 +724,7 @@ function setup() {
     },
     onControlModeChange: (mode) => { inputSystem.setControlMode(mode); shopSystem?.setControlMode(mode); },
     initialControlMode: CONTROLS.DEFAULT_MODE,
+    controlsSystem: controlsPageSystem,
   });
 
   shopSystem = createShopSystem(player, CONTROLS.DEFAULT_MODE);

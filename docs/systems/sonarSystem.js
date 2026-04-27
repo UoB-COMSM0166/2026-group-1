@@ -123,13 +123,14 @@ export function createSonarSystem(player, getWalls, getHazards = () => [], getCo
 
           if (Number.isFinite(px) && Number.isFinite(py)) {
             const sonarLevel = player?.upgrades?.sonar ?? 1;
+            const cooldownLevel = player?.upgrades?.sonarCooldown ?? 1;
             const rangeBonus = Math.max(0, sonarLevel - 1) * (SONAR.RANGE_BONUS_PER_LEVEL ?? 50);
             const effectiveRange = (SONAR.BASE_RANGE ?? 250) + rangeBonus;
             const raySpeed = effectiveRange * RAY_DECAY / BASE_RAY_LIFETIME;
             pulses.push(new Pulse(px, py, raySpeed));
 
             // Scaled cooldown: base minus reduction per level, clamped to minimum
-            const cooldownReduction = (sonarLevel - 1) * (SONAR.COOLDOWN_REDUCTION_PER_LEVEL ?? 150);
+            const cooldownReduction = (cooldownLevel - 1) * (SONAR.COOLDOWN_REDUCTION_PER_LEVEL ?? 150);
             const effectiveCooldown = Math.max(SONAR.MIN_COOLDOWN ?? 300,
               (SONAR.BASE_COOLDOWN ?? 1200) - cooldownReduction);
             cooldownTimer = effectiveCooldown;
@@ -140,8 +141,8 @@ export function createSonarSystem(player, getWalls, getHazards = () => [], getCo
       }
 
       // Scaled decay: base minus reduction per level, clamped to minimum
-      const sonarLevel = player?.upgrades?.sonar ?? 1;
-      const decayReduction = (sonarLevel - 1) * (SONAR.DECAY_REDUCTION_PER_LEVEL ?? 0.3);
+      const decayLevel = player?.upgrades?.sonarDecay ?? 1;
+      const decayReduction = (decayLevel - 1) * (SONAR.DECAY_REDUCTION_PER_LEVEL ?? 0.3);
       const effectiveDecay = Math.max(0.2,
         (SONAR.BASE_DECAY ?? 1.8) - decayReduction);
 

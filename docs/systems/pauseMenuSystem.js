@@ -25,6 +25,7 @@ export function createPauseMenuSystem({
   onResolutionChange,
   onControlModeChange,
   initialControlMode = 'wasd',
+  controlsSystem = null,
 } = {}) {
   let paused = false;
   let currentPage = "main"; // 'main' | 'settings' | 'debug'
@@ -53,6 +54,7 @@ export function createPauseMenuSystem({
   let draggingVolume = false;
 
   let returnToMainMenu = false;
+  let showControlsPage = false;
 
   //--------------------------------------
   // HIT TESTING
@@ -150,8 +152,19 @@ export function createPauseMenuSystem({
       isOver(cx - BUTTON_W / 2, settingsY, BUTTON_W, BUTTON_H),
     );
 
+    // Controls
+    const controlsY = settingsY + 55;
+    drawButton(
+      "Controls",
+      cx - BUTTON_W / 2,
+      controlsY,
+      BUTTON_W,
+      BUTTON_H,
+      isOver(cx - BUTTON_W / 2, controlsY, BUTTON_W, BUTTON_H),
+    );
+
     // Difficulty
-    const diffY = settingsY + 55;
+    const diffY = controlsY + 55;
     const diffLabel = `Difficulty: ${difficulty.toUpperCase()}`;
     const diffColor =
       difficulty === "hard" ? color(200, 80, 80) : color(60, 160, 90);
@@ -288,7 +301,9 @@ export function createPauseMenuSystem({
         currentPage = "main";
       } else if (isOver(cx - BUTTON_W / 2, settingsY, BUTTON_W, BUTTON_H)) {
         currentPage = "settings";
-      } else if (isOver(cx - BUTTON_W / 2, diffY, BUTTON_W, BUTTON_H)) {
+      } else if (isOver(cx - BUTTON_W / 2, settingsY + 55, BUTTON_W, BUTTON_H)) {
+        showControlsPage = true;
+      } else if (isOver(cx - BUTTON_W / 2, settingsY + 110, BUTTON_W, BUTTON_H)) {
         difficulty = difficulty === "easy" ? "hard" : "easy";
       }
     } else if (currentPage === "settings") {
@@ -345,6 +360,11 @@ export function createPauseMenuSystem({
       const backY = baseY + 150;
       if (isOver(cx - BUTTON_W / 2, backY, BUTTON_W, BUTTON_H)) {
         currentPage = "settings";
+      }
+    } else if (showControlsPage && controlsSystem) {
+      const result = controlsSystem.checkClick(mouseX, mouseY);
+      if (result === "BACK" || result === "NEXT") {
+        showControlsPage = false;
       }
     }
   }
@@ -429,12 +449,28 @@ export function createPauseMenuSystem({
       } else if (currentPage === "debug") {
         drawDebugPage();
       }
+
+      // Controls overlay — drawn on top of pause menu
+      if (showControlsPage && controlsSystem) {
+        noStroke();
+        fill(0, 0, 0, 200);
+        rect(0, 0, width, height);
+        controlsSystem.draw(null);
+      }
     },
 
     openSettingsMenu(fromMain = false) {
       paused = true;
       currentPage = "settings";
       returnToMainMenu = fromMain;
+    },
+
+    isShowingControlsPage() {
+      return showControlsPage;
+    },
+
+    closeControlsPage() {
+      showControlsPage = false;
     },
   };
 }
