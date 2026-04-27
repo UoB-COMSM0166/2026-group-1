@@ -390,9 +390,16 @@ export function createRenderSystem({
          const pulse = Math.abs(Math.sin(jelly.pulsePhase || 0)) * 0.15 + 0.85;
          scale(1.5, pulse*1.5);
 
+         const glowPulse = Math.abs(Math.sin(jelly.pulsePhase || 0));
+         const jellyCtx = drawingContext;
+
+         jellyCtx.shadowBlur = 18 + glowPulse * 12;
+         jellyCtx.shadowColor = 'rgba(180, 100, 255, 0.85)';
          noStroke();
          fill(150, 100, 255, 180);
          ellipse(0, -jellyH / 4, jellyW, jellyH / 2);
+         jellyCtx.shadowBlur = 0;
+
          fill(255);
          ellipse(-4, -jellyH / 4 - 2, 3, 3);
          ellipse(4, -jellyH / 4 - 2, 3, 3);
@@ -400,6 +407,8 @@ export function createRenderSystem({
          ellipse(-4, -jellyH / 4 - 2, 1.5, 1.5);
          ellipse(4, -jellyH / 4 - 2, 1.5, 1.5);
 
+         jellyCtx.shadowBlur = 8 + glowPulse * 6;
+         jellyCtx.shadowColor = 'rgba(150, 80, 255, 0.7)';
          stroke(120, 80, 200, 150);
          strokeWeight(2);
          for (let i = -1; i <= 1; i++) {
@@ -407,6 +416,7 @@ export function createRenderSystem({
             const tentacleWave = Math.sin((jelly.time || 0) + i) * 3;
             line(xOff, 0, xOff + tentacleWave, jellyH / 2);
          }
+         jellyCtx.shadowBlur = 0;
 
          noStroke();
          fill(200, 150, 255, 100);
