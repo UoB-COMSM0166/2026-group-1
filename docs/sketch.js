@@ -360,43 +360,16 @@ function getBackgroundImageName(room) {
 }
 
 function ensureRoomAssetsLoaded(roomId) {
+  // Tile loading is now handled entirely in preload() via tileGidToPath.
+  // This function only handles background images for rooms.
   const room = roomData[roomId];
   if (!room) return;
-
   const backgroundImageName = getBackgroundImageName(room);
   if (backgroundImageName && !assets[backgroundImageName]) {
     const backgroundPath = backgroundImageName.includes("/")
       ? backgroundImageName
       : `assets/backgrounds/${backgroundImageName}`;
     assets[backgroundImageName] = loadImage(backgroundPath);
-  }
-
-  const mapDir = roomMapDir(roomId);
-  for (const tileset of room?.tilesets ?? []) {
-    const imagePath =
-      tileset.resolvedImagePath ??
-      tilesetSourceToImagePath(tileset?.source, mapDir);
-    if (imagePath) {
-      tileset.resolvedImagePath = imagePath;
-      const key = `tileset:${imagePath}`;
-      if (!assets[key]) {
-        assets[key] = loadImage(imagePath);
-      }
-    }
-
-    for (const tileImage of Object.values(tileset?.tileImagesById ?? {})) {
-      const tileImagePath = tileImage?.resolvedImagePath;
-      if (!tileImagePath) continue;
-      const tileKey = `tileset:${tileImagePath}`;
-      if (!assets[tileKey]) {
-        // Only log once per tileset to avoid spam
-        if (!ensureRoomAssetsLoaded._loggedTileImages) {
-          ensureRoomAssetsLoaded._loggedTileImages = true;
-          const allTileImages = Object.values(tileset?.tileImagesById ?? {}).map(ti => ti?.resolvedImagePath);
-        }
-        assets[tileKey] = loadImage(tileImagePath);
-      }
-    }
   }
 }
 
