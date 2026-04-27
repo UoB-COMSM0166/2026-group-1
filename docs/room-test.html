@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Room Render Test - THE ABYSS</title>
+<style>
+body{background:#111;color:#0f0;font-family:monospace;padding:20px}
+canvas{border:1px solid #333;display:block;margin-top:10px}
+#status{margin-top:12px;font-size:13px;color:#888}
+</style>
+</head>
+<body>
+<h1 style="color:#fff">Room Render Test</h1>
+<div id="status">Loading...</div>
+<script src="p5.js"></script>
+<script>
+// ============================================================
+// CONFIG — change this to match your server
+// ============================================================
+// Serve from docs/: cd docs && python3 -m http.server 3000
+// Then open: http://127.0.0.1:3000/room-test.html
+var SERVER_BASE = "http://127.0.0.1:5501"; // CHANGE if your server is different
+var ROOM_FILE = "data/rooms/demoStart.json";
+// ============================================================
+var roomData = null;
+var tilesetCache = {};
+var assets = {};
+var statusEl = document.getElementById('status');
+
+function status(s) { console.log(s); statusEl.textContent = s; }
+
+function nr(base, rel) {
+  var b = String(base).split("/").filter(Boolean);
+  var r = String(rel||"").split("/").filter(Boolean);
+  for (var i=0; i<r.length; i++) {
+    var p = r[i];
+    if (p===".") continue;
+    if (p==="..") { b.pop(); continue; }
+    b.push(p);
+  }
+  return b.join("/");
+}
+function dp(p) { var b=String(p||"").split("/").filter(Boolean); b.pop(); return b.join("/"); }
+function gd(p) { var b=String(p||"").split("/").filter(Boolean); return b[b.length-1]||""; }
+
+// Parse TSX metadata
+function parseTsx(xml, sp) {
+  sp = sp||"";
+  var pd = new DOMParser().parseFromString(xml, "application/xml");
+  var ts = pd.querySelector("tileset");
+  if (!ts) return null;
+  var bd = dp(sp);
+  var ri = ts.querySelector("image");
+  var rs = ri ? ri.getAttribute("source") : null;
+  return {
+    imagePath: rs ? nr(bd, rs) : null,
+    tw: Number(ts.getAttribute("tilewidth")||0)||16,
+    th: Number(ts.getAttribute("tileheight")||0)||16,
+    cols: Number(ts.getAttribute("columns")||0)||24,
+    count: Number(ts.getAttribute("tilecount")||0)||576
+  };
+}
+
+function getTilesetForGid(gid) {
+  if (!roomData || !roomData.tilesets) return null;
+  var best = null;
+  for (var i=0; i<roomData.tilesets.length; i++) {
+    var ts = roomData.tilesets[i];
+    var fg = Number(ts.firstgid||0);
+    if (!fg || gid < fg) continue;
+    if (!best || fg > best.firstgid) best = Object.assign({}, ts);
+  }
+  return best;
+}
+
+// Draw a single tile from a tileset atlas
+function drawTile(gid, destX, destY, tw, th) {
+  var ts = getTilesetForGid(gid);
+  if (!ts) { fill(255,0,255); noStroke(); rect(destX, destY, tw, th, 2); return; } // magenta = no tileset
+  
+  var meta = tilesetCache[ts.source];
+  if (!meta) { fill(255,128,0); noStroke(); rect(destX, destY, tw, th, 2); return; } // orange = no TSX parsed
+
+  var imgPath = "tileset:" + meta.imagePath;
+  var img = assets[imgPath];
+  if (!img || img.width === 0) { fill(255,0,0); noStroke(); rect(destX, destY, tw, th, 2); return; } // red = image not loaded
+
+  var localId = gid - ts.firstgid;
+  var sx = (localId % meta.cols) * meta.tw;
+  var sy = Math.floor(localId / meta.cols) * meta.th;
+  image(img, destX, destY, tw, th, sx, sy, meta.tw, meta.th);
+}
+
+function drawTileLayer(layer) {
+  if (!layer || layer.type !== "tilelayer") return;
+  var tw = roomData.tilewidth || 16;
+  var th = roomData.tileheight || 16;
+  var w = layer.width;
+  var h = layer.height;
+  var data = layer.data;
+  for (var y=0; y<h; y++) {
+    for (var x=0; x<w; x++) {
+      var idx = y*w + x;
+      var gid = data[idx];
+      if (!gid) continue;
+      drawTile(gid, x*tw, y*th, tw, th);
+    }
+  }
+}
+
+function drawObjectLayer(layer) {
+  if (!layer || layer.type !== "objectgroup") return;
+  var tw = roomData.tilewidth || 16;
+  var th = roomData.tileheight || 16;
+  for (var i=0; i<(layer.objects||[]).length; i++) {
+    var obj = layer.objects[i];
+    var gid = obj.gid;
+    if (!gid) continue;
+    var x = obj.x;
+    var y = obj.y;
+    var w = obj.width || tw;
+    var h = obj.height || th;
+    drawTile(gid, x, y-h, w, h); // Tiled y is bottom-left, canvas y is top-left
+  }
+}
+
+function preload() {
+  status("Loading room JSON...");
+  loadJSON(SERVER_BASE + "/" + ROOM_FILE, function(rd) {
+    roomData = rd;
+    status("Room loaded. Parsing tilesets...");
+    
+    // Parse all TSX files
+    var tsxCount = 0;
+    var tsxDone = 0;
+    var toFetch = [];
+    
+    for (var i=0; i<(roomData.tilesets||[]).length; i++) {
+      var ts = roomData.tilesets[i];
+      var tsxUrl = SERVER_BASE + "/" + ts.source;
+      toFetch.push(tsxUrl);
+    }
+    
+    // Fetch all TSX at once
+    var tsxData = {};
+    var fetched = 0;
+    for (var j=0; j<toFetch.length; j++) {
+      (function(url) {
+        fetch(url).then(function(r) { return r.ok ? r.text() : null; }).then(function(xml) {
+          tsxData[url] = xml;
+          fetched++;
+          if (fetched === toFetch.length) {
+            // All TSX fetched — parse and cache metadata
+            for (var k=0; k<(roomData.tilesets||[]).length; k++) {
+              var ts = roomData.tilesets[k];
+              var url = SERVER_BASE + "/" + ts.source;
+              var xml = tsxData[url];
+              tilesetCache[ts.source] = xml ? parseTsx(xml, ts.source) : null;
+              status("TSX parsed: " + ts.source + " -> " + (tilesetCache[ts.source] ? tilesetCache[ts.source].imagePath : "FAILED"));
+            }
+            // Now load all tileset atlas images
+            status("Loading tileset images...");
+            var imgKeys = [];
+            for (var ts in tilesetCache) {
+              var m = tilesetCache[ts];
+              if (m && m.imagePath) imgKeys.push(m.imagePath);
+            }
+            var loaded = 0;
+            for (var l=0; l<imgKeys.length; l++) {
+              var imgUrl = SERVER_BASE + "/" + imgKeys[l];
+              var key = "tileset:" + imgKeys[l];
+              loadImage(imgUrl, function(img) {
+                assets[key] = img;
+                loaded++;
+                status("Loaded " + loaded + "/" + imgKeys.length + " images");
+                if (loaded === imgKeys.length) {
+                  status("READY — rendering...");
+                }
+              }, function(e) {
+                assets[key] = { width: 0 };
+                loaded++;
+                status("FAILED to load: " + imgUrl);
+                if (loaded === imgKeys.length) status("READY (some images failed) — rendering...");
+              });
+            }
+          }
+        });
+      })(toFetch[j]);
+    }
+  }, function(e) { status("FAILED to load room JSON: " + e); });
+}
+
+function setup() {
+  createCanvas(640, 400);
+  noLoop();
+}
+
+function draw() {
+  if (!roomData) {
+    background(20);
+    fill(200); textAlign(CENTER, CENTER); text("Loading...", width/2, height/2); textAlign(LEFT);
+    return;
+  }
+  
+  background(20);
+  
+  // Draw tilelayers
+  var layers = roomData.layers || [];
+  for (var i=0; i<layers.length; i++) {
+    var layer = layers[i];
+    if (layer.type === "tilelayer") {
+      var name = (layer.name||"").toLowerCase();
+      if (name === "collision" || name === "boundary") continue; // skip collision — it's drawn as platforms
+      drawTileLayer(layer);
+    }
+  }
+  
+  // Draw object layers (foreground objects with GIDs)
+  for (var j=0; j<layers.length; j++) {
+    var layer = layers[j];
+    if (layer.type === "objectgroup") {
+      var name = (layer.name||"").toLowerCase();
+      if (name === "terrain" || name === "background" || name === "spawns" || name === "exits" || name === "enemies" || name === "collectables" || name === "triggers") continue;
+      drawObjectLayer(layer);
+    }
+  }
+  
+  noLoop();
+}
+</script>
+</body>
+</html>
