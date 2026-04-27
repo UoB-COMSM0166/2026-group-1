@@ -407,17 +407,23 @@ function roomMapDir(_roomId) {
 async function preload() {
 
   soundSystem = createSoundSystem();
-  soundSystem.preload();
 
-  // Load all rooms in parallel, wait for all before processing.
-  // Using raw fetch (not p5 loadJSON) so preload() can await them properly.
-  await Promise.all(ROOM_IDS.map(roomId =>
-    fetch(`data/rooms/${roomId}.json`)
-      .then(r => r.json())
-      .then(data => { roomData[roomId] = data; })
-  ));
+  // p5.js tracks async ops from preload() and waits before calling setup().
+  // Wrap everything in one promise so p5.js sees it as a single async operation.
+  await new Promise(async resolve => {
 
+    await soundSystem.preload();
+
+    // Load all rooms in parallel via fetch (not p5 loadJSON) so we control timing.
+    await Promise.all(ROOM_IDS.map(roomId =>
+      fetch(`data/rooms/${roomId}.json`)
+        .then(r => r.json())
+        .then(data => { roomData[roomId] = data; })
+    ));
+
+  // Load all TSX files in parallel and await them.
   const tsxMetaBySourcePath = {};
+  const tsxLoadJobs = [];
   for (const [roomId, room] of Object.entries(roomData)) {
     const mapDir = roomMapDir(roomId);
     for (const tileset of room?.tilesets ?? []) {
@@ -426,16 +432,20 @@ async function preload() {
       if (!sourcePath.toLowerCase().endsWith(".tsx")) continue;
       if (tsxMetaBySourcePath[sourcePath]) continue;
 
-      const tsxLines = loadStrings(sourcePath) ?? [];
-      if (!tsxLines.length) {
-        console.warn(`[preload] TSX file empty or failed to load: "${sourcePath}"`);
-      }
-      tsxMetaBySourcePath[sourcePath] = parseTsxMetadata(
-        tsxLines.join("\n"),
-        sourcePath,
+      tsxLoadJobs.push(
+        loadStrings(sourcePath).then(tsxLines => {
+          if (!tsxLines || !tsxLines.length) {
+            console.warn(`[preload] TSX file empty or failed to load: "${sourcePath}"`);
+          }
+          tsxMetaBySourcePath[sourcePath] = parseTsxMetadata(
+            (tsxLines || []).join("\n"),
+            sourcePath,
+          );
+        })
       );
     }
   }
+  await Promise.all(tsxLoadJobs);
 
   for (const [roomId, room] of Object.entries(roomData)) {
     const mapDir = roomMapDir(roomId);
@@ -524,6 +534,9 @@ async function preload() {
 
   mainPageBg = loadImage("assets/backgrounds/titleBackground.png");
   menuBg = loadImage("assets/backgrounds/bg_black.png");
+
+    resolve();
+  });
 }
 
 function setup() {
