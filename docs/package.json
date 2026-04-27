@@ -26,6 +26,14 @@
 
     "jest": "^30.3.0"
 
+  },
+
+  "dependencies": {
+
+    "fast-xml-parser": "^5.7.2",
+
+    "sharp": "^0.34.5"
+
   }
 
 }
