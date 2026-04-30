@@ -83,8 +83,9 @@ function settingsPageLayout() {
     showFPS:      { x: togglesX, y: baseY + 110 - 12, w: 48, h: 24 },
     screenShake:  { x: togglesX, y: baseY + 150 - 12, w: 48, h: 24 },
     controlMode:  { x: togglesX, y: baseY + 190 - 12, w: 48, h: 24 },
-    debug:        { x: cx() - BUTTON_W / 2, y: baseY + 260 },
-    back:         { x: cx() - BUTTON_W / 2, y: baseY + 260 + 55 },
+    controls:     { x: cx() - BUTTON_W / 2, y: baseY + 260 },
+    debug:        { x: cx() - BUTTON_W / 2, y: baseY + 260 + 55 },
+    back:         { x: cx() - BUTTON_W / 2, y: baseY + 260 + 110 },
   };
 }
 

@@ -265,6 +265,7 @@ export function createEnemySystem(player, getEnemies, getActivePulses, soundSyst
       piranha.chaseTimer--;
       if (piranha.chaseTimer <= 0) {
         piranha.state = 'return';
+        piranha.chaseEndTime = performance.now();
       }
 
     } else if (piranha.state === 'return') {
@@ -305,6 +306,40 @@ export function createEnemySystem(player, getEnemies, getActivePulses, soundSyst
     }
   }
 
+  function checkPiranhaContact(piranha) {
+    if (isColliding(piranha, player)) {
+      if (!contactSet.has(piranha)) {
+        player.power.current = Math.max(0, player.power.current - CRAB_CONTACT_PENALTY);
+        piranha.hitGlowTime = performance.now();
+        contactSet.add(piranha);
+        soundSystem?.play('playerHit', 0.2);
+      }
+      player.power.drain(CRAB_DRAIN_RATE);
+    } else {
+      contactSet.delete(piranha);
+    }
+  }
+
+  function checkJellyfishContact(jelly) {
+    if (isColliding(jelly, player)) {
+      if (!contactSet.has(jelly)) {
+        if (Math.random() < 0.5) {
+          player.power.current = Math.max(0, player.power.current - JELLYFISH_CONTACT_PENALTY);
+          jelly.hitFlashType = 'drain';
+        } else {
+          player.power.current = Math.min(player.power.maxPower, player.power.current + JELLYFISH_CONTACT_PENALTY);
+          jelly.hitFlashType = 'gain';
+        }
+        jelly.hitFlashTime = performance.now();
+        contactSet.add(jelly);
+        soundSystem?.play('playerHit', 0.2);
+      }
+      player.power.drain(JELLYFISH_DRAIN_RATE);
+    } else {
+      contactSet.delete(jelly);
+    }
+  }
+
   return {
     update() {
       syncEnemies();
@@ -330,7 +365,7 @@ export function createEnemySystem(player, getEnemies, getActivePulses, soundSyst
 
       for (const jelly of jellyfish) {
         updateJellyfish(jelly);
-        checkPlayerContact(jelly, JELLYFISH_CONTACT_PENALTY, JELLYFISH_DRAIN_RATE);
+        checkJellyfishContact(jelly);
       }
 
       for (let i = piranhas.length - 1; i >= 0; i--) {
@@ -342,7 +377,7 @@ export function createEnemySystem(player, getEnemies, getActivePulses, soundSyst
 
       for (const piranha of piranhas) {
         updatePiranha(piranha, player, getActivePulses ? getActivePulses() : []);
-        checkPlayerContact(piranha, CRAB_CONTACT_PENALTY, CRAB_DRAIN_RATE);
+        checkPiranhaContact(piranha);
       }
     },
 
@@ -362,6 +397,28 @@ export function createEnemySystem(player, getEnemies, getActivePulses, soundSyst
       return [...crabs, ...jellyfish, ...piranhas];
     },
 
+    getPiranhaLights() {
+      const lights = [];
+      const now = performance.now();
+      for (const p of piranhas) {
+        if (p.pendingDestroy) continue;
+
+        if (p.state === 'chase') {
+          const pulse = 0.32 + 0.12 * Math.abs(Math.sin(now / 350));
+          lights.push({ kind: 'piranhaChase', x: p.position.x, y: p.position.y, radius: 22, intensity: pulse, piranhaColor: 'red' });
+        } else {
+          const chaseStrength = Math.max(0, 1 - (now - (p.chaseEndTime ?? -Infinity)) / 1500);
+          const hitStrength   = Math.max(0, 1 - (now - (p.hitGlowTime   ?? -Infinity)) / 800);
+          const blueStrength  = Math.max(chaseStrength, hitStrength);
+          if (blueStrength > 0) {
+            const pulse = 0.28 + 0.10 * Math.abs(Math.sin(now / 400));
+            lights.push({ kind: 'piranhaChase', x: p.position.x, y: p.position.y, radius: 22, intensity: blueStrength * pulse, piranhaColor: 'blue' });
+          }
+        }
+      }
+      return lights;
+    },
+
     getJellyfishLights() {
       const lights = [];
       for (const j of jellyfish) {
@@ -379,25 +436,33 @@ export function createEnemySystem(player, getEnemies, getActivePulses, soundSyst
         const headT = ((t / JELLYFISH_GLOW.HEAD_CYCLE_S) + offset) % 1;
         const bodyT = ((t / JELLYFISH_GLOW.BODY_CYCLE_S) + offset + JELLYFISH_GLOW.BODY_PHASE_OFFSET) % 1;
 
+        const hitAge = performance.now() - (j.hitFlashTime ?? -Infinity);
+        const hitFlash = Math.max(0, 1 - hitAge / 600);
+        const hitPulse = hitFlash > 0 ? hitFlash * Math.abs(Math.sin(hitAge / 80 * Math.PI)) : 0;
+        const boostedIntensity = Math.min(2.0, intensity + hitPulse * 1.5);
+
         lights.push({
           kind: 'jellyfishHead',
           x: j.position.x,
-          y: j.position.y - (j.h ?? 22) * 0.375,  // centre on dome
+          y: j.position.y - (j.h ?? 22) * 0.375,
           radius: JELLYFISH_GLOW.HEAD_RADIUS,
-          intensity,
-          glowPulse,
+          intensity: boostedIntensity,
+          glowPulse: Math.min(1, glowPulse + hitPulse),
           cycleT: headT,
+          hitFlash,
+          hitFlashType: j.hitFlashType ?? 'drain',
         });
         const bodyH = j.glowHeight ?? JELLYFISH_GLOW.BODY_MIN_RADIUS;
         lights.push({
           kind: 'jellyfishBody',
           x: j.position.x,
-          y: j.position.y + (j.h ?? 22) * 0.15,  // shifted to visual body centre
+          y: j.position.y + (j.h ?? 22) * 0.15,
           radius: bodyH,
-          aspect: JELLYFISH_GLOW.BODY_HALF_WIDTH / bodyH,  // keeps width stable as height changes
-          intensity: intensity * 0.65,
-          glowPulse: glowPulse * 0.7,
+          aspect: JELLYFISH_GLOW.BODY_HALF_WIDTH / bodyH,
+          intensity: Math.min(2.0, intensity * 0.65 + hitPulse * 0.8),
+          glowPulse: Math.min(1, glowPulse * 0.7 + hitPulse * 0.5),
           cycleT: bodyT,
+          hitFlash,
         });
       }
       return lights;

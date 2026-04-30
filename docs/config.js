@@ -39,21 +39,6 @@ export const RENDER = {
   SHOW_TRIGGER_AND_ENTITY_VISUALS: false,
 };
 
-//======================
-// GAME VERSIONS CONFIG
-//======================
-export const GAME_VERSIONS = {
-  demo: {
-    startRoom: "demoStart",
-    rooms: ["demoStart", "tunnel", "theDrop", "endlessAbyss", "crabCaverns", "spikeMaze", "jellyfishAtrium", "theSurface"],
-    difficulty: "EASY",
-  },
-  full: {
-    startRoom: "demoStart",
-    rooms: ["demoStart", "tunnel", "theDrop", "endlessAbyss", "crabCaverns", "spikeMaze", "jellyfishAtrium", "theSurface"],
-  },
-};
-
 
 //======================
 // MAIN CANVAS CONFIG
@@ -121,8 +106,8 @@ export const MINIMAP = {
   CENTER_X: 960,
   CENTER_Y: 895,
 
-  // Effective radius = DIAL_RADIUS - DIAL_INSET (85px). Keeps minimap clear of bottom row.
-  DIAL_RADIUS: 93,
+  // Effective radius = DIAL_RADIUS - DIAL_INSET. Keeps minimap clear of bottom row.
+  DIAL_RADIUS: 118,
   DIAL_INSET: 8,
 };
 
@@ -143,10 +128,13 @@ export const HUD_DIALS = {
   SONAR_SCALE: 1.3,
 
   // Bottom row: upgrade bars + missile dots
-  BOTTOM_ROW_Y: 1025,
-  BOTTOM_ROW_LABEL_Y: 1048,
-  BOTTOM_ROW_SPACING: 150,
-  BOTTOM_ROW_CENTER_X: 960,
+  // Left group (POWER, SONAR) centred at LEFT_GROUP_X, right group (TORCH, MISSILES) at RIGHT_GROUP_X.
+  // GROUP_SPACING is the distance between the two items within each group.
+  BOTTOM_ROW_Y: 1008,
+  BOTTOM_ROW_LABEL_Y: 1031,
+  BOTTOM_ROW_LEFT_GROUP_X: 700,
+  BOTTOM_ROW_RIGHT_GROUP_X: 1220,
+  BOTTOM_ROW_GROUP_SPACING: 180,
 };
 
 //======================
@@ -172,7 +160,7 @@ export const PLAYER = {
 //======================
 export const POWER = {
   MAX_POWER: 100,
-  CURRENT_POWER: 100,
+  CURRENT_POWER: 60,   // starts at 60% of max — upgrades push this higher
   LOW_POWER_THRESHOLD: 0.15,
   DRAIN_RATE: 0.5,
   UPGRADE_MAX_POWER_BONUS: 20,  // extra capacity per upgrade level
@@ -274,6 +262,7 @@ export const GLOW = {
   KNOCKBACK_LIFT: 50,
   IFRAME_DURATION_MS: 800,
   DAMAGE_FLASH_DURATION_MS: 300,
+  CHARGE_RATE: 2,              // power units per second charged while on active glow object
 };
 
 //======================
@@ -349,6 +338,7 @@ export function keyLabel(binding) {
     68:  'D',
     69:  'E',
     70:  'F',
+    67:  'C',
     81:  'Q',
     83:  'S',
     87:  'W',
@@ -375,11 +365,10 @@ export const CONTROLS = {
       SONAR:        69,    // E
       LAUNCH_MISSILE: 32,  // Space
       TOGGLE_PAUSE:      27,    // Escape
-      TOGGLE_WORKSHOP:       66,    // B
-      ACCEPT:            81,    // Q
+      TOGGLE_WORKSHOP:       81,    // Q
       TOGGLE_FULLSCREEN: 192,   // Backtick
       SNEAK:             16,    // Shift
-      TOGGLE_CONTROLS:   72,    // H
+      TOGGLE_CONTROLS:   67,    // C
     },
     /* Arrow-keys option for movement */
     arrows: {
@@ -391,11 +380,10 @@ export const CONTROLS = {
       SONAR:        69,    // E
       LAUNCH_MISSILE: 32,  // Space
       TOGGLE_PAUSE:      27,    // Escape
-      TOGGLE_WORKSHOP:       66,    // B
-      ACCEPT:            81,    // Q
+      TOGGLE_WORKSHOP:       81,    // Q
       TOGGLE_FULLSCREEN: 192,   // Backtick
       SNEAK:             16,    // Shift
-      TOGGLE_CONTROLS:   72,    // H
+      TOGGLE_CONTROLS:   67,    // C
     },
   },
 };

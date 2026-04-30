@@ -52,7 +52,11 @@ import { LIGHTING, TORCH } from '../config.js';
 const SURFACE_BOTTOM_Y = 3184; // player spawn row — darkest point
 const SURFACE_TOP_Y    = 320;  // win trigger row  — brightest point
 
-export function createLightingSystem(player = null, getSonarLights = () => [], getGlowLights = () => [], getCurrentRoom = () => null, getJellyfishLights = () => []) {
+function capitalize(s) {
+   return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+}
+
+export function createLightingSystem(player = null, getSonarLights = () => [], getGlowLights = () => [], getCurrentRoom = () => null, getJellyfishLights = () => [], getCollectables = () => [], getPiranhaLights = () => []) {
    return {
 
       //--- GET LIGHT SOURCES ---//
@@ -101,6 +105,29 @@ export function createLightingSystem(player = null, getSonarLights = () => [], g
          const jellyfishLights = getJellyfishLights?.() ?? [];
          for (const light of jellyfishLights) {
             lightSources.push(light);
+         }
+
+         // Piranha chase glow
+         const piranhaLights = getPiranhaLights?.() ?? [];
+         for (const light of piranhaLights) {
+            lightSources.push(light);
+         }
+
+         // Collectable lights — power cells and scrap glow faintly
+         const collectables = getCollectables?.() ?? [];
+         for (const c of collectables) {
+            if (!c.visible) continue;
+            const kind = c.collectableType;
+            if (kind === 'power' || kind === 'scrap') {
+               lightSources.push({
+                  kind: 'collectable',
+                  type: `collectable${capitalize(kind)}`,
+                  x: c.x,
+                  y: c.y,
+                  radius: kind === 'power' ? 28 : 18,
+                  intensity: kind === 'power' ? 0.7 : 0.4,
+               });
+            }
          }
 
          // Surface room: fixed-position ambient zones — brightness tied to world Y, not player Y

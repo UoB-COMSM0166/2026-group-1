@@ -164,12 +164,18 @@ export function createMissileSystem(player, getTargets, getWalls, soundSystem = 
                         if (entity.isBreakable) {
                             entity.isDestroyed = true;
                             entity.damageFlashTime = millis();
+                            const wx = entity.position?.x ?? 0;
+                            const wy = entity.position?.y ?? 0;
+                            particleSystem?.emitBurst(wx, wy, 'wall');
                             if (GAME.DIFFICULTY === 'EASY') {
                                 const blastRadius = 64;
                                 for (const w of walls) {
                                     if (w.isBreakable && w !== entity && p5.Vector.dist(entity.position, w.position) <= blastRadius) {
                                         w.isDestroyed = true;
                                         w.damageFlashTime = millis();
+                                        const bwX = w.position?.x ?? 0;
+                                        const bwY = w.position?.y ?? 0;
+                                        particleSystem?.emitBurst(bwX, bwY, 'wall');
                                     }
                                 }
                             }
@@ -177,6 +183,9 @@ export function createMissileSystem(player, getTargets, getWalls, soundSystem = 
                     } else {
                         entity.pendingDestroy = true;
                         entity.damageFlashTime = millis();
+                        const ex = entity.position?.x ?? entity.x ?? 0;
+                        const ey = entity.position?.y ?? entity.y ?? 0;
+                        particleSystem?.emitBurst(ex, ey, 'enemy');
                     }
 
                     missile.pendingDestroy = true;

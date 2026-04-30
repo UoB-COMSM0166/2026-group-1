@@ -70,6 +70,7 @@ export class Player extends Hitbox{
 
       this.torch = new Torch(TORCH);
       this.power = new PowerSystem(POWER);
+      this.power.current = this.power.maxPower;  // start full
       this.oxygen = null;
 
       this.bubbles = [];

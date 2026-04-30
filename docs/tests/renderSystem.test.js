@@ -137,8 +137,9 @@ global.WEBGL      = 'WEBGL';
 
 // Minimal player factory
 function makePlayer(overrides = {}) {
+  const defaultPower = { getPercent: () => 0.5, isEmpty: () => false };
   return {
-    power: { getPercent: () => 0.5 },
+    power: { ...defaultPower, ...overrides.power },
     facing: 1,
     position: { x: 640, y: 360 },
     previousPos: { x: 630, y: 355 },

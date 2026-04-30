@@ -110,8 +110,10 @@ describe('createPowerSystem — no power = no torch', () => {
    it('sets torch.isOn = false when power is empty', () => {
       const { entity, system } = makeSystem(
          { torch: { isOn: true } },
-         { CURRENT_POWER: 0, MAX_POWER: 100 }
+         { CURRENT_POWER: 100, MAX_POWER: 100 }
       );
+      // createPowerSystem starts current at maxPower; drain it to 0 to simulate exhaustion
+      entity.power.current = 0;
       system.update();
       expect(entity.torch.isOn).toBe(false);
    });

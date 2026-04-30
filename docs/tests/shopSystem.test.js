@@ -38,6 +38,10 @@ global.text = jest.fn();
 global.textAlign = jest.fn();
 global.textSize = jest.fn();
 global.textStyle = jest.fn();
+global.LEFT = 'left';
+global.RIGHT = 'right';
+global.CENTER = 'center';
+global.TOP = 'top';
 global.color = (r, g, b, a) => makeColor(r, g, b, a);
 global.lerpColor = (c1, c2, t) => c1;
 global.circle = jest.fn();
@@ -47,11 +51,14 @@ jest.unstable_mockModule('../config.js', () => ({
   CONTROLS: {
     DEFAULT_MODE: 'wasd',
     MODES: {
-      wasd: { ACCEPT: 'w' },
-      arrows: { ACCEPT: 'ArrowUp' },
+      wasd: { TOGGLE_WORKSHOP: 'q' },
+      arrows: { TOGGLE_WORKSHOP: 'q' },
     },
   },
   keyLabel: (key) => key,
+  MISSILE: {
+    MAX_CONCURRENT: 5,
+  },
 }));
 
 const { createWorkshopSystem: createShopSystem } = await import('../systems/workshopSystem.js');
@@ -320,6 +327,30 @@ describe('ShopSystem — item purchases via click', () => {
 
     expect(player.scrap).toBe(5);
     expect(player.missiles).toBe(0);
+  });
+
+  it('rejects missile purchase when already at max missiles', () => {
+    const player = makePlayer({ scrap: 500, missiles: 5 });
+    const shop = createShopSystem(player);
+    shop.openWorkshop();
+
+    const layout = getLayout();
+    clickAt(shop, layout.itemCards[0].x + 10, layout.itemCards[0].y + 10);
+
+    expect(player.scrap).toBe(500);
+    expect(player.missiles).toBe(5);
+  });
+
+  it('shows MAX CAPACITY label on missile card when at cap', () => {
+    const player = makePlayer({ scrap: 500, missiles: 5 });
+    const shop = createShopSystem(player);
+    shop.openWorkshop();
+    global.text.mockClear();
+
+    shop.draw();
+
+    const drewMax = global.text.mock.calls.some((args) => args[0] === 'MAX CAPACITY');
+    expect(drewMax).toBe(true);
   });
 });
 

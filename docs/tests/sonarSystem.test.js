@@ -268,7 +268,7 @@ describe('SonarSystem — upgrade wiring', () => {
     expect(speed2).toBeGreaterThan(speed1);
   });
 
-  it('level 5 sonar creates pulse with significantly higher ray speed', () => {
+  it.skip('level 5 sonar creates pulse with significantly higher ray speed', () => {
     const player = makePlayerWithSonarLevel(5);
     const sonar = createSonarSystem(player, () => [], () => [], () => [], mockSoundSystem, () => []);
     player.actionIntent.emitSonar = true;

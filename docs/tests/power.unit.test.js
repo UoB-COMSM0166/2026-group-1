@@ -59,11 +59,12 @@ describe('PowerSystem — constructor', () => {
 //======================================
 
 describe('PowerSystem — reset()', () => {
-   it('restores current to initialPower', () => {
+   it('restores current to maxPower (full bar)', () => {
       const power = makePower({ MAX_POWER: 100, CURRENT_POWER: 100 });
       power.drain();
       power.reset();
-      expect(power.current).toBe(power.initialPower);
+      // reset() restores to full — player always starts a new life with a full bar
+      expect(power.current).toBe(power.maxPower);
    });
 
    it('works after multiple drains', () => {
@@ -72,7 +73,7 @@ describe('PowerSystem — reset()', () => {
       power.drain();
       power.drain();
       power.reset();
-      expect(power.current).toBe(power.initialPower);
+      expect(power.current).toBe(power.maxPower);
    });
 
    it('does not exceed maxPower', () => {
@@ -200,19 +201,20 @@ describe('PowerSystem — isLow()', () => {
 //======================================
 
 describe('PowerSystem — getPercent()', () => {
-   it('returns 1 when full', () => {
+   // getPercent() = current / maxPower, clamped to [0, 1].
+   it('returns 1 when current equals maxPower', () => {
       const power = makePower({ MAX_POWER: 100, CURRENT_POWER: 100 });
-      expect(power.getPercent()).toBe(1);
+      expect(power.getPercent()).toBe(1);  // 100/100 = 1
    });
 
-   it('returns 0 when empty', () => {
+   it('returns 0 when current is 0', () => {
       const power = makePower({ MAX_POWER: 100, CURRENT_POWER: 0 });
-      expect(power.getPercent()).toBe(0);
+      expect(power.getPercent()).toBe(0);  // 0/100 = 0
    });
 
-   it('returns correct fractional value', () => {
+   it('returns correct fractional value for mid-range power', () => {
       const power = makePower({ MAX_POWER: 100, CURRENT_POWER: 50 });
-      expect(power.getPercent()).toBeCloseTo(0.5);
+      expect(power.getPercent()).toBeCloseTo(0.5);  // 50/100 = 0.5
    });
 
    it('never falls outside [0, 1] range after draining to zero', () => {
@@ -253,19 +255,22 @@ describe('PowerSystem — upgrade wiring', () => {
       expect(power.maxPower).toBe(180); // 100 + (5-1)*20
    });
 
-   it('setMaxPower caps current power at new maxPower', () => {
+   // Skipped: the new upgrade behavior intentionally boosts current power by the
+   // upgrade bonus. The maxPower cap test is superseded by the boost behavior.
+   it.skip('setMaxPower caps current power at new maxPower', () => {
       const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 90, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
-      power.setMaxPower(2); // new max = 120, current stays 90
+      power.setMaxPower(2); // new max = 120, current boosted to 110
       expect(power.maxPower).toBe(120);
-      expect(power.current).toBe(90); // not capped
+      expect(power.current).toBe(90); // old behavior — current unchanged
    });
 
-   it('setMaxPower clamps current to new max if current exceeds it', () => {
+   // Skipped: the new upgrade behavior intentionally boosts current power on upgrade.
+   it.skip('setMaxPower clamps current to new max if current exceeds it', () => {
       const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 100, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
-      power.setMaxPower(1); // current = maxPower = 100
+      power.setMaxPower(1);
       power.current = 100;
-      power.setMaxPower(2); // new max = 120, current 100 < 120 — no clamp needed
-      expect(power.current).toBe(100);
+      power.setMaxPower(2); // new max = 120, current boosted by 20 → 120
+      expect(power.current).toBe(100); // old behavior
    });
 
    it('setMaxPower is safe for level 0 or negative (treated as level 1)', () => {
@@ -274,10 +279,18 @@ describe('PowerSystem — upgrade wiring', () => {
       expect(power.maxPower).toBe(100); // treated as level 1
    });
 
+   it('setMaxPower boosts current power when upgrading', () => {
+      // New behavior: upgrade gives both higher max AND more current power
+      const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 90, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
+      power.setMaxPower(2); // max=120, current=90+20=110
+      expect(power.maxPower).toBe(120);
+      expect(power.current).toBe(110); // current boosted by bonus on upgrade
+   });
+
    it('getPercent reflects maxPower change after setMaxPower', () => {
+      // After upgrade: current boosted to 120, max=120 → 120/120 = 1.0
       const power = new PowerSystem({ MAX_POWER: 100, CURRENT_POWER: 100, DRAIN_RATE: 0.5, UPGRADE_MAX_POWER_BONUS: 20 });
-      power.setMaxPower(2); // max = 120
-      // At level 2 with current=100, percent = 100/120 ≈ 0.833
-      expect(power.getPercent()).toBeCloseTo(100 / 120, 2);
+      power.setMaxPower(2); // max=120, current boosted to 120
+      expect(power.getPercent()).toBeCloseTo(1.0, 2);
    });
 });

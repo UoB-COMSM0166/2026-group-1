@@ -67,10 +67,21 @@ TODO / LIMITATIONS:
 // WORKSHOP SYSTEM
 //======================================
 
-import { CONTROLS, keyLabel } from '../config.js';
+import { CONTROLS, keyLabel, MISSILE } from '../config.js';
 
 export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAULT_MODE, getScrapIcon = () => null, soundSystem = null) {
   let workshopOpen = false;
+  let _goldScrapIcon = null;
+  function getGoldScrapIcon() {
+    const raw = getScrapIcon?.();
+    if (!raw) return null;
+    if (!_goldScrapIcon && raw.width > 0) {
+      _goldScrapIcon = createGraphics(raw.width, raw.height);
+      _goldScrapIcon.image(raw, 0, 0);
+      _goldScrapIcon.filter(GRAY);
+    }
+    return _goldScrapIcon;
+  }
   let controlMode = initialControlMode;
 
   const INITIAL_UPGRADE_COSTS = { power: 50, torch: 40, sonar: 60 };
@@ -80,7 +91,7 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
     power: {
       level: player?.upgrades?.power ?? 1,
       cost: INITIAL_UPGRADE_COSTS.power,
-      description: "Increase max power capacity",
+      description: "Increase max power & refills some current power",
     },
     sonar: {
       level: player?.upgrades?.sonar ?? 1,
@@ -104,12 +115,12 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
   };
 
   // Layout constants
-  const PANEL_W = 900;
-  const PANEL_H = 460;
-  const CARD_W = 190;
-  const CARD_H = 118;
-  const BUTTON_W = 110;
-  const BUTTON_H = 38;
+  const PANEL_W = 1280;
+  const PANEL_H = 630;
+  const CARD_W = 290;
+  const CARD_H = 168;
+  const BUTTON_W = 140;
+  const BUTTON_H = 48;
 
   //--------------------------------------
   // HIT TESTING
@@ -139,11 +150,11 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
     noStroke();
     fill(canAfford ? 240 : 150);
     textAlign(CENTER, CENTER);
-    textSize(13);
+    textSize(16);
     text(label, x + w / 2, y + h / 2);
   }
 
-  function drawTechFrame(x, y, w, h, title, titleBarH = 28) {
+  function drawTechFrame(x, y, w, h, title, titleBarH = 34) {
     noStroke();
     fill(12, 23, 31, 240);
     rect(x, y, w, h, 10);
@@ -153,34 +164,34 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
     noFill();
     rect(x, y, w, h, 10);
 
-    const titleBarTop = y + 12;
+    const titleBarTop = y + 15;
     noStroke();
     fill(33, 56, 70, 240);
-    rect(x + 14, titleBarTop, w - 28, titleBarH, 5);
+    rect(x + 16, titleBarTop, w - 32, titleBarH, 5);
 
     fill(227, 244, 248);
     textAlign(LEFT, CENTER);
-    textSize(14);
-    text(title, x + 24, titleBarTop + titleBarH / 2);
+    textSize(17);
+    text(title, x + 28, titleBarTop + titleBarH / 2);
   }
 
   function drawLevelTicks(x, y, level, maxTicks = 8) {
     const safeLevel = Math.max(0, Math.min(maxTicks, level ?? 0));
     for (let i = 0; i < maxTicks; i++) {
-      const tx = x + i * 9;
+      const tx = x + i * 11;
       noStroke();
       fill(i < safeLevel ? color(117, 250, 126) : color(53, 83, 65));
-      rect(tx, y, 6, 10, 1);
+      rect(tx, y, 7, 12, 1);
     }
   }
 
   function getLayout() {
     const panelX = width / 2 - PANEL_W / 2;
     const panelY = height / 2 - PANEL_H / 2;
-    const upgradesStartX = panelX + 32;
-    const upgradesStartY = panelY + 118;
-    const cardGap = 18;
-    const sectionGapY = 182;
+    const upgradesStartX = panelX + 36;
+    const upgradesStartY = panelY + 148;
+    const cardGap = 22;
+    const sectionGapY = 228;
 
     const upgradeCards = [];
     let i = 0;
@@ -208,17 +219,11 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
       j += 1;
     }
 
-    const rightPanel = {
-      x: panelX + PANEL_W - 250,
-      y: panelY + 118,
-      w: 220,
-      h: 306,
-    };
-
-    const rp = { x: panelX + PANEL_W - 250, y: panelY + 118, w: 220, h: 306 };
+    const rp = { x: panelX + PANEL_W - 295, y: panelY + 148, w: 260, h: 385 };
+    const rightPanel = rp;
     const closeButton = {
       x: rp.x + (rp.w - BUTTON_W) / 2,
-      y: rp.y + rp.h - BUTTON_H - 12,
+      y: rp.y + rp.h - BUTTON_H - 15,
       w: BUTTON_W,
       h: BUTTON_H,
     };
@@ -228,18 +233,18 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
 
   function drawScrapCost(amount, x, y, canAfford) {
     const icon = getScrapIcon();
-    const iconSize = 24;
+    const iconSize = 30;
     const textCol = canAfford ? color(255, 223, 136) : color(132, 132, 132);
     if (icon) {
-      tint(canAfford ? color(255, 255, 255) : color(100, 100, 100));
-      image(icon, x, y - iconSize / 2, iconSize, iconSize);
+      tint(canAfford ? color(255, 200, 50) : color(100, 100, 100));
+      image(canAfford ? (getGoldScrapIcon() ?? icon) : icon, x, y - iconSize / 2, iconSize, iconSize);
       noTint();
     }
     fill(textCol);
     noStroke();
     textAlign(LEFT, CENTER);
-    textSize(12);
-    text(amount, x + iconSize + 4, y);
+    textSize(15);
+    text(amount, x + iconSize + 5, y);
   }
 
   function drawUpgradeCard(name, upgrade, x, y) {
@@ -257,31 +262,32 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
     rect(x, y, CARD_W, CARD_H, 7);
 
     textAlign(LEFT, TOP);
-    textSize(15);
+    textSize(18);
     fill(234, 246, 248);
     noStroke();
-    text(name.toUpperCase(), x + 10, y + 8);
+    text(name.toUpperCase(), x + 12, y + 10);
 
     fill(149, 177, 182);
-    textSize(11);
-    text(upgrade.description, x + 10, y + 29);
+    textSize(13);
+    text(upgrade.description, x + 12, y + 34, CARD_W - 24);
 
     fill(174, 205, 211);
-    text(`LEVEL ${currentLevel}`, x + 10, y + 50);
-    drawLevelTicks(x + 10, y + 68, currentLevel, 8);
+    text(`LEVEL ${currentLevel}`, x + 12, y + 74);
+    drawLevelTicks(x + 12, y + 90, currentLevel, 8);
 
-    drawScrapCost(upgrade.cost, x + 5, y + 98, canAfford);
+    drawScrapCost(upgrade.cost, x + 6, y + 126, canAfford);
 
     textAlign(RIGHT, CENTER);
-    textSize(10);
+    textSize(12);
     fill(canAfford ? color(148, 252, 165) : color(129, 129, 129));
-    text(canAfford ? "CLICK TO UPGRADE" : "INSUFFICIENT MATERIALS", x + CARD_W - 10, y + 98);
+    text(canAfford ? "CLICK TO UPGRADE" : "INSUFFICIENT MATERIALS", x + CARD_W - 12, y + 126);
   }
 
   function drawItemCard(itemName, item, x, y) {
     const playerScrap = player?.scrap ?? 0;
-    const canAfford = playerScrap >= item.costPerUnit;
     const currentQuantity = itemName === 'missiles' ? (player?.missiles ?? 0) : (item.quantity ?? 0);
+    const atMax = itemName === 'missiles' && currentQuantity >= MAX_MISSILES;
+    const canAfford = !atMax && playerScrap >= item.costPerUnit;
 
     noStroke();
     fill(27, 33, 42, 240);
@@ -293,24 +299,25 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
     rect(x, y, CARD_W, CARD_H, 7);
 
     textAlign(LEFT, TOP);
-    textSize(15);
+    textSize(18);
     fill(234, 246, 248);
     noStroke();
-    text(item.description.toUpperCase(), x + 10, y + 8);
+    text(item.description.toUpperCase(), x + 12, y + 10);
 
-    textSize(11);
+    textSize(13);
     fill(149, 177, 182);
-    text("Single-use guided projectile", x + 10, y + 29);
+    text("Single-use guided projectile", x + 12, y + 34, CARD_W - 24);
 
     fill(174, 205, 211);
-    text(`OWNED ${currentQuantity}`, x + 10, y + 50);
+    text(`OWNED ${currentQuantity}`, x + 12, y + 74);
 
-    drawScrapCost(item.costPerUnit, x + 5, y + 98, canAfford);
+    drawScrapCost(item.costPerUnit, x + 6, y + 126, canAfford);
 
     textAlign(RIGHT, CENTER);
-    textSize(10);
+    textSize(12);
     fill(canAfford ? color(148, 252, 165) : color(129, 129, 129));
-    text(canAfford ? "CLICK TO BUY +1" : "INSUFFICIENT MATERIALS", x + CARD_W - 10, y + 98);
+    const actionText = atMax ? "MAX CAPACITY" : (canAfford ? "CLICK TO BUY +1" : "INSUFFICIENT MATERIALS");
+    text(actionText, x + CARD_W - 12, y + 126);
   }
 
   //--------------------------------------
@@ -324,27 +331,28 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
     const layout = getLayout();
     const { panelX, panelY } = layout;
 
-    drawTechFrame(panelX, panelY, PANEL_W, PANEL_H, "WORKSHOP", 44);
+    drawTechFrame(panelX, panelY, PANEL_W, PANEL_H, "WORKSHOP", 54);
 
-    const sysBarTop = panelY + 68, sysBarH = 30;
+    const sectionBarW = layout.rightPanel.x - panelX - 36 - 8;
+    const sysBarTop = panelY + 86, sysBarH = 38;
     noStroke();
     fill(28, 42, 54, 220);
-    rect(panelX + 30, sysBarTop, 608, sysBarH, 4);
+    rect(panelX + 36, sysBarTop, sectionBarW, sysBarH, 4);
     noStroke();
     fill(220, 237, 242);
     textAlign(LEFT, CENTER);
-    textSize(16);
-    text("SYSTEMS", panelX + 42, sysBarTop + sysBarH / 2);
+    textSize(20);
+    text("SYSTEMS", panelX + 50, sysBarTop + sysBarH / 2);
 
-    const subBarTop = panelY + 252, subBarH = 30;
+    const subBarTop = panelY + 316, subBarH = 38;
     noStroke();
     fill(24, 38, 50, 220);
-    rect(panelX + 30, subBarTop, 608, subBarH, 4);
+    rect(panelX + 36, subBarTop, sectionBarW, subBarH, 4);
     noStroke();
     fill(220, 237, 242);
     textAlign(LEFT, CENTER);
-    textSize(16);
-    text("SUBSYSTEMS", panelX + 42, subBarTop + subBarH / 2);
+    textSize(20);
+    text("SUBSYSTEMS", panelX + 50, subBarTop + subBarH / 2);
 
     for (const card of layout.upgradeCards) {
       drawUpgradeCard(card.key, upgrades[card.key], card.x, card.y);
@@ -358,13 +366,13 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
     drawTechFrame(info.x, info.y, info.w, info.h, "Player Loadout");
     noStroke();
     fill(190, 228, 236);
-    textSize(13);
+    textSize(16);
     textAlign(LEFT, TOP);
 
     // Scrap row — highlighted box
     const scrapIcon = getScrapIcon?.();
-    const iconSize = 20;
-    const boxX = info.x + 14, boxY = info.y + 48, boxW = info.w - 28, boxH = 26;
+    const iconSize = 25;
+    const boxX = info.x + 16, boxY = info.y + 60, boxW = info.w - 32, boxH = 32;
     noStroke();
     fill(12, 23, 31, 200);
     rect(boxX, boxY, boxW, boxH, 4);
@@ -376,25 +384,27 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
 
     const scrapRowY = boxY + boxH / 2;
     if (scrapIcon) {
-      image(scrapIcon, boxX + 8, scrapRowY - iconSize / 2, iconSize, iconSize);
+      tint(255, 200, 50);
+      image(getGoldScrapIcon() ?? scrapIcon, boxX + 8, scrapRowY - iconSize / 2, iconSize, iconSize);
+      noTint();
     }
     fill(255, 223, 136);
-    textSize(13);
+    textSize(16);
     textAlign(LEFT, CENTER);
-    text(`Scrap: ${player?.scrap ?? 0}`, boxX + 8 + (scrapIcon ? iconSize + 4 : 0), scrapRowY);
+    text(`Scrap: ${player?.scrap ?? 0}`, boxX + 8 + (scrapIcon ? iconSize + 5 : 0), scrapRowY);
 
     fill(190, 228, 236);
-    textSize(13);
+    textSize(16);
     textAlign(LEFT, TOP);
-    text(`Missiles: ${player?.missiles ?? 0}`, info.x + 20, info.y + 82);
-    text(`Power Lvl: ${player?.upgrades?.power ?? 1}`, info.x + 20, info.y + 108);
-    text(`Torch Lvl: ${player?.upgrades?.torch ?? 1}`, info.x + 20, info.y + 134);
-    text(`Sonar Lvl: ${player?.upgrades?.sonar ?? 1}`, info.x + 20, info.y + 160);
+    text(`Missiles: ${player?.missiles ?? 0}`, info.x + 24, info.y + 102);
+    text(`Power Lvl: ${player?.upgrades?.power ?? 1}`, info.x + 24, info.y + 134);
+    text(`Torch Lvl: ${player?.upgrades?.torch ?? 1}`, info.x + 24, info.y + 166);
+    text(`Sonar Lvl: ${player?.upgrades?.sonar ?? 1}`, info.x + 24, info.y + 198);
 
     fill(116, 160, 171);
-    textSize(11);
-    const shopKey = keyLabel(CONTROLS.MODES[controlMode].ACCEPT);
-    text(`Click any card to buy. Press ${shopKey} or close to return.`, info.x + 20, info.y + 218, info.w - 40, 80);
+    textSize(14);
+    const shopKey = keyLabel(CONTROLS.MODES[controlMode].TOGGLE_WORKSHOP);
+    text(`Click any card to buy. Press ${shopKey} or close to return.`, info.x + 24, info.y + 275, info.w - 48, 80);
 
     drawButton(
       `CLOSE (${shopKey})`,
@@ -422,10 +432,16 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
 
     // Deduct scrap
     player.scrap -= upgrade.cost;
-    
+
     // Increment upgrade level
     if (player.upgrades && upgradeName in player.upgrades) {
       player.upgrades[upgradeName]++;
+    }
+
+    // Power upgrade: restore current power immediately for a satisfying feedback loop
+    if (upgradeName === 'power' && player.power) {
+      const bonus = player.power.upgradeBonusPerLevel ?? 20;
+      player.power.current = Math.min(player.power.current + bonus * 1.5, player.power.maxPower);
     }
 
     // Update shop display
@@ -440,6 +456,10 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
   function attemptItemPurchase(itemName, quantity = 1) {
     const item = items[itemName];
     if (!item) return false;
+    if (itemName === 'missiles' && (player?.missiles ?? 0) >= MAX_MISSILES) {
+      console.log(`❌ Cannot buy more missiles. Max reached: ${MAX_MISSILES}`);
+      return false;
+    }
 
     const totalCost = item.costPerUnit * quantity;
     const playerScrap = player?.scrap ?? 0;
@@ -564,3 +584,4 @@ export function createWorkshopSystem(player, initialControlMode = CONTROLS.DEFAU
 //======================================
 // END
 //======================================
+  const MAX_MISSILES = MISSILE.MAX_CONCURRENT ?? 5;

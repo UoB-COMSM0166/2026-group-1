@@ -25,6 +25,7 @@ export function createPauseMenuSystem({
   onResolutionChange,
   onControlModeChange,
   onVolumeChange,
+  onOpenControls,
   initialControlMode = 'wasd',
 } = {}) {
   let paused = false;
@@ -200,16 +201,31 @@ export function createPauseMenuSystem({
     fill(140);
     noStroke();
     text(
-      `Move: ${moveStr}   Torch: ${keyLabel(map.TOGGLE_TORCH)}   Sonar: ${keyLabel(map.SONAR)}   Fire: ${keyLabel(map.LAUNCH_MISSILE)}`,
+      `Move: ${moveStr}   Move Slow: ${keyLabel(map.SNEAK)}   Sonar: ${keyLabel(map.SONAR)}   Torch: ${keyLabel(map.TOGGLE_TORCH)}`,
       leftX, baseY + 207,
     );
     text(
-      `Workshop: ${keyLabel(map.TOGGLE_WORKSHOP)}   Pause: ${keyLabel(map.TOGGLE_PAUSE)}   Fullscreen: ${keyLabel(map.TOGGLE_FULLSCREEN)}`,
+      `Missile: ${keyLabel(map.LAUNCH_MISSILE)}   Workshop: ${keyLabel(map.TOGGLE_WORKSHOP)}   Pause: ${keyLabel(map.TOGGLE_PAUSE)}`,
       leftX, baseY + 221,
+    );
+    text(
+      `Fullscreen: ${keyLabel(map.TOGGLE_FULLSCREEN)}`,
+      leftX, baseY + 235,
+    );
+
+    // Controls button
+    const controlsY = baseY + 260;
+    drawButton(
+      "Controls",
+      cx - BUTTON_W / 2,
+      controlsY,
+      BUTTON_W,
+      BUTTON_H,
+      isOver(cx - BUTTON_W / 2, controlsY, BUTTON_W, BUTTON_H),
     );
 
     // Debug button
-    const debugY = baseY + 260;
+    const debugY = controlsY + 55;
     drawButton(
       "Debug",
       cx - BUTTON_W / 2,
@@ -314,8 +330,14 @@ export function createPauseMenuSystem({
         onControlModeChange?.(controlMode);
       }
 
+      // Controls button
+      const controlsY = baseY + 260;
+      if (isOver(cx - BUTTON_W / 2, controlsY, BUTTON_W, BUTTON_H)) {
+        onOpenControls?.();
+      }
+
       // Debug button
-      const debugY = baseY + 260;
+      const debugY = controlsY + 55;
       if (isOver(cx - BUTTON_W / 2, debugY, BUTTON_W, BUTTON_H)) {
         currentPage = "debug";
       }

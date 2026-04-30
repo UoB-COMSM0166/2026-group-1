@@ -42,6 +42,20 @@ jest.unstable_mockModule('../config.js', () => ({
   PLAYER: { DRAG: 0.85, ACCELERATION: 0.8, MOVE_SPEED: 200 },
   CONTROLS: { DEFAULT_MODE: 'default', MODES: { default: {} } },
   SONAR: { COOLDOWN_MS: 500 },
+  JELLYFISH_GLOW: {
+    HEAD_RADIUS: 18,
+    BODY_MIN_RADIUS: 25,
+    BODY_HEIGHT_RANGE: 18,
+    BODY_HALF_WIDTH: 17,
+    BODY_LERP: 0.08,
+    BASE_INTENSITY: 0.32,
+    PULSE_SPEED: 1.2,
+    PULSE_VARIATION: 0.15,
+    HEAD_CYCLE_S: 12.0,
+    BODY_CYCLE_S: 14.0,
+    BODY_PHASE_OFFSET: 0.35,
+    FLICKER_SPEED: 13.7,
+  },
 }));
 
 const mockSoundSystem = { play: jest.fn() };

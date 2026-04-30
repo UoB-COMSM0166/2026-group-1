@@ -35,6 +35,7 @@ export { PowerSystem };
 export function createPowerSystem(entity, { getDifficulty = () => "easy", config = POWER } = {}) {
    if (!entity.power) {
       entity.power = new PowerSystem(config);
+      entity.power.current = entity.power.maxPower;  // start full
    }
    const power = entity.power;
 

@@ -111,8 +111,8 @@ export function createSonarSystem(player, getWalls, getHazards = () => [], getCo
   const collectableAlpha = new WeakMap();
   const enemyAlpha = new WeakMap();
   let cooldownTimerMs = 0;  // real milliseconds in sonar system time
-  let effectiveCooldownMs = BASE_COOLDOWN_MS;
   let prevCollectableSet = new Set();
+  let effectiveCooldownMs = BASE_COOLDOWN_MS;  // persists across frames, updated each update()
 
   return {
     update() {
@@ -266,7 +266,7 @@ export function createSonarSystem(player, getWalls, getHazards = () => [], getCo
         }
         const rectInfo = readWallRect(wall);
         if (rectInfo) {
-          reveals.push({ ...rectInfo, alpha: Math.max(0, Math.min(255, alpha)) });
+          reveals.push({ ...rectInfo, alpha: Math.max(0, Math.min(255, alpha)), isBreakable: wall.isBreakable ?? false });
         }
       }
       return reveals;

@@ -5,17 +5,29 @@
 		   COMSM0166 - Group 1 (2026) <br/></h1>
 		</div>
 		<div align="center">
-		   <h2> THE ABYSS </h2> 
-			Can you escape the endless dark? <br/><br/>
-			[ADD PROMO IMAGE]
+			<a href="https://uob-comsm0166.github.io/2026-group-1/"><img width="4314" height="1449" alt="633366E9-8455-45F0-8D67-0C95AD609FA3_1_201_a" src="https://github.com/user-attachments/assets/644a519f-0c25-4b48-93d2-f74f054544b2" /></a>
+			<h3>Somewhere above the surface awaits </h3>
 		</div>
 		<div align="center">
- 			<h3 align=center><a href="https://uob-comsm0166.github.io/2026-group-1/">Play Current Version - V4</a></h3>
+ 			<h2 align=center><a href="https://uob-comsm0166.github.io/2026-group-1/">CLICK HERE TO PLAY</a></h2>
 		</div>
 	</body>
 </html>
-
-
+	
+## Table of Contents
+0. [Our Team](#our-team)
+1. [Introduction](#1-introduction)
+2. [Requirements](#2-requirements)
+3. [Design](#3-design)
+4. [Implementation](#4-implementation)
+5. [Evaluation](#5-evaluation)
+6. [Process](#6-process)
+7. [Sustainability](#7-sustainability)
+8. [Conclusion](#8-conclusion)
+9. [Contribution Statement](#9-contribution-statement)
+10. [AI Statement](#10-ai-statement)
+11. [References](#11-references)
+    
 
 ### Video DEMO v4 (2-3 mins long max)
 *(updated 05/03/26)*
@@ -25,7 +37,7 @@ https://github.com/user-attachments/assets/511bb68b-5e3b-4c63-b410-d253316b1b56
 <br/>
 
 
-# Our Team - Group 1
+# Our Team
 
 ![Group1](/project-docs/images/Group1.jpeg)
 
@@ -33,12 +45,12 @@ https://github.com/user-attachments/assets/511bb68b-5e3b-4c63-b410-d253316b1b56
 
 |Name|Email|Role|
 |:-|:-|:-|
-|Archie Brown|cq25988@bristol.ac.uk| Co-developer; Lead UI Developer |
-|Monal Gupta|ta25702@bristol.ac.uk| Co-developer; Report contributor; Video Production |
-|Ben Mounce|wv25183@bristol.ac.uk| Co-developer; Report contributor; Video Production |
-|Georgia Sweeny|dp25498@bristol.ac.uk| Lead developer; System Architect; Code reviewer |
-|Nick Jankov|ve21144@bristol.ac.uk| Co-developer & Code Reviewer |
-|Jude Hsu|ca20853@bristol.ac.uk| Report contributor; Co-developer |
+|Archie Brown|cq25988@bristol.ac.uk| UI and Upgrade Systems, CameraSystem and transition effects, VFX, CI Testing |
+|Monal Gupta|ta25702@bristol.ac.uk| EnemySystem; ResourceManagmentSystem, Menus, Sound FX |
+|Ben Mounce|wv25183@bristol.ac.uk| SonarSystem, MissileSystem & visuals |
+|Georgia Sweeny|dp25498@bristol.ac.uk| Lead developer; Systems Architect; Lighting Systems & effects; Code reviewer, GameWorld Design |
+|Nick Jankov|ve21144@bristol.ac.uk| HitboxSystem, Code Reviewer |
+|Jude Hsu|ca20853@bristol.ac.uk| Report contributor; Co-developer; PauseMenu |
 
 </br>
 
@@ -51,24 +63,22 @@ https://github.com/user-attachments/assets/511bb68b-5e3b-4c63-b410-d253316b1b56
 # Project Report
 
 ## 1. Introduction
-Our game is a tense, underwater exploration adventure where players navigate their way out of abyss using movement, resource management, and environmental interaction. The core twist is the 
-echolocation-based sonar mechanic, which allows players to temporarily reveal their surroundings in an otherwise dark and hazardous environment. This mechanic drives both gameplay and atmosphere,
-creating tension and encouraging strategic decision-making.
+- 5% ~250 words 
+- Describe your game, what is based on, what makes it novel? (what's the "twist"?)
 
-The game draws inspiration from Metroidvania-style design, featuring interconnected rooms, gated areas unlocked through new abilities, and challenges that reward exploration and mastery. Unlike traditional
-underwater games, the use of sonar as a primary navigation and discovery tool sets it apart, providing a fresh experience where visibility is limited and deliberate planning is essential.
+The Abyss is a tense underwater, Metroidvania-style game with a playful blocky aesthetic, focused on exploration and challenging resource management in near-complete darkness.
 
-Players must manage resources such as power, and health while exploring unknown areas. Strategic use of the torch and sonar is crucial, as these tools consume resources but are necessary for
-survival and progression. This combination of limited visibility, environmental hazards, and resource management emphasizes careful exploration over fast-paced action, creating an immersive and atmospheric
-gameplay loop.
+When a deep sea scientific expedition takes a sudden turn after the submersible suffers a major malfunction, the player is left stranded deep within the abyss and must find a way back to the surface from an unknown location. Like traditional Metroidvania games, progression is based on exploration, mastery of abilities, and unlocking tools that grant access to previously unreachable areas. Players are frequently placed in situations where they must quickly learn the layout of the environment and identify hazards in order to survive and progress. The game also supports multiple playstyles through system upgrades and missile-based combat, allowing players to either adopt a cautious, navigation-focused approach or play more aggressively by using salvaged scrap to craft missiles and eliminate threats.
 
-The game’s novelty lies in how the sonar mechanic integrates with world design, enemies, and lighting. It encourages players to think tactically, interact meaningfully with the environment, and engage with
-risk versus reward. By combining a familiar exploration framework with a unique visibility mechanic, the game provides a distinctive experience** that is both challenging and rewarding, appealing to players
-seeking depth, immersion, and discovery in an underwater setting**.
+Rather than being a gimmick, the setting directly supports the core mechanic and central twist: a sonar-based navigation system. Instead of constant visibility, players use sonar to temporarily reveal surrounding areas. A limited torch system is also available, but it acts as a trade-off, draining the player’s already scarce power resource. In addition, the game features a sonar-based minimap system, which gradually updates as the player explores. This minimap is revealed through both sonar scans and torch usage, reinforcing the player’s understanding of explored and unexplored areas over time. Together, these systems create a gameplay loop based on scanning, interpretation, and memory rather than continuous vision, making movement deliberate and uncertain. Although set in darkness, the abyss is far from empty, with bioluminescent jellyfish, glowing biomatter, and salvage from the surface scattered throughout the environment to encourage exploration and risk-taking.
+
+The game also features a resource management and upgrade system. Players must manage limited power while navigating environmental hazards and interacting with objects that can either assist or hinder progression. This reinforces a consistent risk–reward structure, where deeper exploration offers greater rewards but increases danger. With the ultimate goal of returning to the surface, every decision carries weight.
+
+Overall, the game combines traditional Metroidvania design principles with a sonar-based visibility and mapping system alongside resource management mechanics. This reshapes how players perceive and interact with the environment, while maintaining a focus on progression through exploration and discovery.
 
 ## 2. Requirements 
 ### 2.1 Early Stage Design & Ideation
-The game concept was developed collaboratively through group discussions and pitch proposals. During the early design phase, we used [Notion](https://www.notion.so/Software-Engineering-Project-2eef3902b1f080668320f5a1a2d17915)to document and refine ideas. Each team member proposed a concept [Figure 1: Game Ideas], and the team then voted on their preferred option [Figure 2: Poll Results for Game Ideas]. Two of the proposed concepts were centred on echolocation, which helped establish it as the foundation of the project. Through further discussion, the selected concept evolved into an underwater exploration game, where limited visibility creates tension and supports the overall atmosphere. The game’s core differentiator is its sonar-based mechanic, supported by darkness and resource management systems.
+We were inspired by classic flash games from our childhood like; Club Penguin's Aqua Grabber, Motherload as well as modern titles, Hollow Knight and Subnautica. The game concept was developed collaboratively through group discussions and pitch proposals. During the early design phase, we used [Notion](https://www.notion.so/Software-Engineering-Project-2eef3902b1f080668320f5a1a2d17915)to document and refine ideas. Each team member proposed a concept [Figure 1: Game Ideas], and the team then voted on their preferred option [Figure 2: Poll Results for Game Ideas]. Two of the proposed concepts were centred on echolocation, which helped establish it as the foundation of the project. Through further discussion, the selected concept evolved into an underwater exploration game, where limited visibility creates tension and supports the overall atmosphere. The game’s core differentiator is its sonar-based mechanic, supported by darkness and resource management systems.
 
 ``` jude: Please check that non-members can access the Notion link before submission.```
 
@@ -109,34 +119,81 @@ Based on this feedback, the team shaped the game around exploration, tension, an
 </p>
 
 ### 2.4 Epics and User Stories
-We used epics and user stories to structure the game idea into a clearer and manageable development plan that the team could actually work with. At the start of the project, the overall concept was a bit too broad, so epics helped us organise the project into major areas of player experience and technical functionality, such as player movement, resource management, sonar and lighting, enemies, world progression, interface, and system architecture. 
+We used epics and user stories to structure the game concept into a clear and manageable development plan. At the start of the project, the overall design was too broad, so epics were used to organise development into key areas of player experience and technical functionality. These included player movement, resource management, sonar and lighting systems, enemies, world progression, interface design, and system architecture.
 
-For each epic, we wrote features from the perspective of the player, and in some cases from the perspective of the developer. This forced us to think about why a feature mattered, not just what needed to be coded.
+For each epic, features were defined primarily from the perspective of the player, and in some cases from the perspective of the developer. This encouraged consideration of why each feature was important, rather than focusing solely on implementation.
 
-We also used acceptance criteria to define what "completed" looked like. This helped make features more concrete and reduced ambiguity during implementation. It also make it easier to determine what belonged in the MVP and what could be ranked as lower priority.
+Acceptance criteria were also defined to establish what “complete” meant for each feature. This made requirements more concrete, reduced ambiguity during development, and supported prioritisation between core MVP features and lower-priority enhancements.
 
-The main thing we learned from this process was that epics and user stories were most useful when they stayed practical. They helped the team focus on player experience, communicate implementation priorities more clearly.
+Overall, epics and user stories were most effective when kept practical and closely aligned with gameplay systems. They helped maintain a focus on player experience while improving clarity in planning and implementation priorities.
 
-For repo readibility, we listed two representative examples below. The full set of epics, user stories, and acceptance criteria can be found in the following link: [Full list](Epics_and_user_stories.md)
+### EPIC 1 – Core Player Interaction
+**Description:** The player must move, explore, and interact with the underwater world intuitively. 
 
-#### EPIC 1 – Core Player Interaction
-**Description:** The player must move, explore, and interact with the underwater world intuitively.  
 **User Stories:**  
-- As a competitive player, I want responsive movement, so that I feel in control underwater.
-- As a player, I want to navigate vertical spaces, so that I can truly explore.
-- As a casual player, I want intuitive controls, so that I can start playing immediately. 
-- As a disabled player, I want remappable controls, so that I can play comfortably.
-  
-**Acceptance Criteria:** Movement and physics are frame-rate independent; input is separated from logic; drag and capped fall speed applied consistently.
+- As a player, I want responsive movement so that I feel in control while navigating underwater.
+- As a player, I want to navigate vertical space so that I can fully explore the environment.
+- As a player, I want intuitive controls so that I can begin playing without a steep learning curve.
+- As a player with accessibility needs, I want remappable controls so that I can play comfortably.
 
-#### EPIC 2 – Resource & Survival Systems
-**Description:** Players manage limited resources to create tension and strategic decision-making.  
+**Acceptance Criteria:**
+- Movement and physics are independent of frame rate.
+- Input handling is separated from game logic.
+- Movement includes consistent drag and controlled vertical velocity limits.
+- Controls can be remapped without affecting core gameplay systems.
+
+### EPIC 2 - Resource & Survival Systems
+**Description:** The player must manage limited resources to create tension and encourage strategic decision-making.
+
 **User Stories:**  
-- As a player, I want power to drain over time, so that exploration feels risky.
-- As a player, I want torch and sonar to consume additional power, so that I must choose when to use them.
-- As a player, I want health to decrease when colliding with enemies, so there are tangable consequences.  
+- As a player, I want power to drain over time so that exploration feels increasingly risky.
+- As a player, I want sonar and torch usage to consume additional power so that I must choose when to use them.
+- As a player, I want health to decrease when colliding with enemies so that there are meaningful consequences for mistakes.
   
-**Acceptance Criteria:** Resources drain continuously and predictably; Game Over triggers if any resource reaches zero; UI displays all resources clearly.
+**Acceptance Criteria:**
+- Resource values decrease continuously and consistently over time or usage.
+- Game Over is triggered when any critical resource reaches zero.
+- UI clearly displays all active resource levels at all times.
+- Resource changes are immediately reflected in gameplay state.
+
+### EPIC 3 – World Structure & Progression
+**Description:** The world supports non-linear exploration and ability-based progression. 
+
+**User Stories:**  
+- As a player, I want interconnected rooms so that exploration feels cohesive.
+- As a player, I want gated paths so that new abilities unlock new areas.
+
+**Acceptance Criteria:**
+- Multiple interconnected rooms with clear transitions.
+- Progression is gated through unlockable abilities.
+- Reaching the final area triggers a win state.
+
+### EPIC 4 – Interface & Game States
+**Description:** The interface clearly communicates game state and core systems.
+
+**User Stories:**  
+- As a player, I want an in-game UI displaying resources so that I can manage survival.
+- As a player, I want clear game states (start, pause, win, loss) so that the game flow is understandable.
+
+**Acceptance Criteria:**
+- UI displays all active resource values consistently.
+- Menus correctly pause and resume gameplay.
+- Game Over and Win states trigger correctly.
+
+### EPIC 5 – Technical Architecture & Maintainability
+**Description:** The system is modular and scalable to support consistent gameplay and future development. 
+
+**User Stories:**  
+- As a developer, I want systems to be modular so that features can be developed and debugged independently.
+- As a developer, I want all time-based behaviour to use deltaTime so that gameplay is consistent across frame rates.
+- As a developer, I want logic and rendering to be separated so that systems like lighting and sonar can be extended.
+  
+**Acceptance Criteria:**
+- Systems are modularised (Input, Physics, Resource, Lighting, Enemy).
+- All time-dependent behaviour is frame-rate independent.
+- Rendering is decoupled from game logic.
+- A central update loop manages execution order.
+
 
 In addition to the inital concept proposals, the lead developer documented discussion points from the ideation stage and produced sevearal early room sketches and map layouts. These drawings helped the team make abstract ideas more concrete, compare possible structures, and visualise how exploration and progression might work in practice. Selectd examples of the maps are included below.
 
@@ -340,13 +397,81 @@ The structural architecture diagram shows how the main systems are connected. Th
 This flow shows that sonar is not drawn directly from player input. The input first becomes an intent, then the relevant systems update resources, visibility, enemy behaviour, and rendering in sequence. This keeps the core mechanic modular and prevents rendering logic from being mixed with gameplay logic.
 
 
-### 4. Implementation (DL: 26 Apr 2026)
+### 4. Implementation
 
-- 15% ~750 words
+Before tackling the core mechanics of our game, we established a foundational architecture using an Object-Oriented approach. All physical entities inherit from a base Hitbox class, ensuring a standardised method for position tracking and collision detection. Initial physics implementation proved difficult, particularly maintaining consistent movement speeds across varying frame rates. To resolve this, we implemented a fixed timestep loop (TIME.fixedDeltaTime), which detached the game logic from the rendering framerate. This ensured smooth and predictable movement for both the player and dynamic objects.
 
-- Describe implementation of your game, in particular highlighting the TWO areas of *technical challenge* in developing your game. 
+## Challenges
 
-### 5. Evaluation (DL: 27 Apr 2026)
+### Technical Challenge 1: The Sonar Pulse Mechanic
+
+<p align="center">
+    <img src="project-docs/report_figures/SonarPulse.gif" alt="Code snippet 1" width="600" />
+    <br>
+    <sub>Figure 8: Sonar Pulse in-game mechanic </sub>
+</p>
+
+Given the dark nature of our underwater setting, the sonar pulse is a critical navigation mechanic used to reveal terrain, enemies, and hazards. Implementing this presented significant performance and architectural challenges. Our primary design goal was to achieve this without mutating the shared game state of our room and entities, ensuring the rendering pipeline remained decoupled from the physics engine.
+
+Instead of a simple expanding radius, we built a custom ray-casting engine. When triggered, the system spawns a Pulse object consisting of 180 individual particles. These particles are assigned velocity vectors pointing outward at equal intervals using p5.Vector.fromAngle. Every frame, these particles step outward and check for point-vs-bounding-box collisions against normalised spatial data (walls, hazards, and enemies).
+
+<p align="center">
+    <img src="project-docs/report_figures/Figure 9 rayCount.png" alt="Code snippet 1" width="400" />
+    <br>
+    <sub>Figure 9: Code snippet showing the 180-degree ray-casting initialisation and vector mathematics</sub>
+</p>
+
+A major technical hurdle was managing the temporary visual "revealed" state of the environment without directly modifying the physical objects. To solve this, we utilised JavaScript WeakMap structures (wallAlpha, hazardAlpha, etc.). When a sonar ray collides with an entity, the particle is destroyed, and the entity is used as a key in the WeakMap to store an alpha transparency value. This value degrades over time in the update() loop.
+
+This approach completely decouples the visual pulse from the core game physics and inherently prevents memory leaks; if a wall is destroyed by a player's missile, the WeakMap automatically collects the unused reference without crashing the sonar system.
+
+<p align="center">
+    <img src="project-docs/report_figures/Figure 10 WeakMap.png" alt="Code snippet 2" width="600" />
+    <br>
+    <sub>Figure 10: Code snippet demonstrating WeakMap state management and garbage collection logic</sub>
+</p>
+
+Furthermore, the system was designed to be highly scalable to accommodate player progression. As the player upgrades their sonar, the system dynamically recalculates several variables: the fade rate decreases linearly, the effective range expands, and the cooldown timer is reduced in inverse proportion to the square root of the sonar level (BASE_COOLDOWN_MS / Math.sqrt(sonarLevel)). The ray speed is also dynamically scaled to ensure the pulse always travels the newly calculated effective range within its fixed mathematical lifetime.
+
+### Technical Challenge 2: Resource Economy and State Synchronisation
+
+<p align="center">
+    <img src="project-docs/report_figures/Figure 11 Workshop.png" alt="Workshop in-game" width="600" />
+    <br>
+    <sub>Figure 11: In-game Workshop feature</sub>
+</p>
+
+The second major technical hurdle was designing a scalable resource and hazard economy. This required parsing raw map data into actionable game logic and synchronising player state across multiple decoupled systems (the physics loop, the resource manager, and the UI workshop) without creating race conditions or tightly coupled spaghetti code.
+
+The first step was dynamically resolving items loaded from the roomSystem. Our maps are built using Tiled (JSON), meaning objects are imported with generic Global Tile IDs (GIDs). Rather than hardcoding specific IDs into the game loop, we wrote a dynamic resolveCollectableType algorithm. This function cross-references the item's GID against the imported tileset's firstgid ranges, converting raw map data into contextual gameplay tags (e.g., "scrap" or "power") at runtime.
+
+<p align="center">
+    <img src="project-docs/report_figures/Figure 12 processCollectables.png" alt="Code snippet 3" width="400" />
+    <br>
+    <sub>Figure 12: Code snippet of resolveCollectableType converting Tiled GIDs into game logic</sub>
+</p>
+
+Managing the physical collection of these items presented a memory management challenge. Initially, processing collisions against arrays of collectables could result in a single item being "collected" multiple times in a single frame before the engine destroyed it. To solve this, we implemented a JavaScript Set (collectedEntities). Because sets guarantee uniqueness and offer O(1) lookup times, we can instantly verify if an item has already been collected. Furthermore, this decoupled the rendering logic from the physical map data; rather than deleting the item from memory, the renderer simply filters out any entity present in the Set. When a player dies or resets the level, calling collectedEntities.clear() instantly "respawns" all items.
+
+<p align="center">
+    <img src="project-docs/report_figures/Figure 13 processHazards.png" alt="Code snippet 4" width="400" />
+    <br>
+    <sub>Figure 13: Code snippet demonstrating O(1) Set lookups for collection processing</sub>
+</p>
+
+Handling environmental hazards required an entirely different collision paradigm. Unlike discrete collectables (which trigger once), hazards require both immediate and continuous effects. Within processHazards(), we programmed a state-machine approach. When a player initially overlaps a hazard, they are hit with a one-shot HAZARD_ENTRY_PENALTY. If they remain on the hazard in subsequent frames, a continuous HAZARD_DRAIN_RATE is applied via the fixed-timestep loop. To prevent players from losing all their health instantly, the continuous hit-response is safely gated behind an invincibility-frame (i-frame) timer handled by our combat utilities.
+
+<p align="center">
+    <img src="project-docs/report_figures/Figure 14 resolveCollectableType.png" alt="Code snippet 5" width="400" />
+    <br>
+    <sub>Figure 14: Hazard processing logic showing discrete penalties vs. continuous drain</sub>
+</p>
+
+
+The culmination of this resource loop is the workshopSystem, a frontend UI overlay. The challenge here was ensuring a completely async UI could safely mutate the gameplay state. The workshop operates independently of the main update() loop. When a user clicks an upgrade, the system calculates the exponential cost scaling (Math.ceil(upgrade.cost * 1.5)), verifies the player's scrap count, directly mutates the player's upgrade levels, and instantly triggers a state-recalculation (e.g., immediately refilling the player's power to match the newly purchased maximum capacity). This strict separation of concerns ensures the UI never blocks the physics thread while providing immediate, satisfying feedback to the player.
+
+
+### 5. Evaluation
 
 - 15% ~750 words
 - One qualitative evaluation (of your choice) 
@@ -438,34 +563,33 @@ The second sprint therefore focused more strongly on integration. Instead of cre
 #### Second sprint retrospective
 Overall, the team’s process evolved from open-ended exploration into a more structured development workflow. The early prototyping stage helped us discover the strongest mechanics, while the later integration stage helped us turn those mechanics into a playable game. The main lesson was that creative experimentation is useful at the start of a project, but it needs to be followed by clear ownership, integration planning, code review, and regular communication.
 
-### 7. Sustainability
+## 7. Sustainability
 
-This section considers how sustainability would apply if *The Abyss* became a large-scale, widely played game in the future. In that scenario, sustainability would not only mean reducing the environmental footprint of the software, but also considering the technical, social, individual, economic, and environmental effects created by long-term use. This follows the idea that sustainability is a cross-cutting concern. It affects software requirements, architecture, implementation, deployment, and the wider behaviour encouraged by the system.
+As software developers we acknowledge that the software development process is deeply integrated into many industries and as a result has a large effect on the environment. It is our responsibility to mitigate the environmental impacts of our project by following a sustainable workflow. To aid in this we have followed the sustainability awareness framework (SusAF) closely to identify any large impacts our game has and to reduce the impact caused by them during the development process. We have taken 3 main sections from the SusAF – environmental, technical and individual that align the most with our project. 
 
-#### Technical sustainability
+#### 7.1 Environmental 
 
-Technical sustainability would be important if the game continued to grow after the project. The current modular architecture supports this because input, player movement, gameplay features, and rendering are separated into different modules. This would make the game easier to maintain and extend if new rooms, mechanics, or accessibility options were added later.
+It was important for us to look at our overall project from an environmental perspective, as developers we use a wide variety of tools that although increase the speed and efficiency of coding can lead to some negative long term environmental consequences which we would like to mitigate where possible. 
 
-A future version should also avoid letting the codebase become too complex to maintain. Code review, documentation, performance checks, and clear system boundaries would reduce the risk of the game becoming difficult to change as it scales. This supports technical sustainability because future developers would be able to add features without rewriting the whole codebase.
+AI is an example of a resource intensive tool and has been used in this project as it is useful for development. AI however has come under scrutiny due to its large land, water and energy usage. This has been mitigated by using AI sparingly in our project only when necessary to fix difficult problems with our code. General coding work was not done with AI and some sprites were drawn by hand to avoid AI overuse. 
 
-#### Social, individual, and economic sustainability
+We were commited in this project to keeping the codebase clean with any legacy code removed and old inefficient systems being replaced. This reduces the runtime requirements of the game and reduces long term energy usage leading to environmental benefits. It also benefits users with less powerful computers and allows them to play the game with minimal lag. In addition, the large amount of object data required for the maps, enemies and player were extracted from compact json files reducing overall project file size. 
 
-If the game succeeded massively in the future, social and individual sustainability would become more important. A future version should therefore be accessible to people with different abilities, devices, and experience levels. For example, it should consider remappable controls, readable UI, colour-contrast checks for players with visual impairments, and support for lower-spec hardware to reduce pressure on players to upgrade devices unnecessarily. These choices would make the game more inclusive.
+#### 7.2 Technical 
 
-Economic sustainability would also matter if the game became commercial. The game should use a fair pricing model that helps maintain player trust while still supporting future development and maintenance.
+From a programmer's perspective creating readable and maintainable code is important in the development process and we have taken steps throught the project to implement maintainability in our codebase. 
 
-#### Direct environmental sustainability
+To aid in maintainability for both our group members and any potential contributors we adhered to a model controller structure with a game engine class for controller registration. This allows other developers to develop their own controllers which can then be easily registered with the game engine. Controllers can then interact easily with data carrying classes such as the player or enemies. Rendering is kept separate from game logic and is stored in its own file allowing for easier testing of controllers and models and implementation of new graphics easily if desired.  
 
-If the game succeeded massively in the future, it would also have a direct environmental footprint. This would come from player devices, downloads, network traffic, hosting, analytics, and the tools used to develop and update the game. To reduce this impact, developers should keep the game lightweight and efficient. For example, images and audio files could be compressed, unnecessary background processing could be avoided, and CPU, storage, and network use should be monitored as the game scales.
+Additionally, we have included a comprehensive set of test scripts in our code base. To ensure that new commits are functional, we have included a pre commit bash script that runs through each test when a pull request is submitted. This helps ensure our system is stable and any potential bugs are caught that a reviewer might miss. 
 
-If online features such as cloud saves or multiplayer were added, the server infrastructure should scale with actual player demand instead of running more resources than needed. Hosting choices should also consider data-centre efficiency and the availability of renewable energy.
+#### 7.3 Individual 
 
-#### Enabling and behavioural effects
+Since we are developing a game that is intended to be played by multiple people, we saw it fit to examine our game on an individual basis. We did so by analysing the effects our game has on the individual considering usage and user experience. 
 
-The game could also encourage players to reflect on sustainability through its design. *The Abyss* already uses limited power, darkness, and careful exploration as core mechanics. A future version could connect these mechanics more clearly to environmental issues such as resource scarcity, fragile underwater ecosystems, or water pollution. This should be done through gameplay rather than only through text. For example, overusing light or sonar could drain resources or disturb sensitive coral areas, while careful exploration could be rewarded. Instead of simply telling players that resources are limited, the game would allow them to experience the consequences of over-consumption and potential environmental risk.
+When developing the controls system for the game we decided to include the ability for the movement controls to be switched from arrows keys to wasd through the settings menu. This allowed the game to be played with one hand as the torch, sonar, menu, missile and shop keys are on the same side of the keyboard as wasd. This addition allows people with disabilities or injuries affecting their arms to more easily play the game increasing overall user trust. 
 
-Overall, *The Abyss* already contains mechanics that could support sustainability awareness by allowing players to engage with sustainability ideas through gameplay rather than direct instruction. If the game succeeded massively in the future, sustainability would need to be considered across all major dimentions including technical, social, individual, economic, and environmental effects, and the behaviour encouraged by the game.
-
+We decided during development to have pre-determined room layouts which are not random. This reduces overall replayability but mitigates the addictive quality of randomly generated games and improves user wellbeing in the long run. Additionally, no user data is stored in the code, if the player dies or reloads the game then they are sent back to the start with no upgrades. There was concern that this would cause user frustration if the game was difficult, so we modified the game to have a lenient power limit and plentiful pickups to reduce user stress and create a more pleasant experience. 
 
 ### 8. Conclusion 
 
@@ -480,32 +604,34 @@ Overall, *The Abyss* already contains mechanics that could support sustainabilit
 <div align="center">
     <table>
         <tr>
-            <th>Contributor</th>
-            <th>Contribution Weighting</th>
+            <th>Team Member</th>
+            <th>Contributions</th>
         </tr>
         <tr>
             <td>Archie Brown</td>
-            <td align="center">1.0</td>
+            <td align="left">
+				UI and upgrade systems (shop, power bar, controls overlay), diagnostic tooling (tile/room test pages), and CI infrastructure
+			</td>
         </tr>
         <tr>
             <td>Monal Gupta</td>
-            <td align="center">1.0</td>
+            <td align="left"></td>
         </tr>
         <tr>
             <td>Ben Mounce</td>
-            <td align="center">1.0</td>
+            <td align="left"></td>
         </tr>
         <tr>
             <td>Georgia Sweeny</td>
-            <td align="center">1.0</td>
+            <td align="left"> Set-up and designed code architecture, Map design and creation (Tiled Editor), created roomSystem (parses map data for other systems, drives room loading) created lighting sfx (via darknessLayer) and related systems (torchSystem, LightingSystem, glowSystem, renderSystem), assisted with HUD and shop UI (mainly design), created guides for team, code reviews for PRs, video report</td>
         </tr>
         <tr>
             <td>Nick Jankov</td>
-            <td align="center">1.0</td>
+            <td align="left"></td>
         </tr>
         <tr>
             <td>Jude Hsu</td>
-            <td align="center">1.0</td>
+            <td align="left"></td>
         </tr>
     </table>
     <sub>Table 1: Team Contributions</sub>
@@ -513,11 +639,11 @@ Overall, *The Abyss* already contains mechanics that could support sustainabilit
 
 ### 10. AI Statement
 
-AI tools were used throughout the project as development support rather than as a replacement for team decision-making. Team members used AI to explore gameplay ideas, draft code, debug errors and improve documentation. We also continued to use conventional search engines and technical documentation when researching gameplay logic, p5.js behaviour, Tiled map editing, and possible implementation approaches.
+The use of artificial intelligence has been kept at a minimum during this project and was only used to aid group members in difficult or repetitive parts of the project. Generally, most group members were new to the usage of both git and GitHub leading to some challenging situations where it was not easy to find a solution when a quick answer was necessary. In those cases, AI was used to resolve the issues, however the outcomes were carefully checked to make sure they were correct due to the unpredictable nature of AI tools. 
 
-However, AI-generated code could not be accepted unconditionally. Suggested solutions often needed to be adapted to the actual structure of our game, especially where several systems shared state, such as sonar and rendering. Team members also had to become familiar with the game architecture before AI support was useful. When AI could not successfully fix a bug, we still had to trace the issue ourselves, understand how the relevant systems interacted, and decide whether to revise or rewrite the suggested code.
+Such an issue occurred during the merging of a pull request where instead main was merged into the new branch, this situation was difficult to fix but the use of AI tools helped us identify the problem and learn how to fix it if it happened again. Another issue occurred when a team member could not find the location of a bug in a pull request, in that case AI was used to scan through the code and identify the location of said bug. Once identified the issue was then fixed by hand. AI was also used to scan large json files containing object data for maps and enemies which allowed team members to continue to work on more important code structure and logic while keeping on schedule. 
 
-Some parts of the project were also largely manual design work rather than code generation. For example, the game maps were created using Tiled and exported as `.json` files for the game to load. Although AI could suggest possible map layouts or design ideas, the actual maps still had to be built, checked, and adjusted manually so that room structure, collision boundaries, and gameplay flow worked correctly.
+AI image generators were used to generate the main menu image and sprites for the scrap and power pickups. AI was not used to create the enemy and player sprites as they are made up of simple p5.js shapes in which manual implementation into our project was a simple task. 
 
 <table align="center">
   <tr>
@@ -533,6 +659,8 @@ Some parts of the project were also largely manual design work rather than code 
 </table>
 
 Overall, AI helped us move faster, but moving further still required professional software engineering skills, including architectural understanding, debugging, code review, testing, and design judgement. As AI makes code generation easier, critical thinking becomes more important than ever. In the end, final responsibility for the project remained with the developers.
+
+### 11. References
 
 
 ### Additional Marks

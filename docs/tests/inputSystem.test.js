@@ -19,8 +19,7 @@ jest.unstable_mockModule('../config.js', () => ({
         MOVE_UP: 87,            // 'w'
         MOVE_DOWN: 83,          // 's'
         TOGGLE_PAUSE: 27,       // Escape
-        TOGGLE_WORKSHOP: 66,        // 'e'
-        ACCEPT: 13,             // Enter
+        TOGGLE_WORKSHOP: 81,    // 'q'
         TOGGLE_TORCH: 32,       // Space
         SONAR: 70,              // 'f'
         LAUNCH_MISSILE: 82,     // 'r'
@@ -31,8 +30,7 @@ jest.unstable_mockModule('../config.js', () => ({
         MOVE_UP: 38,
         MOVE_DOWN: 40,
         TOGGLE_PAUSE: 27,
-        TOGGLE_WORKSHOP: 66,
-        ACCEPT: 13,
+        TOGGLE_WORKSHOP: 81,
         TOGGLE_TORCH: 32,
         SONAR: 70,
         LAUNCH_MISSILE: 82,
@@ -54,7 +52,6 @@ function makePlayer(overrides = {}) {
     actionIntent: {
       togglePause: false,
       toggleWorkshop: false,
-      accept: false,
       toggleTorch: false,
       emitSonar: false,
       launchMissile: false,
@@ -152,16 +149,10 @@ describe('InputSystem', () => {
       expect(player.actionIntent.togglePause).toBe(true);
     });
 
-    it('sets toggleWorkshop = true when B (66) is pressed', () => {
+    it('sets toggleWorkshop = true when Q (81) is pressed', () => {
       const input = createInputSystem(player);
-      input.onKeyPressed('b', 66);
+      input.onKeyPressed('q', 81);
       expect(player.actionIntent.toggleWorkshop).toBe(true);
-    });
-
-    it('sets accept = true when Enter (13) is pressed', () => {
-      const input = createInputSystem(player);
-      input.onKeyPressed('Enter', 13);
-      expect(player.actionIntent.accept).toBe(true);
     });
 
     it('sets toggleTorch = true when Space (32) is pressed', () => {

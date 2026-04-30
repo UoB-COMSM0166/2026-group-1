@@ -47,7 +47,7 @@ function initGlowState(obj) {
   }
 }
 
-function updateGlow(player, obj) {
+function updateGlow(player, obj, soundSystem) {
   initGlowState(obj);
   const now = millis();
   const touching = overlapsPlayer(player, obj);
@@ -66,6 +66,11 @@ function updateGlow(player, obj) {
     }
     const pulse = GLOW.PULSE_AMPLITUDE * Math.sin((now / 1000) * GLOW.PULSE_SPEED * Math.PI * 2);
     obj._glow.intensity = Math.min(1, Math.max(0.75, 1 + pulse));
+
+    // Charge player power while on active glow object (pulse state, not resting)
+    if (obj._glow.intensity > GLOW.BASE_INTENSITY && player.power) {
+      player.power.charge(GLOW.CHARGE_RATE);
+    }
   } else {
     obj._glow.intensity = Math.max(GLOW.BASE_INTENSITY, obj._glow.intensity - GLOW.DECAY_RATE * TIME.fixedDeltaTime);
   }
@@ -77,7 +82,7 @@ export function createGlowSystem(player, getGlowObjects, soundSystem = null) {
       const glowObjects = getGlowObjects?.() ?? [];
       for (const obj of glowObjects) {
         if (obj.visible === false) continue;
-        updateGlow(player, obj);
+        updateGlow(player, obj, soundSystem);
       }
     },
 

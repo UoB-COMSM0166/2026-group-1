@@ -23,9 +23,8 @@ export function createMenuSystem() {
   const btnEasyX = startX;
   const btnHardX = startX + btnWidth + gap;
 
-  const demoY = CANVAS.HEIGHT / 2;
-  const btnY = demoY + btnHeight + gap;
-  const settingsY = btnY + btnHeight + 20;
+  const btnY = CANVAS.HEIGHT / 2;
+  const settingsY = btnY + btnHeight + gap;
   const backToControlsY = settingsY + btnHeight + 20;
 
   function isHover(x, y, w, h) {
@@ -58,9 +57,6 @@ export function createMenuSystem() {
       textSize(20);
       text("Select Mode", CANVAS.WIDTH / 2, CANVAS.HEIGHT / 3 + 10);
 
-      drawBtn(startX, demoY, totalWidth, btnHeight, "DEMO",
-        color(60, 160, 100), color(20, 100, 60));
-
       drawBtn(btnEasyX, btnY, btnWidth, btnHeight, "EASY",
         color(60, 100, 180), color(25, 50, 120));
       drawBtn(btnHardX, btnY, btnWidth, btnHeight, "HARD",
@@ -74,8 +70,6 @@ export function createMenuSystem() {
     },
 
     checkClick(mX, mY) {
-      if (mX > startX && mX < startX + totalWidth && mY > demoY && mY < demoY + btnHeight)
-        return "DEMO";
       if (mX > btnEasyX && mX < btnEasyX + btnWidth && mY > btnY && mY < btnY + btnHeight)
         return "EASY";
       if (mX > btnHardX && mX < btnHardX + btnWidth && mY > btnY && mY < btnY + btnHeight)

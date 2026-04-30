@@ -9,11 +9,11 @@ DESCRIPTION:
 =======================================
 */
 
-import { CANVAS } from "../config.js";
+import { CANVAS, CONTROLS, keyLabel } from "../config.js";
 
 export function createControlsPageSystem(){
     const boxWidth = CANVAS.WIDTH * 0.88;
-    const boxHeight = CANVAS.HEIGHT * 0.58;
+    const boxHeight = CANVAS.HEIGHT * 0.76;
     const boxX = CANVAS.WIDTH / 2 - boxWidth / 2;
     const boxY = CANVAS.HEIGHT / 2 - boxHeight / 2 + 20;
 
@@ -35,6 +35,7 @@ export function createControlsPageSystem(){
     const btnY = CANVAS.HEIGHT - btnHeight - 50;
     const backX = CANVAS.WIDTH / 2 - totalW / 2;
     const nextX = backX + btnWidth + gap;
+    const singleBtnX = CANVAS.WIDTH / 2 - btnWidth / 2;
 
     function isHover(x, y, w, h) {
         return mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h;
@@ -91,7 +92,7 @@ export function createControlsPageSystem(){
     }
 
     return {
-        draw(bg) {
+        draw(bg, standalone = false) {
             if (bg) image(bg, 0, 0, width, height);
             else background(0);
 
@@ -107,7 +108,7 @@ export function createControlsPageSystem(){
             rect(boxX, boxY, boxWidth, boxHeight, 20);
 
             let y = boxY + 55;
-            const rowH = 78; 
+            const rowH = 60; 
             const midKey = keyW / 2;
 
             //keys
@@ -121,9 +122,15 @@ export function createControlsPageSystem(){
             textAlign(LEFT, CENTER);
             textStyle(BOLD);
             textSize(labelSize);
-            text("Move & [SHIFT] Sneak", labelX, y + keyW + 4 + midKey);
+            text("Move", labelX, y + keyW + 4 + midKey);
 
             y += keyW * 2 + 4 + 22;
+
+            drawKey(contentLeft+ keyW, y, "SHIFT");
+            fill(255); noStroke();
+            textAlign(LEFT, CENTER); textStyle(BOLD); textSize(labelSize);
+            text("Move Slow", labelX, y + midKey);
+            y += rowH;
 
             drawKey(contentLeft + keyW, y, "E");
             fill(255); noStroke();
@@ -143,10 +150,22 @@ export function createControlsPageSystem(){
             text("Missile", labelX, y + midKey);
             y += rowH;
 
-            drawKey(contentLeft+ keyW, y, "TAB");
+            drawKey(contentLeft+ keyW, y, keyLabel(CONTROLS.MODES[CONTROLS.DEFAULT_MODE].TOGGLE_WORKSHOP));
             fill(255); noStroke();
             textAlign(LEFT, CENTER); textStyle(BOLD); textSize(labelSize);
             text("Workshop", labelX, y + midKey);
+            y += rowH;
+
+            drawKey(contentLeft+ keyW, y, "C");
+            fill(255); noStroke();
+            textAlign(LEFT, CENTER); textStyle(BOLD); textSize(labelSize);
+            text("Show Controls", labelX, y + midKey);
+            y += rowH;
+
+            drawKey(contentLeft+ keyW, y, "`");
+            fill(255); noStroke();
+            textAlign(LEFT, CENTER); textStyle(BOLD); textSize(labelSize);
+            text("Toggle Full Screen", labelX, y + midKey);
             y += rowH;
 
             drawKey(contentLeft+ keyW, y, "ESC");
@@ -156,24 +175,26 @@ export function createControlsPageSystem(){
 
             textStyle(NORMAL);
 
-            drawButton(backX, btnY, btnWidth, btnHeight, "BACK");
-            drawButton(nextX, btnY, btnWidth, btnHeight, "NEXT");
+            fill(210);
+            noStroke();
+            textAlign(CENTER, CENTER);
+            textStyle(NORMAL);
+            textSize(15);
+            text("(Movement keys can be changed to Arrows in settings)", width / 2, btnY - 40);
+
+            if (standalone) {
+                drawButton(singleBtnX, btnY, btnWidth, btnHeight, "BACK");
+            } else {
+                drawButton(backX, btnY, btnWidth, btnHeight, "BACK");
+                drawButton(nextX, btnY, btnWidth, btnHeight, "NEXT");
+            }
         },
 
-        checkClick() {
-            if (
-                mouseX > backX &&
-                mouseX < backX + btnWidth &&
-                mouseY > btnY &&
-                mouseY < btnY + btnHeight
-            ) return "BACK";
+        checkClick(standalone = false) {
+            const bx = standalone ? singleBtnX : backX;
+            if (mouseX > bx && mouseX < bx + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) return "BACK";
 
-            if (
-                mouseX > nextX &&
-                mouseX < nextX + btnWidth &&
-                mouseY > btnY &&
-                mouseY < btnY + btnHeight
-            ) return "NEXT";
+            if (!standalone && mouseX > nextX && mouseX < nextX + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) return "NEXT";
 
             return null;
         },
